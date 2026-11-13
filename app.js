@@ -47,8 +47,12 @@ function refreshPreview(){
   $("previewMantra").textContent=hindi?"॥ शुभ मंगल ॥":(d.traditionInput==="Hindu"||d.traditionInput==="Jain"?"॥ श्री गणेशाय नमः ॥":"WITH JOY & BLESSINGS");
   $("exportCard").className="export-card design-"+d.designInput+" accent-"+d.colorInput;
   $("exportCard").dataset.language=d.languageInput;
-  const photo=$("previewPhoto");
-  if(photoData){photo.src=photoData;photo.hidden=false;}else{photo.removeAttribute("src");photo.hidden=true;}
+  const photoWrap=$("previewPhotos");
+  const photoIds=["bride","groom","couple"];
+  const previewIds=["previewBridePhoto","previewGroomPhoto","previewCouplePhoto"];
+  let visiblePhotos=0;
+  photoIds.forEach((key,index)=>{const el=$(previewIds[index]);if(photoData[key]){el.src=photoData[key];el.hidden=false;visiblePhotos++;}else{el.removeAttribute("src");el.hidden=true;}});
+  photoWrap.hidden=visiblePhotos===0;
 }
 $("inviteForm").addEventListener("submit",e=>{e.preventDefault();refreshPreview();$("saveStatus").textContent="Preview updated.";});
 fields.forEach(id=>$(id).addEventListener("input",()=>{refreshPreview();saveDraft();}));
@@ -59,7 +63,7 @@ document.querySelectorAll(".mode-button").forEach(button=>button.addEventListene
   document.body.classList.toggle("advanced-mode",button.dataset.mode==="advanced");
   $("saveStatus").textContent=button.dataset.mode==="advanced"?"Advanced controls shown.":"Simple editor selected.";
 }));
-let photoData="",photoImage=null;
+let photoData={bride:"",groom:"",couple:""},photoImages={bride:null,groom:null,couple:null};
 function saveDraft(){
   try{
     localStorage.setItem("vivahsutra-draft-v1",JSON.stringify({...readData(),photoData}));
@@ -69,30 +73,39 @@ function saveDraft(){
 $("saveDraft").addEventListener("click",saveDraft);
 try{
   const saved=JSON.parse(localStorage.getItem("vivahsutra-draft-v1")||"null");
-  if(saved){fields.forEach(id=>{if(typeof saved[id]==="string")$(id).value=saved[id];});photoData=typeof saved.photoData==="string"?saved.photoData:"";if(photoData){photoImage=new Image();photoImage.onload=()=>refreshPreview();photoImage.src=photoData;}}
+  if(saved){fields.forEach(id=>{if(typeof saved[id]==="string")$(id).value=saved[id];});photoData=typeof saved.photoData==="string"?{bride:"",groom:"",couple:saved.photoData}:{bride:saved.photoData?.bride||"",groom:saved.photoData?.groom||"",couple:saved.photoData?.couple||""};
+    Object.keys(photoData).forEach(key=>{if(photoData[key]){photoImages[key]=new Image();photoImages[key].onload=()=>refreshPreview();photoImages[key].src=photoData[key];}});}
 }catch(error){/* Ignore an unreadable local draft and keep the starter values. */}
 refreshPreview();
-$("photoInput").addEventListener("change",()=>{
-  const file=$("photoInput").files&&$("photoInput").files[0];
-  if(!file){photoData="";photoImage=null;refreshPreview();saveDraft();return;}
-  if(!["image/jpeg","image/png","image/webp"].includes(file.type)){$("saveStatus").textContent="Please choose JPG, PNG or WebP.";return;}
-  if(file.size>12*1024*1024){$("saveStatus").textContent="Choose a photo smaller than 12 MB.";return;}
-  const reader=new FileReader();
-  reader.onload=()=>{
-    const img=new Image();
-    img.onload=()=>{
-      const scale=Math.min(1,900/Math.max(img.width,img.height));
-      const cv=document.createElement("canvas");
-      cv.width=Math.max(1,Math.round(img.width*scale));cv.height=Math.max(1,Math.round(img.height*scale));
-      cv.getContext("2d").drawImage(img,0,0,cv.width,cv.height);
-      photoData=cv.toDataURL("image/jpeg",0.78);photoImage=new Image();photoImage.onload=()=>{refreshPreview();saveDraft();};photoImage.src=photoData;
+function handlePhotoInput(inputId,key){
+  $(inputId).addEventListener("change",()=>{
+    const file=$(inputId).files&&$(inputId).files[0];
+    if(!file){photoData[key]="";photoImages[key]=null;refreshPreview();saveDraft();return;}
+    if(!file.type.startsWith("image/")){$("saveStatus").textContent="Please choose an image from Photos.";return;}
+    if(file.size>12*1024*1024){$("saveStatus").textContent="Choose a photo smaller than 12 MB.";return;}
+    const reader=new FileReader();
+    reader.onload=()=>{
+      const img=new Image();
+      img.onload=()=>{
+        const scale=Math.min(1,900/Math.max(img.width,img.height));
+        const cv=document.createElement("canvas");
+        cv.width=Math.max(1,Math.round(img.width*scale));cv.height=Math.max(1,Math.round(img.height*scale));
+        cv.getContext("2d").drawImage(img,0,0,cv.width,cv.height);
+        photoData[key]=cv.toDataURL("image/jpeg",0.78);
+        photoImages[key]=new Image();
+        photoImages[key].onload=()=>{refreshPreview();saveDraft();};
+        photoImages[key].src=photoData[key];
+      };
+      img.onerror=()=>{$("saveStatus").textContent="Could not read this photo. Try another image.";};
+      img.src=reader.result;
     };
-    img.onerror=()=>{$("saveStatus").textContent="Could not read this photo.";};
-    img.src=reader.result;
-  };
-  reader.onerror=()=>{$("saveStatus").textContent="Photo could not be opened.";};
-  reader.readAsDataURL(file);
-});
+    reader.onerror=()=>{$("saveStatus").textContent="Photo could not be opened.";};
+    reader.readAsDataURL(file);
+  });
+}
+handlePhotoInput("bridePhotoInput","bride");
+handlePhotoInput("groomPhotoInput","groom");
+handlePhotoInput("couplePhotoInput","couple");
 
 let selectedPlan="free";
 const planDetails={free:{price:0,label:"Free"},basic:{price:29,label:"Basic"},premium:{price:49,label:"Premium"},royal:{price:79,label:"Royal"}};
@@ -136,7 +149,17 @@ function makeInvitationImage(){
   const draw=(txt,y,size,font="Georgia",weight="normal")=>{ctx.font=weight+" "+size+"px "+font;ctx.fillText(txt,600,y,980);};
   draw(d.languageInput==="hi"?"॥ शुभ मंगल ॥":"॥ SHUBH VIVAH ॥",190,34);
   draw(d.designInput==="mughal"?"✿":d.designInput==="pastel"?"✧":"✺",260,78,"Georgia");
-  if(photoImage&&photoImage.complete&&photoImage.naturalWidth){const size=170;ctx.save();ctx.beginPath();ctx.arc(600,390,size/2,0,Math.PI*2);ctx.clip();ctx.drawImage(photoImage,515,305,size,size);ctx.restore();ctx.strokeStyle=accent;ctx.lineWidth=7;ctx.beginPath();ctx.arc(600,390,size/2+5,0,Math.PI*2);ctx.stroke();}
+  const chosenPhotoKeys=["bride","groom","couple"].filter(key=>photoImages[key]&&photoImages[key].complete&&photoImages[key].naturalWidth);
+  if(chosenPhotoKeys.length){
+    const size=chosenPhotoKeys.length===1?170:132;
+    const gap=chosenPhotoKeys.length===1?0:34;
+    const total=chosenPhotoKeys.length*size+(chosenPhotoKeys.length-1)*gap;
+    chosenPhotoKeys.forEach((key,index)=>{
+      const x=600-total/2+index*(size+gap),y=390-size/2;
+      ctx.save();ctx.beginPath();ctx.arc(x+size/2,y+size/2,size/2,0,Math.PI*2);ctx.clip();ctx.drawImage(photoImages[key],x,y,size,size);ctx.restore();
+      ctx.strokeStyle=accent;ctx.lineWidth=6;ctx.beginPath();ctx.arc(x+size/2,y+size/2,size/2+4,0,Math.PI*2);ctx.stroke();
+    });
+  }
   draw((d.hostInput||"TOGETHER WITH THEIR FAMILIES").toUpperCase(),520,25,"Arial");
   draw(d.brideInput||"Bride",700,76);
   draw("&",790,45);
