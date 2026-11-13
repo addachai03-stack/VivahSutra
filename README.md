@@ -17,11 +17,18 @@ A mobile-first Indian wedding invitation maker.
 ## Run
 Open `index.html` in a browser or host the repository as a static site.
 
+## Free Beta status
+- The Free Beta is active: customers can create, preview, download a watermarked PNG, save/print a watermarked PDF, and use the share sheet where supported.
+- No customer account, KYC, checkout, payment collection, or manual fulfilment is required for the beta.
+- Basic ₹29, Premium ₹49 and Royal ₹79 are display-only future plans and are disabled until a verified payment provider is configured.
+- Invitation data and drafts stay in the customer’s browser; nothing is uploaded to a VivahSutra server in this beta.
+
 ## Important current limits
 - Drafts are local to the current browser/device; there is no cloud account or cross-device sync.
 - PNG export is browser-generated from the current invitation fields. PDF uses the browser/iOS print flow.
 - AI generation is not connected. No AI button pretends to generate content.
 - No checkout, payment verification, paid template delivery, database, or authentication is configured.
+- Photo uploads and cloud sync are not part of this beta yet; invitation exports use the current text and design fields.
 - Fonts are loaded from Google Fonts when online; system fallbacks are provided.
 
 ## Suggested production milestones
