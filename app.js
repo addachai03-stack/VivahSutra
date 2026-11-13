@@ -182,6 +182,35 @@ function makeInvitationImage(){
   addFreeWatermark(ctx);
   return canvas;
 }
+
+function makeInvitationBackImage(){
+  const d=readData();
+  const canvas=document.createElement("canvas");
+  canvas.width=1200;canvas.height=1600;
+  const ctx=canvas.getContext("2d");
+  const themes={royal:["#4b1724","#f0d69f"],floral:["#f3e5e0","#70484d"],minimal:["#eee7da","#493b34"],traditional:["#f0d49a","#71352b"],mughal:["#29483b","#f3dfb5"],pastel:["#f7e9e7","#77545d"]};
+  const [bg,ink]=themes[d.designInput]||themes.royal;
+  const accents={gold:"#c99a4b",rose:"#b76d75",green:"#64816a",blue:"#54808a"};
+  const accent=accents[d.colorInput]||accents.gold;
+  ctx.fillStyle=bg;ctx.fillRect(0,0,1200,1600);
+  ctx.strokeStyle=accent;ctx.lineWidth=8;ctx.strokeRect(48,48,1104,1504);ctx.lineWidth=2;ctx.strokeRect(70,70,1060,1460);
+  ctx.textAlign="center";ctx.fillStyle=ink;
+  const draw=(txt,y,size,font="Georgia",weight="normal")=>{ctx.font=weight+" "+size+"px "+font;ctx.fillText(txt,600,y,980);};
+  draw(d.languageInput==="hi"?"॥ सपरिवार ॥":"WITH LOVE & BLESSINGS",220,30,"Arial");
+  draw(d.languageInput==="hi"?"हमारे परिवार":"OUR FAMILIES",390,62,"Georgia");
+  ctx.strokeStyle=accent;ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(300,450);ctx.lineTo(900,450);ctx.stroke();
+  const names=d.relativesInput.split(/\n|,/).map(name=>name.trim()).filter(Boolean);
+  const list=names.length?names:["Your family names"];
+  const maxVisible=12;
+  const shown=list.slice(0,maxVisible);
+  const startY=570;
+  const lineGap= Math.min(76, Math.floor(820/Math.max(shown.length,1)));
+  shown.forEach((name,index)=>draw(name,startY+index*lineGap,Math.min(38,Math.max(24,Math.floor(520/Math.max(name.length,1)))),"Georgia"));
+  if(list.length>maxVisible)draw("and "+(list.length-maxVisible)+" more family members",startY+maxVisible*lineGap+20,24,"Arial");
+  draw(d.languageInput==="hi"?"आपकी उपस्थिति हमारे लिए अनमोल है":"WE LOOK FORWARD TO CELEBRATING WITH YOU",1430,20,"Arial");
+  addFreeWatermark(ctx);
+  return canvas;
+}
 $("downloadImage").addEventListener("click",()=>{
   if(!requirePaidCheckout())return;
   try{
@@ -193,12 +222,24 @@ $("downloadImage").addEventListener("click",()=>{
 $("printPdf").addEventListener("click",()=>{
   if(!requirePaidCheckout())return;
   try{
-    const data=makeInvitationImage().toDataURL("image/png");
+    const front=makeInvitationImage().toDataURL("image/png");
+    const back=makeInvitationBackImage().toDataURL("image/png");
     const win=window.open("","_blank");
     if(!win){$("saveStatus").textContent="Allow pop-ups for this site, then try again.";return;}
-    win.document.write('<!doctype html><html><head><title>VivahSutra Invitation</title><style>@page{size:A5 portrait;margin:0}html,body{margin:0;width:100%;height:100%}img{width:100%;height:100%;object-fit:contain}</style></head><body><img src="'+data+'" onload="window.print()"></body></html>');
+    win.document.write('<!doctype html><html><head><title>VivahSutra Two-Sided Invitation</title><style>@page{size:A5 portrait;margin:0}html,body{margin:0;padding:0} .page{width:100%;height:100vh;display:flex;align-items:center;justify-content:center;page-break-after:always;break-after:page} .page:last-child{page-break-after:auto;break-after:auto}img{width:100%;height:100%;object-fit:contain}</style></head><body><div class="page"><img src="'+front+'"></div><div class="page"><img src="'+back+'"></div><script>window.onload=()=>window.print()<\/script></body></html>');
     win.document.close();
+    $("saveStatus").textContent="Two-sided PDF is ready: front and family-name back.";
   }catch(error){$("saveStatus").textContent="PDF print could not open. Try image download.";}
+});
+$("downloadBackImage").addEventListener("click",()=>{
+  if(!requirePaidCheckout())return;
+  try{
+    const link=document.createElement("a");
+    link.download="VivahSutra-Invitation-Back.png";
+    link.href=makeInvitationBackImage().toDataURL("image/png");
+    link.click();
+    $("saveStatus").textContent="Back-side image created.";
+  }catch(error){$("saveStatus").textContent="Back-side image export failed. Try the two-sided PDF.";}
 });
 $("shareInvite").addEventListener("click",async()=>{
   if(!requirePaidCheckout())return;
