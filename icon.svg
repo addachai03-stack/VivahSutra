@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#672638"/><stop offset="1" stop-color="#35101b"/></linearGradient>
+    <linearGradient id="gold" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#f1d49a"/><stop offset="1" stop-color="#bd8740"/></linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="112" fill="url(#bg)"/>
+  <rect x="28" y="28" width="456" height="456" rx="94" fill="none" stroke="url(#gold)" stroke-width="5"/>
+  <rect x="42" y="42" width="428" height="428" rx="82" fill="none" stroke="#d4ad6b" stroke-opacity=".45" stroke-width="2"/>
+  <g fill="none" stroke="url(#gold)" stroke-width="7" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M256 98 C218 145 205 180 256 222 C307 180 294 145 256 98Z"/>
+    <path d="M256 98 C169 126 151 177 213 218 C231 177 244 135 256 98Z"/>
+    <path d="M256 98 C343 126 361 177 299 218 C281 177 268 135 256 98Z"/>
+    <path d="M213 218 C157 211 132 244 154 278 C193 275 226 252 256 222"/>
+    <path d="M299 218 C355 211 380 244 358 278 C319 275 286 252 256 222"/>
+    <path d="M154 278 C183 311 218 321 256 300 C294 321 329 311 358 278"/>
+    <path d="M256 222 V300"/>
+  </g>
+  <text x="256" y="380" text-anchor="middle" fill="#f3d69d" font-family="Georgia,serif" font-size="104" font-weight="bold">वि</text>
+  <path d="M166 411 H346" stroke="#c99a4b" stroke-width="3" stroke-linecap="round"/>
+  <circle cx="150" cy="411" r="5" fill="#e8c98f"/><circle cx="362" cy="411" r="5" fill="#e8c98f"/>
+</svg>
