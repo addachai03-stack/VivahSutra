@@ -1,6 +1,6 @@
 const modal=document.getElementById("editorModal");
 const $=id=>document.getElementById(id);
-const fields=["languageInput","occasionInput","traditionInput","brideInput","groomInput","hostInput","dateInput","timeInput","venueInput","rsvpInput","messageInput","designInput","colorInput"];
+const fields=["languageInput","occasionInput","traditionInput","brideInput","groomInput","hostInput","relativesInput","dateInput","timeInput","venueInput","rsvpInput","messageInput","designInput","colorInput"];
 const readData=()=>Object.fromEntries(fields.map(id=>[id,$(id).value]));
 const openEditor=()=>{modal.hidden=false;document.body.style.overflow="hidden";refreshPreview();};
 const closeEditor=()=>{modal.hidden=true;document.body.style.overflow="";};
@@ -44,6 +44,8 @@ function refreshPreview(){
   $("previewVenue").textContent=d.venueInput.trim().toUpperCase()||"VENUE TO BE ANNOUNCED";
   $("previewMessage").textContent=d.messageInput.trim();
   $("previewRsvp").textContent=d.rsvpInput.trim()?"RSVP · "+d.rsvpInput.trim():"";
+  const familyNames=d.relativesInput.split(/\\n|,/).map(name=>name.trim()).filter(Boolean);
+  $("previewRelatives").replaceChildren(...(familyNames.length?familyNames.map(name=>{const line=document.createElement("div");line.textContent=name;return line;}):[Object.assign(document.createElement("div"),{textContent:"Your family names will appear here"})]));
   $("previewMantra").textContent=hindi?"॥ शुभ मंगल ॥":(d.traditionInput==="Hindu"||d.traditionInput==="Jain"?"॥ श्री गणेशाय नमः ॥":"WITH JOY & BLESSINGS");
   $("exportCard").className="export-card design-"+d.designInput+" accent-"+d.colorInput;
   $("exportCard").dataset.language=d.languageInput;
@@ -55,6 +57,7 @@ function refreshPreview(){
   photoWrap.hidden=visiblePhotos===0;
 }
 $("inviteForm").addEventListener("submit",e=>{e.preventDefault();refreshPreview();$("saveStatus").textContent="Preview updated.";});
+$("flipCardButton").addEventListener("click",()=>{const card=$("flipCard");card.classList.toggle("is-flipped");$("cardSideLabel").textContent=card.classList.contains("is-flipped")?"Inside · Family names":"Front cover";$("flipCardButton").textContent=card.classList.contains("is-flipped")?"Fold / Flip to front ↻":"Open / Flip card ↻";});
 fields.forEach(id=>$(id).addEventListener("input",()=>{refreshPreview();saveDraft();}));
 fields.forEach(id=>$(id).addEventListener("change",()=>{refreshPreview();saveDraft();}));
 
