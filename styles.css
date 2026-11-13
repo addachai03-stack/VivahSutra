@@ -63,3 +63,17 @@
  .export-actions{grid-template-columns:1fr 1fr 1fr}
 }
 @media(max-width:390px){.editor-mode .mode-button{padding:7px 8px}.editor-title-row h2{font-size:24px}.export-card{width:82vw}.card-stage{min-height:365px}}
+
+/* Self-service pricing plans */
+.plan-picker{margin:0 26px 12px;padding:14px 16px;background:#fffdfa;border:1px solid #eadfce}
+.plan-heading{display:flex;justify-content:space-between;align-items:end;gap:12px;margin-bottom:12px}
+.plan-heading h3{font:600 17px "Playfair Display",serif;color:var(--wine);margin:5px 0 0}
+.plan-note{font-size:9px;color:#8b7b6d}
+.plan-options{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+.plan-option{display:grid;gap:4px;text-align:left;padding:10px;border:1px solid #e4d8c8;background:#fffefa;color:#4b302e;border-radius:3px;cursor:pointer}
+.plan-option.selected{border:2px solid #a77c42;background:#fbf3e5;padding:9px}
+.plan-name{font-size:10px;font-weight:700}
+.plan-option strong{font:600 22px "Playfair Display",serif;color:var(--wine)}
+.plan-option small{font-size:8px;line-height:1.35;color:#85766d}
+.plan-status{margin:10px 0 0;font-size:9px;line-height:1.5;color:#806d5c}
+@media(max-width:760px){.plan-picker{margin:0 14px 10px;padding:12px}.plan-heading{align-items:flex-start;flex-direction:column;gap:5px}.plan-options{grid-template-columns:repeat(2,minmax(0,1fr))}}
