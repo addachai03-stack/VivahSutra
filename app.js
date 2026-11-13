@@ -44,7 +44,7 @@ function refreshPreview(){
   $("previewVenue").textContent=d.venueInput.trim().toUpperCase()||"VENUE TO BE ANNOUNCED";
   $("previewMessage").textContent=d.messageInput.trim();
   $("previewRsvp").textContent=d.rsvpInput.trim()?"RSVP · "+d.rsvpInput.trim():"";
-  const familyNames=d.relativesInput.split(/\\n|,/).map(name=>name.trim()).filter(Boolean);
+  const familyNames=d.relativesInput.split(/\n|,/).map(name=>name.trim()).filter(Boolean);
   $("previewRelatives").replaceChildren(...(familyNames.length?familyNames.map(name=>{const line=document.createElement("div");line.textContent=name;return line;}):[Object.assign(document.createElement("div"),{textContent:"Your family names will appear here"})]));
   $("previewMantra").textContent=hindi?"॥ शुभ मंगल ॥":(d.traditionInput==="Hindu"||d.traditionInput==="Jain"?"॥ श्री गणेशाय नमः ॥":"WITH JOY & BLESSINGS");
   $("exportCard").className="export-card design-"+d.designInput+" accent-"+d.colorInput;
