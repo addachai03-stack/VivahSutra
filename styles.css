@@ -77,3 +77,9 @@
 .plan-option small{font-size:8px;line-height:1.35;color:#85766d}
 .plan-status{margin:10px 0 0;font-size:9px;line-height:1.5;color:#806d5c}
 @media(max-width:760px){.plan-picker{margin:0 14px 10px;padding:12px}.plan-heading{align-items:flex-start;flex-direction:column;gap:5px}.plan-options{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+/* Free Beta status and unavailable paid plans */
+.beta-pill{display:inline-flex;align-items:center;border:1px solid #c99a4b;color:#805d2e;background:#fbf3e5;border-radius:30px;padding:7px 11px;font-size:8px;font-weight:700;letter-spacing:1.2px;margin-left:auto;margin-right:18px;white-space:nowrap}
+.plan-option:disabled{cursor:not-allowed;opacity:.55;background:#f6f1e9}
+.plan-option:disabled strong{text-decoration:line-through;text-decoration-thickness:1px}
+@media(max-width:800px){.beta-pill{margin-right:8px;padding:6px 8px;font-size:7px}.topbar{gap:6px}}
