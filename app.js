@@ -106,6 +106,7 @@ try{
   if(saved){fields.forEach(id=>{if(typeof saved[id]==="string")$(id).value=saved[id];});photoData={bride:typeof saved.photoData==="object"?(saved.photoData?.bride||""):"",groom:typeof saved.photoData==="object"?(saved.photoData?.groom||""):""};
     Object.keys(photoData).forEach(key=>{if(photoData[key]){photoImages[key]=new Image();photoImages[key].onload=()=>refreshPreview();photoImages[key].src=photoData[key];}});}
 }catch(error){/* Ignore an unreadable local draft and keep the starter values. */}
+updateWeddingNote();
 refreshPreview();
 function handlePhotoInput(inputId,key){
   $(inputId).addEventListener("change",()=>{
