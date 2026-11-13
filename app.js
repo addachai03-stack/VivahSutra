@@ -71,6 +71,33 @@ try{
 }catch(error){/* Ignore an unreadable local draft and keep the starter values. */}
 refreshPreview();
 
+let selectedPlan="free";
+const planDetails={free:{price:0,label:"Free"},basic:{price:29,label:"Basic"},premium:{price:49,label:"Premium"},royal:{price:79,label:"Royal"}};
+document.querySelectorAll(".plan-option").forEach(button=>button.addEventListener("click",()=>{
+  selectedPlan=button.dataset.plan;
+  document.querySelectorAll(".plan-option").forEach(item=>item.classList.toggle("selected",item===button));
+  const detail=planDetails[selectedPlan];
+  $("planStatus").textContent=selectedPlan==="free"
+    ?"Free plan selected. You can create and download a sample with a VivahSutra watermark."
+    :detail.label+" plan selected (₹"+detail.price+"). Secure online checkout is not connected yet; no payment will be taken.";
+}));
+function addFreeWatermark(ctx){
+  if(selectedPlan!=="free")return;
+  ctx.save();
+  ctx.translate(600,800);
+  ctx.rotate(-Math.PI/5);
+  ctx.fillStyle="rgba(110,75,65,.22)";
+  ctx.font="bold 72px Arial";
+  ctx.textAlign="center";
+  ctx.fillText("VIVAHSUTRA • FREE PREVIEW",0,0);
+  ctx.restore();
+}
+function requirePaidCheckout(){
+  if(selectedPlan==="free")return true;
+  $("planStatus").textContent="Checkout is not live yet. Your invitation is safe; no payment has been taken. Please use Free to download a watermarked sample for now.";
+  $("saveStatus").textContent="Paid checkout is not connected yet.";
+  return false;
+}
 function makeInvitationImage(){
   const d=readData();
   const canvas=document.createElement("canvas");
@@ -102,9 +129,11 @@ function makeInvitationImage(){
   if(d.messageInput)draw(d.messageInput,1400,22,"Arial");
   if(d.rsvpInput)draw("RSVP · "+d.rsvpInput,1460,20,"Arial");
   draw(d.languageInput==="hi"?"॥ सादर आमंत्रित ॥":"WITH LOVE & BLESSINGS",1510,22);
+  addFreeWatermark(ctx);
   return canvas;
 }
 $("downloadImage").addEventListener("click",()=>{
+  if(!requirePaidCheckout())return;
   try{
     const canvas=makeInvitationImage();const link=document.createElement("a");
     link.download="VivahSutra-Invitation.png";link.href=canvas.toDataURL("image/png");link.click();
@@ -112,6 +141,7 @@ $("downloadImage").addEventListener("click",()=>{
   }catch(error){$("saveStatus").textContent="Image export failed in this browser. Try PDF print.";}
 });
 $("printPdf").addEventListener("click",()=>{
+  if(!requirePaidCheckout())return;
   try{
     const data=makeInvitationImage().toDataURL("image/png");
     const win=window.open("","_blank");
@@ -121,6 +151,7 @@ $("printPdf").addEventListener("click",()=>{
   }catch(error){$("saveStatus").textContent="PDF print could not open. Try image download.";}
 });
 $("shareInvite").addEventListener("click",async()=>{
+  if(!requirePaidCheckout())return;
   try{
     const blob=await new Promise(resolve=>makeInvitationImage().toBlob(resolve,"image/png"));
     const file=new File([blob],"VivahSutra-Invitation.png",{type:"image/png"});
