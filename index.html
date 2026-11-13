@@ -22,6 +22,7 @@
     <nav class="desktop-nav" aria-label="Main navigation">
       <a href="#collections">Collections</a><a href="#how-it-works">How it works</a>
     </nav>
+    <span class="beta-pill">FREE BETA</span>
     <button class="button button-dark top-cta" id="topCreate">Create invite <span>↗</span></button>
   </header>
 
@@ -59,7 +60,7 @@
     </section>
 
     <section class="trust-strip">
-      <span>DESIGNED FOR INDIAN CELEBRATIONS</span><b>✦</b><span>TRADITION MEETS MODERN STYLE</span><b>✦</b><span>MADE TO SHARE</span>
+      <span>FREE BETA · NO PAYMENT</span><b>✦</b><span>NO ACCOUNT OR KYC</span><b>✦</b><span>CREATE & DOWNLOAD YOURSELF</span>
     </section>
 
     <section class="collections section-wrap" id="collections">
@@ -114,14 +115,14 @@
       <header class="editor-header"><div class="brand"><img src="icon.svg" class="brand-mark" alt=""><span><strong>VivahSutra Studio</strong><small>YOUR INVITATION WORKSPACE</small></span></div><button class="modal-close" id="closeEditor" aria-label="Close">×</button></header>
       <div class="editor-title-row"><div><div class="eyebrow">MAKE IT PERSONAL</div><h2 id="editorTitle">Create your <em>invitation.</em></h2></div><div class="editor-mode"><button type="button" class="mode-button active" data-mode="simple">Simple</button><button type="button" class="mode-button" data-mode="advanced">Advanced</button></div></div>
       <section class="plan-picker" aria-label="Choose invitation plan">
-        <div class="plan-heading"><div><span class="eyebrow">SIMPLE, TRANSPARENT PRICING</span><h3>Start free. Upgrade when ready.</h3></div><span class="plan-note">One-time payment · No subscription</span></div>
+        <div class="plan-heading"><div><span class="eyebrow">VIVAHSUTRA FREE BETA</span><h3>Create and download for free.</h3></div><span class="plan-note">No payment · No account · No KYC</span></div>
         <div class="plan-options">
-          <button type="button" class="plan-option selected" data-plan="free"><span class="plan-name">Free</span><strong>₹0</strong><small>Preview + watermarked sample</small></button>
-          <button type="button" class="plan-option" data-plan="basic"><span class="plan-name">Basic</span><strong>₹29</strong><small>Clean invitation download</small></button>
-          <button type="button" class="plan-option" data-plan="premium"><span class="plan-name">Premium</span><strong>₹49</strong><small>PNG + PDF, premium styles</small></button>
-          <button type="button" class="plan-option" data-plan="royal"><span class="plan-name">Royal</span><strong>₹79</strong><small>All advanced design options</small></button>
+          <button type="button" class="plan-option selected" data-plan="free" aria-pressed="true"><span class="plan-name">Free Beta</span><strong>₹0</strong><small>Preview · PNG · PDF · Share</small></button>
+          <button type="button" class="plan-option plan-coming" data-plan="basic" disabled aria-disabled="true"><span class="plan-name">Basic · Soon</span><strong>₹29</strong><small>Paid plan not active</small></button>
+          <button type="button" class="plan-option plan-coming" data-plan="premium" disabled aria-disabled="true"><span class="plan-name">Premium · Soon</span><strong>₹49</strong><small>Paid plan not active</small></button>
+          <button type="button" class="plan-option plan-coming" data-plan="royal" disabled aria-disabled="true"><span class="plan-name">Royal · Soon</span><strong>₹79</strong><small>Paid plan not active</small></button>
         </div>
-        <p class="plan-status" id="planStatus" aria-live="polite">Free plan selected. You can create and download a sample with a VivahSutra watermark.</p>
+        <p class="plan-status" id="planStatus" aria-live="polite">Free Beta is active. Create your invitation and download or share a watermarked sample. Paid plans are not available yet.</p>
       </section>
       <div class="studio-grid">
         <form id="inviteForm" class="studio-controls">
@@ -130,7 +131,7 @@
           <div class="field-section"><h3>03 · Look & feel</h3><label>Design collection<select id="designInput"><option value="royal">Rajwada Royale</option><option value="floral">Garden of Love</option><option value="minimal">Modern Heirloom</option><option value="traditional">Mangal Patrika</option></select></label><label>Accent colour<select id="colorInput"><option value="gold">Antique Gold</option><option value="rose">Rose</option><option value="green">Emerald</option><option value="blue">Peacock</option></select></label></div>
           <div class="studio-actions"><button class="button button-gold" type="submit">Update invitation preview <span>→</span></button><button class="button button-outline" type="button" id="saveDraft">Save draft</button><span class="save-status" id="saveStatus" aria-live="polite">Draft stays on this device.</span></div>
         </form>
-        <aside class="preview-panel"><div class="preview-toolbar"><span>LIVE INVITATION PREVIEW</span><span class="preview-live-dot">● LIVE</span></div><div class="card-stage"><article class="export-card design-royal" id="exportCard"><div class="export-inner"><div class="export-mantra" id="previewMantra">॥ श्री गणेशाय नमः ॥</div><div class="export-ornament">✺</div><div class="export-host" id="previewHost">TOGETHER WITH THEIR FAMILIES</div><div class="export-names"><span id="previewBride">Meera</span><i>&</i><span id="previewGroom">Aarav</span></div><div class="export-rule"><span>✦</span></div><div class="export-occasion" id="previewOccasion">REQUEST THE PLEASURE OF YOUR COMPANY</div><div class="export-date" id="previewDate">18 FEBRUARY 2027</div><div class="export-time" id="previewTime">7:00 PM</div><div class="export-venue" id="previewVenue">JAIPUR, RAJASTHAN</div><div class="export-message" id="previewMessage"></div><div class="export-rsvp" id="previewRsvp"></div><div class="export-footer">॥ शुभ विवाह ॥</div></div></article></div><div class="export-actions"><button class="button button-dark" type="button" id="downloadImage">Download image</button><button class="button button-outline" type="button" id="printPdf">Save as PDF</button><button class="button button-outline" type="button" id="shareInvite">Share</button></div><p class="preview-note">Preview is generated in your browser. Drafts are stored only on this device. PDF option opens the iPhone print sheet; choose Save to Files.</p></aside>
+        <aside class="preview-panel"><div class="preview-toolbar"><span>LIVE INVITATION PREVIEW</span><span class="preview-live-dot">● LIVE</span></div><div class="card-stage"><article class="export-card design-royal" id="exportCard"><div class="export-inner"><div class="export-mantra" id="previewMantra">॥ श्री गणेशाय नमः ॥</div><div class="export-ornament">✺</div><div class="export-host" id="previewHost">TOGETHER WITH THEIR FAMILIES</div><div class="export-names"><span id="previewBride">Meera</span><i>&</i><span id="previewGroom">Aarav</span></div><div class="export-rule"><span>✦</span></div><div class="export-occasion" id="previewOccasion">REQUEST THE PLEASURE OF YOUR COMPANY</div><div class="export-date" id="previewDate">18 FEBRUARY 2027</div><div class="export-time" id="previewTime">7:00 PM</div><div class="export-venue" id="previewVenue">JAIPUR, RAJASTHAN</div><div class="export-message" id="previewMessage"></div><div class="export-rsvp" id="previewRsvp"></div><div class="export-footer">॥ शुभ विवाह ॥</div></div></article></div><div class="export-actions"><button class="button button-dark" type="button" id="downloadImage">Download image</button><button class="button button-outline" type="button" id="printPdf">Save as PDF</button><button class="button button-outline" type="button" id="shareInvite">Share</button></div><p class="preview-note">Free Beta: no payment or account is needed. Your invitation is generated in this browser; drafts stay on this device. PNG downloads with a watermark. PDF opens the print sheet; choose Save to Files.</p></aside>
       </div>
     </section>
   </div>
