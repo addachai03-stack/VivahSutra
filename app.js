@@ -16,9 +16,8 @@ filterButtons.forEach(button=>button.addEventListener("click",()=>{
   filterButtons.forEach(item=>item.classList.toggle("active",item===button));
   templateCards.forEach(card=>{card.hidden=button.dataset.filter!=="all"&&card.dataset.category!==button.dataset.filter;});
 }));
-const designByCard=["royal","floral","minimal","traditional"];
 document.querySelectorAll(".choose-template").forEach((button,index)=>button.addEventListener("click",()=>{
-  $("designInput").value=designByCard[index]||"royal";
+  $("designInput").value=button.dataset.design||["royal","floral","minimal","traditional","mughal","pastel"][index]||"royal";
   openEditor();
 }));
 
@@ -127,7 +126,7 @@ function makeInvitationImage(){
   const canvas=document.createElement("canvas");
   canvas.width=1200;canvas.height=1600;
   const ctx=canvas.getContext("2d");
-  const themes={royal:["#4b1724","#f0d69f"],floral:["#f3e5e0","#70484d"],minimal:["#eee7da","#493b34"],traditional:["#f0d49a","#71352b"]};
+  const themes={royal:["#4b1724","#f0d69f"],floral:["#f3e5e0","#70484d"],minimal:["#eee7da","#493b34"],traditional:["#f0d49a","#71352b"],mughal:["#29483b","#f3dfb5"],pastel:["#f7e9e7","#77545d"]};
   const [bg,ink]=themes[d.designInput]||themes.royal;
   const accents={gold:"#c99a4b",rose:"#b76d75",green:"#64816a",blue:"#54808a"};
   const accent=accents[d.colorInput]||accents.gold;
@@ -136,15 +135,16 @@ function makeInvitationImage(){
   ctx.textAlign="center";ctx.fillStyle=ink;
   const draw=(txt,y,size,font="Georgia",weight="normal")=>{ctx.font=weight+" "+size+"px "+font;ctx.fillText(txt,600,y,980);};
   draw(d.languageInput==="hi"?"॥ शुभ मंगल ॥":"॥ SHUBH VIVAH ॥",190,34);
-  draw("✺",310,90,"Georgia");
-  draw((d.hostInput||"TOGETHER WITH THEIR FAMILIES").toUpperCase(),430,25,"Arial");
-  draw(d.brideInput||"Bride",650,86);
-  draw("&",755,52);
-  draw(d.groomInput||"Groom",870,86);
-  ctx.strokeStyle=accent;ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(300,940);ctx.lineTo(900,940);ctx.stroke();
-  draw(d.occasionInput==="Wedding"?"REQUEST THE PLEASURE OF YOUR COMPANY":"JOIN US TO CELEBRATE "+d.occasionInput.toUpperCase(),1030,25,"Arial");
-  draw(dateLabel(d.dateInput),1120,32,"Arial","bold");
-  draw(timeLabel(d.timeInput),1180,27,"Arial");
+  draw(d.designInput==="mughal"?"✿":d.designInput==="pastel"?"✧":"✺",260,78,"Georgia");
+  if(photoData){const photo=new Image();photo.src=photoData;const size=170;ctx.save();ctx.beginPath();ctx.arc(600,390,size/2,0,Math.PI*2);ctx.clip();ctx.drawImage(photo,515,305,size,size);ctx.restore();ctx.strokeStyle=accent;ctx.lineWidth=7;ctx.beginPath();ctx.arc(600,390,size/2+5,0,Math.PI*2);ctx.stroke();}
+  draw((d.hostInput||"TOGETHER WITH THEIR FAMILIES").toUpperCase(),520,25,"Arial");
+  draw(d.brideInput||"Bride",700,76);
+  draw("&",790,45);
+  draw(d.groomInput||"Groom",880,76);
+  ctx.strokeStyle=accent;ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(300,960);ctx.lineTo(900,960);ctx.stroke();
+  draw(d.occasionInput==="Wedding"?"REQUEST THE PLEASURE OF YOUR COMPANY":"JOIN US TO CELEBRATE "+d.occasionInput.toUpperCase(),1040,23,"Arial");
+  draw(dateLabel(d.dateInput),1130,30,"Arial","bold");
+  draw(timeLabel(d.timeInput),1185,25,"Arial");
   const venue=(d.venueInput||"VENUE TO BE ANNOUNCED").toUpperCase();
   const words=venue.split(" ");let line="",y=1260;
   ctx.font="28px Arial";
