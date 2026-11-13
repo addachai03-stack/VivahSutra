@@ -1,5 +1,30 @@
 const modal=document.getElementById("editorModal");
 const $=id=>document.getElementById(id);
+
+const weddingNotes={
+  Wedding:["शुभ शुरुआत, सुंदर यादें और अपनों का साथ।","दो दिल, दो परिवार — एक खूबसूरत रिश्ता।","मंगल अवसर पर आपका स्नेह ही सबसे बड़ा उपहार है।"],
+  Engagement:["एक नए रिश्ते की पहली खूबसूरत अंगूठी।","दो परिवारों के मिलने से खुशियाँ दोगुनी होती हैं।","नई शुरुआत को अपनों के आशीर्वाद से सजाएँ।"],
+  Haldi:["हल्दी की खुशबू, हँसी और ढेर सारा प्यार।","पीले रंग में रंग जाएँ खुशियों के पल।","हर रस्म में अपनों का साथ सबसे खास।"],
+  Mehendi:["मेहंदी के रंग में सजे प्यार के नाम।","हथेलियों पर खुशियाँ, दिलों में उत्सव।","रंग गहरे हों और रिश्ते और भी प्यारे।"],
+  Sangeet:["संगीत, मुस्कान और यादगार शाम।","हर धुन पर झूमें अपने, हर पल बने खास।","खुशियों की महफ़िल में आपका स्वागत है।"],
+  Reception:["आपकी मौजूदगी हमारी शाम को खास बनाएगी।","मिलें, मुस्कुराएँ और खुशियाँ साथ मनाएँ।","एक यादगार शाम, अपनों के नाम।"],
+  "Save the Date":["तारीख़ याद रखें — खुशियों का दिन आने वाला है।","एक खास दिन, एक प्यारा निमंत्रण।","हमारी नई कहानी की तारीख़ नोट कर लें।"]
+};
+let weddingNoteTimer;
+let weddingNoteIndex=0;
+function updateWeddingNote(reset=true){
+  const occasion=$("occasionInput").value||"Wedding";
+  const lines=weddingNotes[occasion]||weddingNotes.Wedding;
+  if(reset)weddingNoteIndex=0;
+  const target=$("weddingNote");
+  if(target)target.textContent=lines[weddingNoteIndex%lines.length];
+  clearInterval(weddingNoteTimer);
+  weddingNoteTimer=setInterval(()=>{
+    weddingNoteIndex=(weddingNoteIndex+1)%lines.length;
+    if(target)target.textContent=lines[weddingNoteIndex];
+  },4200);
+}
+
 const fields=["languageInput","occasionInput","traditionInput","brideInput","groomInput","hostInput","relativesInput","dateInput","timeInput","venueInput","rsvpInput","messageInput","designInput","colorInput"];
 const readData=()=>Object.fromEntries(fields.map(id=>[id,$(id).value]));
 const openEditor=()=>{modal.hidden=false;document.body.style.overflow="hidden";refreshPreview();};
@@ -58,6 +83,8 @@ function refreshPreview(){
 }
 $("inviteForm").addEventListener("submit",e=>{e.preventDefault();refreshPreview();$("saveStatus").textContent="Preview updated.";});
 $("flipCardButton").addEventListener("click",()=>{const card=$("flipCard");card.classList.toggle("is-flipped");$("cardSideLabel").textContent=card.classList.contains("is-flipped")?"Inside · Family names":"Front cover";$("flipCardButton").textContent=card.classList.contains("is-flipped")?"Fold / Flip to front ↻":"Open / Flip card ↻";});
+$("occasionInput").addEventListener("change",()=>updateWeddingNote(true));
+updateWeddingNote();
 fields.forEach(id=>$(id).addEventListener("input",()=>{refreshPreview();saveDraft();}));
 fields.forEach(id=>$(id).addEventListener("change",()=>{refreshPreview();saveDraft();}));
 
