@@ -89,3 +89,9 @@
 .plan-option:disabled{cursor:not-allowed;opacity:.55;background:#f6f1e9}
 .plan-option:disabled strong{text-decoration:line-through;text-decoration-thickness:1px}
 @media(max-width:800px){.beta-pill{margin-right:8px;padding:6px 8px;font-size:7px}.topbar{gap:6px}}
+
+/* Clearly visible couple-photo picker */
+.photo-section{border:1px solid #d8bf94;background:#fff9ef}
+.photo-help{display:block;margin:0;color:#78695e;font-size:11px;line-height:1.5}
+.photo-picker-label{display:grid;gap:8px;padding:12px;border:1px dashed #b88b4c;background:#fffdf8;color:#5b2934;font-size:12px;font-weight:700;border-radius:5px}
+.photo-picker-label input[type="file"]{display:block;width:100%;padding:10px;background:#fff;border:1px solid #e3d8ca;border-radius:4px;font-size:12px;color:#4b1724}
