@@ -50,8 +50,8 @@ function refreshPreview(){
   $("exportCard").dataset.language=d.languageInput;
 }
 $("inviteForm").addEventListener("submit",e=>{e.preventDefault();refreshPreview();$("saveStatus").textContent="Preview updated.";});
-fields.forEach(id=>$(id).addEventListener("input",refreshPreview));
-fields.forEach(id=>$(id).addEventListener("change",refreshPreview));
+fields.forEach(id=>$(id).addEventListener("input",()=>{refreshPreview();saveDraft();}));
+fields.forEach(id=>$(id).addEventListener("change",()=>{refreshPreview();saveDraft();}));
 
 document.querySelectorAll(".mode-button").forEach(button=>button.addEventListener("click",()=>{
   document.querySelectorAll(".mode-button").forEach(b=>b.classList.toggle("active",b===button));
