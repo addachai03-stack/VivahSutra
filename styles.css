@@ -102,3 +102,22 @@
 .preview-photos .preview-photo{width:58px;height:58px;flex:0 1 58px;}
 .photo-section .photo-picker-label{margin-top:2px;}
 .photo-section input[type=file]{font-size:11px;}
+
+/* Interactive fold-and-flip invitation preview */
+.card-stage{perspective:1400px;overflow:visible}
+.flip-card{width:min(100%,340px);aspect-ratio:3/4.2;position:relative;transform-style:preserve-3d;transition:transform .85s cubic-bezier(.2,.7,.2,1);filter:drop-shadow(0 18px 28px #3b211c24)}
+.flip-card.is-flipped{transform:rotateY(180deg)}
+.flip-card-inner{position:absolute;inset:0;transform-style:preserve-3d}
+.flip-card-face{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden}
+.flip-card-front .export-card{width:100%;height:100%;aspect-ratio:auto}
+.flip-card-back{transform:rotateY(180deg);padding:10px;background:#4b1724;color:#f0d69f}
+.back-card-inner{height:100%;border:1px solid #c99a4b;outline:1px solid #c99a4b;outline-offset:-6px;display:flex;flex-direction:column;align-items:center;text-align:center;padding:30px 22px;background:radial-gradient(circle at top,#6b2937,#4b1724 70%)}
+.back-kicker,.back-footer{font:8px "DM Sans",sans-serif;letter-spacing:1.5px;color:#d6b77e;line-height:1.6}
+.back-card-inner h3{font:30px "Playfair Display",serif;font-weight:500;margin:22px 0;color:#f4dfb6}
+.back-family-names{font:16px/1.8 "Playfair Display",serif;white-space:pre-wrap;overflow-wrap:anywhere;color:#fff3dc}
+.back-footer{margin-top:auto;max-width:90%}
+.card-flip-controls{display:flex;justify-content:center;align-items:center;gap:12px;margin-top:12px}
+.card-flip-controls .button{padding:10px 15px;font-size:9px}
+.card-flip-controls span{font-size:9px;color:#85766d}
+@media(max-width:760px){.flip-card{width:min(76vw,300px)}}
+@media(max-width:390px){.flip-card{width:82vw}}
