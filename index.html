@@ -113,6 +113,16 @@
     <section class="editor-modal editor-workspace" role="dialog" aria-modal="true" aria-labelledby="editorTitle">
       <header class="editor-header"><div class="brand"><img src="icon.svg" class="brand-mark" alt=""><span><strong>VivahSutra Studio</strong><small>YOUR INVITATION WORKSPACE</small></span></div><button class="modal-close" id="closeEditor" aria-label="Close">×</button></header>
       <div class="editor-title-row"><div><div class="eyebrow">MAKE IT PERSONAL</div><h2 id="editorTitle">Create your <em>invitation.</em></h2></div><div class="editor-mode"><button type="button" class="mode-button active" data-mode="simple">Simple</button><button type="button" class="mode-button" data-mode="advanced">Advanced</button></div></div>
+      <section class="plan-picker" aria-label="Choose invitation plan">
+        <div class="plan-heading"><div><span class="eyebrow">SIMPLE, TRANSPARENT PRICING</span><h3>Start free. Upgrade when ready.</h3></div><span class="plan-note">One-time payment · No subscription</span></div>
+        <div class="plan-options">
+          <button type="button" class="plan-option selected" data-plan="free"><span class="plan-name">Free</span><strong>₹0</strong><small>Preview + watermarked sample</small></button>
+          <button type="button" class="plan-option" data-plan="basic"><span class="plan-name">Basic</span><strong>₹29</strong><small>Clean invitation download</small></button>
+          <button type="button" class="plan-option" data-plan="premium"><span class="plan-name">Premium</span><strong>₹49</strong><small>PNG + PDF, premium styles</small></button>
+          <button type="button" class="plan-option" data-plan="royal"><span class="plan-name">Royal</span><strong>₹79</strong><small>All advanced design options</small></button>
+        </div>
+        <p class="plan-status" id="planStatus" aria-live="polite">Free plan selected. You can create and download a sample with a VivahSutra watermark.</p>
+      </section>
       <div class="studio-grid">
         <form id="inviteForm" class="studio-controls">
           <div class="field-section"><h3>01 · Your celebration</h3><label>Invitation language<select id="languageInput"><option value="en">English</option><option value="hi">हिन्दी</option></select></label><label>Celebration<select id="occasionInput"><option>Wedding</option><option>Engagement</option><option>Haldi</option><option>Mehendi</option><option>Sangeet</option><option>Reception</option><option>Save the Date</option></select></label><label>Tradition / style<select id="traditionInput"><option>Hindu</option><option>Muslim</option><option>Sikh</option><option>Christian</option><option>Jain</option><option>Secular / Other</option></select></label></div>
