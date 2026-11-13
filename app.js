@@ -78,7 +78,7 @@ document.querySelectorAll(".plan-option").forEach(button=>button.addEventListene
   document.querySelectorAll(".plan-option").forEach(item=>item.classList.toggle("selected",item===button));
   const detail=planDetails[selectedPlan];
   $("planStatus").textContent=selectedPlan==="free"
-    ?"Free plan selected. You can create and download a sample with a VivahSutra watermark."
+    ?"Free Beta is active. Create your invitation and download or share a watermarked sample."
     :detail.label+" plan selected (₹"+detail.price+"). Secure online checkout is not connected yet; no payment will be taken.";
 }));
 function addFreeWatermark(ctx){
@@ -94,7 +94,7 @@ function addFreeWatermark(ctx){
 }
 function requirePaidCheckout(){
   if(selectedPlan==="free")return true;
-  $("planStatus").textContent="Checkout is not live yet. Your invitation is safe; no payment has been taken. Please use Free to download a watermarked sample for now.";
+  $("planStatus").textContent="Paid plans are not active in Free Beta. No payment has been taken. Select Free to download a watermarked sample.";
   $("saveStatus").textContent="Paid checkout is not connected yet.";
   return false;
 }
