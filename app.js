@@ -48,6 +48,8 @@ function refreshPreview(){
   $("previewMantra").textContent=hindi?"॥ शुभ मंगल ॥":(d.traditionInput==="Hindu"||d.traditionInput==="Jain"?"॥ श्री गणेशाय नमः ॥":"WITH JOY & BLESSINGS");
   $("exportCard").className="export-card design-"+d.designInput+" accent-"+d.colorInput;
   $("exportCard").dataset.language=d.languageInput;
+  const photo=$("previewPhoto");
+  if(photoData){photo.src=photoData;photo.hidden=false;}else{photo.removeAttribute("src");photo.hidden=true;}
 }
 $("inviteForm").addEventListener("submit",e=>{e.preventDefault();refreshPreview();$("saveStatus").textContent="Preview updated.";});
 fields.forEach(id=>$(id).addEventListener("input",()=>{refreshPreview();saveDraft();}));
@@ -58,18 +60,40 @@ document.querySelectorAll(".mode-button").forEach(button=>button.addEventListene
   document.body.classList.toggle("advanced-mode",button.dataset.mode==="advanced");
   $("saveStatus").textContent=button.dataset.mode==="advanced"?"Advanced controls shown.":"Simple editor selected.";
 }));
+let photoData="";
 function saveDraft(){
   try{
-    localStorage.setItem("vivahsutra-draft-v1",JSON.stringify(readData()));
+    localStorage.setItem("vivahsutra-draft-v1",JSON.stringify({...readData(),photoData}));
     $("saveStatus").textContent="Draft saved on this device ✓";
   }catch(error){$("saveStatus").textContent="Could not save on this device. Please check browser storage.";}
 }
 $("saveDraft").addEventListener("click",saveDraft);
 try{
   const saved=JSON.parse(localStorage.getItem("vivahsutra-draft-v1")||"null");
-  if(saved)fields.forEach(id=>{if(typeof saved[id]==="string")$(id).value=saved[id];});
+  if(saved){fields.forEach(id=>{if(typeof saved[id]==="string")$(id).value=saved[id];});photoData=typeof saved.photoData==="string"?saved.photoData:"";}
 }catch(error){/* Ignore an unreadable local draft and keep the starter values. */}
 refreshPreview();
+$("photoInput").addEventListener("change",()=>{
+  const file=$("photoInput").files&&$("photoInput").files[0];
+  if(!file){photoData="";refreshPreview();saveDraft();return;}
+  if(!["image/jpeg","image/png","image/webp"].includes(file.type)){$("saveStatus").textContent="Please choose JPG, PNG or WebP.";return;}
+  if(file.size>12*1024*1024){$("saveStatus").textContent="Choose a photo smaller than 12 MB.";return;}
+  const reader=new FileReader();
+  reader.onload=()=>{
+    const img=new Image();
+    img.onload=()=>{
+      const scale=Math.min(1,900/Math.max(img.width,img.height));
+      const cv=document.createElement("canvas");
+      cv.width=Math.max(1,Math.round(img.width*scale));cv.height=Math.max(1,Math.round(img.height*scale));
+      cv.getContext("2d").drawImage(img,0,0,cv.width,cv.height);
+      photoData=cv.toDataURL("image/jpeg",0.78);refreshPreview();saveDraft();
+    };
+    img.onerror=()=>{$("saveStatus").textContent="Could not read this photo.";};
+    img.src=reader.result;
+  };
+  reader.onerror=()=>{$("saveStatus").textContent="Photo could not be opened.";};
+  reader.readAsDataURL(file);
+});
 
 let selectedPlan="free";
 const planDetails={free:{price:0,label:"Free"},basic:{price:29,label:"Basic"},premium:{price:49,label:"Premium"},royal:{price:79,label:"Royal"}};
