@@ -32,9 +32,15 @@
 .design-floral{--card-bg:#f3e5e0;--card-ink:#70484d;--card-accent:#b77d78}
 .design-minimal{--card-bg:#eee7da;--card-ink:#493b34;--card-accent:#ad8d5d}
 .design-traditional{--card-bg:#f0d49a;--card-ink:#71352b;--card-accent:#9e5639}
+.design-mughal{--card-bg:#29483b;--card-ink:#f3dfb5;--card-accent:#d1ad6e}
+.design-pastel{--card-bg:#f7e9e7;--card-ink:#77545d;--card-accent:#c68c91}
 .accent-rose{--card-accent:#c77b83}.accent-green{--card-accent:#719078}.accent-blue{--card-accent:#6b98a0}
 .export-mantra{font:11px Georgia,serif;letter-spacing:1px;color:var(--card-accent)}
 .export-ornament{font:35px Georgia;margin:14px 0;color:var(--card-accent)}
+.preview-photo{width:58px;height:58px;object-fit:cover;border-radius:50%;border:2px solid var(--card-accent);margin:0 auto 8px}
+.photo-help{font-size:9px;font-weight:400;color:#968578;line-height:1.4}
+.art-mughal{background:#29483b;color:#f3dfb5;border:7px double #d1ad6e;outline:1px solid #d1ad6e;outline-offset:-13px}.mughal-motif{font-size:40px;color:#d1ad6e;margin:12px}.art-mughal strong{font-size:27px}
+.art-pastel{background:#f7e9e7;color:#77545d;border:1px solid #d9b6b4}.pastel-motif{font-size:42px;color:#c68c91;margin-bottom:12px}.art-pastel strong{font-size:27px;margin:15px 0}
 .export-host{font:7px "DM Sans",sans-serif;letter-spacing:1.3px;max-width:95%;line-height:1.5}
 .export-names{display:flex;flex-direction:column;align-items:center;gap:1px;font:31px/1.12 "Playfair Display",serif;margin:18px 0}
 .export-names i{font:italic 17px "Playfair Display",serif;color:var(--card-accent)}
