@@ -95,3 +95,10 @@
 .photo-help{display:block;margin:0;color:#78695e;font-size:11px;line-height:1.5}
 .photo-picker-label{display:grid;gap:8px;padding:12px;border:1px dashed #b88b4c;background:#fffdf8;color:#5b2934;font-size:12px;font-weight:700;border-radius:5px}
 .photo-picker-label input[type="file"]{display:block;width:100%;padding:10px;background:#fff;border:1px solid #e3d8ca;border-radius:4px;font-size:12px;color:#4b1724}
+
+/* Multiple optional bride, groom and couple photos */
+.preview-photos{display:flex;justify-content:center;align-items:center;gap:7px;margin:0 auto 8px;max-width:100%;}
+.preview-photos[hidden]{display:none;}
+.preview-photos .preview-photo{width:58px;height:58px;flex:0 1 58px;}
+.photo-section .photo-picker-label{margin-top:2px;}
+.photo-section input[type=file]{font-size:11px;}
