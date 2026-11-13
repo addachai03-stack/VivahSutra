@@ -48,8 +48,8 @@ function refreshPreview(){
   $("exportCard").className="export-card design-"+d.designInput+" accent-"+d.colorInput;
   $("exportCard").dataset.language=d.languageInput;
   const photoWrap=$("previewPhotos");
-  const photoIds=["bride","groom","couple"];
-  const previewIds=["previewBridePhoto","previewGroomPhoto","previewCouplePhoto"];
+  const photoIds=["bride","groom"];
+  const previewIds=["previewBridePhoto","previewGroomPhoto"];
   let visiblePhotos=0;
   photoIds.forEach((key,index)=>{const el=$(previewIds[index]);if(photoData[key]){el.src=photoData[key];el.hidden=false;visiblePhotos++;}else{el.removeAttribute("src");el.hidden=true;}});
   photoWrap.hidden=visiblePhotos===0;
@@ -63,7 +63,7 @@ document.querySelectorAll(".mode-button").forEach(button=>button.addEventListene
   document.body.classList.toggle("advanced-mode",button.dataset.mode==="advanced");
   $("saveStatus").textContent=button.dataset.mode==="advanced"?"Advanced controls shown.":"Simple editor selected.";
 }));
-let photoData={bride:"",groom:"",couple:""},photoImages={bride:null,groom:null,couple:null};
+let photoData={bride:"",groom:""},photoImages={bride:null,groom:null};
 function saveDraft(){
   try{
     localStorage.setItem("vivahsutra-draft-v1",JSON.stringify({...readData(),photoData}));
@@ -73,7 +73,7 @@ function saveDraft(){
 $("saveDraft").addEventListener("click",saveDraft);
 try{
   const saved=JSON.parse(localStorage.getItem("vivahsutra-draft-v1")||"null");
-  if(saved){fields.forEach(id=>{if(typeof saved[id]==="string")$(id).value=saved[id];});photoData=typeof saved.photoData==="string"?{bride:"",groom:"",couple:saved.photoData}:{bride:saved.photoData?.bride||"",groom:saved.photoData?.groom||"",couple:saved.photoData?.couple||""};
+  if(saved){fields.forEach(id=>{if(typeof saved[id]==="string")$(id).value=saved[id];});photoData={bride:typeof saved.photoData==="object"?(saved.photoData?.bride||""):"",groom:typeof saved.photoData==="object"?(saved.photoData?.groom||""):""};
     Object.keys(photoData).forEach(key=>{if(photoData[key]){photoImages[key]=new Image();photoImages[key].onload=()=>refreshPreview();photoImages[key].src=photoData[key];}});}
 }catch(error){/* Ignore an unreadable local draft and keep the starter values. */}
 refreshPreview();
@@ -105,7 +105,7 @@ function handlePhotoInput(inputId,key){
 }
 handlePhotoInput("bridePhotoInput","bride");
 handlePhotoInput("groomPhotoInput","groom");
-handlePhotoInput("couplePhotoInput","couple");
+
 
 let selectedPlan="free";
 const planDetails={free:{price:0,label:"Free"},basic:{price:29,label:"Basic"},premium:{price:49,label:"Premium"},royal:{price:79,label:"Royal"}};
@@ -149,7 +149,7 @@ function makeInvitationImage(){
   const draw=(txt,y,size,font="Georgia",weight="normal")=>{ctx.font=weight+" "+size+"px "+font;ctx.fillText(txt,600,y,980);};
   draw(d.languageInput==="hi"?"॥ शुभ मंगल ॥":"॥ SHUBH VIVAH ॥",190,34);
   draw(d.designInput==="mughal"?"✿":d.designInput==="pastel"?"✧":"✺",260,78,"Georgia");
-  const chosenPhotoKeys=["bride","groom","couple"].filter(key=>photoImages[key]&&photoImages[key].complete&&photoImages[key].naturalWidth);
+  const chosenPhotoKeys=["bride","groom"].filter(key=>photoImages[key]&&photoImages[key].complete&&photoImages[key].naturalWidth);
   if(chosenPhotoKeys.length){
     const size=chosenPhotoKeys.length===1?170:132;
     const gap=chosenPhotoKeys.length===1?0:34;
