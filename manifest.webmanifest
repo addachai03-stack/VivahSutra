@@ -1,0 +1,13 @@
+{
+  "name": "VivahSutra — Wedding Invitation Maker",
+  "short_name": "VivahSutra",
+  "description": "Create beautiful Indian wedding invitations.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#fbf7f0",
+  "theme_color": "#4b1724",
+  "icons": [
+    { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ]
+}
