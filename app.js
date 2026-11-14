@@ -61,6 +61,14 @@ function timeLabel(value,language="en"){
 }
 const traditionSymbols={Hindu:"ॐ",Muslim:"☪",Sikh:"☬",Christian:"✝",Jain:"卐","Secular / Other":"✦"};
 const traditionMantras={Hindu:"॥ श्री गणेशाय नमः ॥",Muslim:"بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ",Sikh:"ੴ ਸਤਿਨਾਮ",Christian:"✝ WITH GOD’S BLESSINGS",Jain:"अहिंसा परमो धर्मः","Secular / Other":"WITH LOVE & BLESSINGS"};
+const templateAssetPaths={royal:"./assets/rajwada-royale.svg",floral:"./assets/garden-of-love.svg",minimal:"./assets/modern-heirloom.svg",traditional:"./assets/mangal-patrika.svg",mughal:"./assets/mughal-garden.svg",pastel:"./assets/pastel-bloom.svg"};
+const templateAssetImages={};
+Object.entries(templateAssetPaths).forEach(([design,path])=>{const image=new Image();image.onload=()=>{templateAssetImages[design]=image;};image.src=path;});
+function drawTemplateAsset(ctx,design){
+  const asset=templateAssetImages[design];
+  if(!asset||!asset.complete||!asset.naturalWidth)return false;
+  ctx.save();ctx.globalAlpha=.34;ctx.drawImage(asset,0,0,1200,1600);ctx.restore();return true;
+}
 const hindiOccasions={Wedding:"विवाह समारोह",Engagement:"सगाई समारोह",Haldi:"हल्दी समारोह",Mehendi:"मेहंदी समारोह",Sangeet:"संगीत समारोह",Reception:"स्वागत समारोह","Save the Date":"तिथि सुरक्षित रखें"};
 const canvasFont=(language,serif=false)=>language==="hi"?(serif?'"Noto Serif Devanagari", "Noto Sans Devanagari", "Nirmala UI", Arial, sans-serif':'"Noto Sans Devanagari", "Nirmala UI", Arial, sans-serif'):(serif?"Georgia":"Arial");
 function refreshPreview(){
@@ -216,6 +224,7 @@ function makeInvitationImage(){
   const accent=accents[d.colorInput]||accents.gold;
   ctx.fillStyle=bg;ctx.fillRect(0,0,1200,1600);
   ctx.strokeStyle=accent;ctx.lineWidth=8;ctx.strokeRect(48,48,1104,1504);ctx.lineWidth=2;ctx.strokeRect(70,70,1060,1460);
+  drawTemplateAsset(ctx,d.designInput);
   ctx.textAlign="center";ctx.fillStyle=ink;
   const font=canvasFont(d.languageInput,true),plain=canvasFont(d.languageInput);
   const draw=(txt,y,size,fontFace=font,weight="normal",maxWidth=960)=>{
@@ -276,6 +285,7 @@ function makeInvitationBackImage(){
   const accent=accents[d.colorInput]||accents.gold;
   ctx.fillStyle=bg;ctx.fillRect(0,0,1200,1600);
   ctx.strokeStyle=accent;ctx.lineWidth=8;ctx.strokeRect(48,48,1104,1504);ctx.lineWidth=2;ctx.strokeRect(70,70,1060,1460);
+  drawTemplateAsset(ctx,d.designInput);
   ctx.textAlign="center";ctx.fillStyle=ink;
   const font=canvasFont(d.languageInput,true),plain=canvasFont(d.languageInput);
   const draw=(txt,y,size,fontFace=font,weight="normal",maxWidth=940)=>{
