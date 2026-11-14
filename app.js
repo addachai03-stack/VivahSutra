@@ -27,8 +27,8 @@ function updateWeddingNote(reset=true){
 
 const fields=["languageInput","occasionInput","traditionInput","brideInput","groomInput","hostInput","relativesInput","dateInput","timeInput","venueInput","rsvpInput","messageInput","designInput","colorInput"];
 const readData=()=>Object.fromEntries(fields.map(id=>[id,$(id).value]));
-const openEditor=()=>{modal.hidden=false;document.body.style.overflow="hidden";refreshPreview();};
-const closeEditor=()=>{modal.hidden=true;document.body.style.overflow="";};
+const openEditor=()=>{modal.hidden=false;document.body.classList.add("editor-open");document.body.style.overflow="hidden";refreshPreview();};
+const closeEditor=()=>{modal.hidden=true;document.body.classList.remove("editor-open");document.body.style.overflow="";};
 $("heroCreate").addEventListener("click",openEditor);
 $("topCreate").addEventListener("click",openEditor);
 if($("bottomCreate"))$("bottomCreate").addEventListener("click",openEditor);
