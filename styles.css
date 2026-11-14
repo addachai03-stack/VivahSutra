@@ -408,3 +408,22 @@ body.editor-open .bottom-action-bar{display:none}
   html{scroll-behavior:auto}
   *,*::before,*::after{scroll-behavior:auto!important;transition-duration:.01ms!important;animation-duration:.01ms!important}
 }
+
+/* Original six-style decorative SVG asset library */
+.template-art::before{content:"";position:absolute;inset:0;background-position:center;background-repeat:no-repeat;background-size:100% 100%;opacity:.52;pointer-events:none;z-index:0}
+.template-art>*{position:relative;z-index:1}
+.art-royal::before{background-image:url("./assets/rajwada-royale.svg")}
+.art-floral::before{background-image:url("./assets/garden-of-love.svg")}
+.art-minimal::before{background-image:url("./assets/modern-heirloom.svg")}
+.art-traditional::before{background-image:url("./assets/mangal-patrika.svg")}
+.art-mughal::before{background-image:url("./assets/mughal-garden.svg")}
+.art-pastel::before{background-image:url("./assets/pastel-bloom.svg")}
+.export-inner{position:relative;overflow:hidden}
+.export-inner::before{content:"";position:absolute;inset:0;background-position:center;background-repeat:no-repeat;background-size:100% 100%;opacity:.3;pointer-events:none}
+.export-inner>*{position:relative;z-index:1}
+.design-royal .export-inner::before{background-image:url("./assets/rajwada-royale.svg")}
+.design-floral .export-inner::before{background-image:url("./assets/garden-of-love.svg")}
+.design-minimal .export-inner::before{background-image:url("./assets/modern-heirloom.svg")}
+.design-traditional .export-inner::before{background-image:url("./assets/mangal-patrika.svg")}
+.design-mughal .export-inner::before{background-image:url("./assets/mughal-garden.svg")}
+.design-pastel .export-inner::before{background-image:url("./assets/pastel-bloom.svg")}
