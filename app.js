@@ -119,6 +119,22 @@ document.querySelectorAll(".mode-button").forEach(button=>button.addEventListene
   $("saveStatus").textContent=button.dataset.mode==="advanced"?"Advanced controls shown.":"Simple editor selected.";
 }));
 let photoData={bride:"",groom:""},photoImages={bride:null,groom:null};
+function waitForSelectedPhotos(){
+  const pending=Object.entries(photoData).filter(([,source])=>Boolean(source)).map(([key])=>{
+    const image=photoImages[key];
+    if(!image)return Promise.reject(new Error("Selected invitation photo is unavailable."));
+    if(image.complete)return image.naturalWidth?Promise.resolve():Promise.reject(new Error("Selected invitation photo could not be decoded."));
+    return new Promise((resolve,reject)=>{
+      image.addEventListener("load",()=>resolve(),{once:true});
+      image.addEventListener("error",()=>reject(new Error("Selected invitation photo could not be loaded.")),{once:true});
+      if(image.complete){
+        if(image.naturalWidth)resolve();
+        else reject(new Error("Selected invitation photo could not be decoded."));
+      }
+    });
+  });
+  return Promise.all(pending);
+}
 function saveDraft(){
   try{
     localStorage.setItem("vivahsutra-draft-v1",JSON.stringify({...readData(),photoData}));
@@ -319,7 +335,7 @@ function makeInvitationBackImage(){
 $("downloadImage").addEventListener("click",async()=>{
   if(!requirePaidCheckout())return;
   try{
-    await templateAssetsReady;
+    await Promise.all([templateAssetsReady,waitForSelectedPhotos()]);
     const canvas=makeInvitationImage();const link=document.createElement("a");
     link.download="VivahSutra-Invitation.png";link.href=canvas.toDataURL("image/png");link.click();
     $("saveStatus").textContent="Invitation image created.";
@@ -330,7 +346,7 @@ $("printPdf").addEventListener("click",async()=>{
   const win=window.open("","_blank");
   if(!win){$("saveStatus").textContent="Allow pop-ups for this site, then try again.";return;}
   try{
-    await templateAssetsReady;
+    await Promise.all([templateAssetsReady,waitForSelectedPhotos()]);
     const front=makeInvitationImage().toDataURL("image/png");
     const back=makeInvitationBackImage().toDataURL("image/png");
     win.document.write('<!doctype html><html><head><title>VivahSutra Two-Sided Invitation</title><style>@page{size:A5 portrait;margin:0}html,body{margin:0;padding:0} .page{width:100%;height:100vh;display:flex;align-items:center;justify-content:center;page-break-after:always;break-after:page} .page:last-child{page-break-after:auto;break-after:auto}img{width:100%;height:100%;object-fit:contain}</style></head><body><div class="page"><img src="'+front+'"></div><div class="page"><img src="'+back+'"></div><script>window.onload=()=>window.print()<\/script></body></html>');
@@ -341,7 +357,7 @@ $("printPdf").addEventListener("click",async()=>{
 $("downloadBackImage").addEventListener("click",async()=>{
   if(!requirePaidCheckout())return;
   try{
-    await templateAssetsReady;
+    await Promise.all([templateAssetsReady,waitForSelectedPhotos()]);
     const link=document.createElement("a");
     link.download="VivahSutra-Invitation-Back.png";
     link.href=makeInvitationBackImage().toDataURL("image/png");
@@ -352,7 +368,7 @@ $("downloadBackImage").addEventListener("click",async()=>{
 $("shareInvite").addEventListener("click",async()=>{
   if(!requirePaidCheckout())return;
   try{
-    await templateAssetsReady;
+    await Promise.all([templateAssetsReady,waitForSelectedPhotos()]);
     const blob=await new Promise((resolve,reject)=>makeInvitationImage().toBlob(result=>result?resolve(result):reject(new Error("Image conversion failed.")),"image/png"));
     const file=new File([blob],"VivahSutra-Invitation.png",{type:"image/png"});
     if(navigator.canShare&&navigator.canShare({files:[file]})){await navigator.share({files:[file],title:"Our wedding invitation"});}
