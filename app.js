@@ -112,7 +112,7 @@ function refreshPreview(){
   photoWrap.hidden=visiblePhotos===0;
 }
 $("inviteForm").addEventListener("submit",e=>{e.preventDefault();refreshPreview();$("saveStatus").textContent="Preview updated.";});
-$("flipCardButton").addEventListener("click",()=>{const card=$("flipCard");card.classList.toggle("is-flipped");$("cardSideLabel").textContent=card.classList.contains("is-flipped")?"Inside · Family names":"Front cover";$("flipCardButton").textContent=card.classList.contains("is-flipped")?"Fold / Flip to front ↻":"Open / Flip card ↻";});
+$("flipCardButton").addEventListener("click",()=>{$("flipCard").classList.toggle("is-flipped");refreshPreview();});
 $("occasionInput").addEventListener("change",()=>updateWeddingNote(true));
 updateWeddingNote();
 fields.forEach(id=>$(id).addEventListener("input",()=>{refreshPreview();saveDraft();}));
