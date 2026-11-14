@@ -4,6 +4,7 @@ A mobile-first Indian wedding invitation maker.
 
 ## Built features
 - Responsive premium landing page and template gallery
+- Six original SVG design motifs used in gallery cards, live preview and PNG/PDF canvas exports
 - Simple and Advanced editor modes
 - English and Hindi invitation preview text
 - Wedding, engagement, Haldi, Mehendi, Sangeet, reception and Save the Date occasions
