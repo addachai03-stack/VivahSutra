@@ -284,3 +284,37 @@ main>.steps-section{order:3}
 .editor-workspace{padding-bottom:78px}
 body.editor-open .bottom-action-bar{display:none}
 @media(min-width:761px){.editor-quick-nav{left:50%;right:auto;transform:translateX(-50%);width:min(560px,90vw);border:1px solid #e6d8c9;border-bottom:0;border-radius:10px 10px 0 0}}
+
+
+/* Make the Hindi wedding line unmistakable on the maroon sample invitation. */
+.card-invite{
+  color:#fff0cf!important;
+  font-family:"Noto Serif Devanagari","Noto Sans Devanagari","Nirmala UI",serif;
+  font-size:10px!important;
+  font-weight:600;
+  letter-spacing:0!important;
+  line-height:1.9!important;
+  max-width:190px;
+  text-wrap:balance;
+}
+
+/* Four clear one-tap destinations stay visible while editing on mobile. */
+.editor-quick-nav{
+  grid-template-columns:repeat(4,minmax(0,1fr));
+  gap:6px;
+}
+.editor-quick-nav button{
+  padding:8px 3px;
+  font-size:11px;
+  white-space:nowrap;
+}
+.editor-workspace [id="inviteForm"],
+.editor-workspace #previewPanel,
+.editor-workspace #designSection,
+.editor-workspace #exportActions{
+  scroll-margin-top:18px;
+}
+@media(max-width:390px){
+  .editor-quick-nav{gap:4px;padding-left:7px;padding-right:7px}
+  .editor-quick-nav button{font-size:10px;letter-spacing:-.2px}
+}
