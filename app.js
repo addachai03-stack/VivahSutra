@@ -27,8 +27,9 @@ function updateWeddingNote(reset=true){
 
 const fields=["languageInput","occasionInput","traditionInput","brideInput","groomInput","hostInput","relativesInput","dateInput","timeInput","venueInput","rsvpInput","messageInput","designInput","colorInput"];
 const readData=()=>Object.fromEntries(fields.map(id=>[id,$(id).value]));
-const openEditor=()=>{modal.hidden=false;document.body.classList.add("editor-open");document.body.style.overflow="hidden";refreshPreview();};
-const closeEditor=()=>{modal.hidden=true;document.body.classList.remove("editor-open");document.body.style.overflow="";};
+const openEditor=()=>{modal.hidden=false;document.body.classList.add("editor-open");document.body.style.overflow="hidden";$("editorQuickNav").hidden=false;refreshPreview();};
+const closeEditor=()=>{modal.hidden=true;document.body.classList.remove("editor-open");document.body.style.overflow="";$("editorQuickNav").hidden=true;};
+document.querySelectorAll("[data-editor-target]").forEach(button=>button.addEventListener("click",()=>{const target=$(button.dataset.editorTarget);if(!target)return;if(target.tagName==="DETAILS")target.open=true;target.scrollIntoView({behavior:"smooth",block:"start"});}));
 $("heroCreate").addEventListener("click",openEditor);
 $("topCreate").addEventListener("click",openEditor);
 if($("bottomCreate"))$("bottomCreate").addEventListener("click",openEditor);
@@ -73,8 +74,9 @@ function refreshPreview(){
   $("previewTime").textContent=timeLabel(d.timeInput,d.languageInput);
   $("previewVenue").textContent=d.venueInput.trim().toUpperCase()||(hindi?"स्थान की जानकारी शीघ्र":"VENUE TO BE ANNOUNCED");
   $("previewMessage").textContent=d.messageInput.trim();
+  $("previewTagline").textContent="दो परिवारों का मिलन, दो दिलों का संगम";
   $("previewRsvp").textContent=d.rsvpInput.trim()?(hindi?"उत्तर हेतु · ":"RSVP · ")+d.rsvpInput.trim():"";
-  const familyNames=d.relativesInput.split(/\n|,/).map(name=>name.trim()).filter(Boolean);
+  const familyNames=d.relativesInput.split(/[\n,;]+/).map(name=>name.trim()).filter(Boolean);
   $("previewRelatives").replaceChildren(...(familyNames.length?familyNames.map(name=>{const line=document.createElement("div");line.textContent=name;return line;}):[Object.assign(document.createElement("div"),{textContent:hindi?"परिवार के नाम यहाँ दिखेंगे":"Your family names will appear here"})]));
   $("backKicker").textContent=hindi?"॥ सपरिवार ॥":"WITH LOVE & BLESSINGS";
   $("backTitle").textContent=hindi?"हमारे परिवार":"Our Families";
@@ -205,8 +207,9 @@ function makeInvitationImage(){
   draw("&",790,45);
   draw(d.groomInput||"Groom",880,76);
   ctx.strokeStyle=accent;ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(300,960);ctx.lineTo(900,960);ctx.stroke();
-  draw(d.languageInput==="hi"?(hindiOccasions[d.occasionInput]||"समारोह में"): (d.occasionInput==="Wedding"?"REQUEST THE PLEASURE OF YOUR COMPANY":"JOIN US TO CELEBRATE "+d.occasionInput.toUpperCase()),1040,23,canvasFont(d.languageInput));
-  draw(dateLabel(d.dateInput,d.languageInput),1130,30,canvasFont(d.languageInput),"bold");
+  draw("दो परिवारों का मिलन, दो दिलों का संगम",1000,30,canvasFont("hi",true),"bold");
+  draw(d.languageInput==="hi"?(hindiOccasions[d.occasionInput]||"समारोह में"): (d.occasionInput==="Wedding"?"REQUEST THE PLEASURE OF YOUR COMPANY":"JOIN US TO CELEBRATE "+d.occasionInput.toUpperCase()),1060,23,canvasFont(d.languageInput));
+  draw(dateLabel(d.dateInput,d.languageInput),1140,30,canvasFont(d.languageInput),"bold");
   draw(timeLabel(d.timeInput,d.languageInput),1185,25,canvasFont(d.languageInput));
   const venue=(d.venueInput||(d.languageInput==="hi"?"स्थान की जानकारी शीघ्र":"VENUE TO BE ANNOUNCED")).toUpperCase();
   const words=venue.split(" ");let line="",y=1260;
