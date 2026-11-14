@@ -237,3 +237,6 @@ body{padding-bottom:78px}
   scroll-snap-type:none;
 }
 .filter-chip{flex:0 0 auto}
+
+/* Hide the fixed site actions while the full-screen invitation studio is open. */
+body.editor-open .bottom-action-bar{display:none}
