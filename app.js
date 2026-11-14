@@ -47,17 +47,19 @@ document.querySelectorAll(".choose-template").forEach((button,index)=>button.add
   openEditor();
 }));
 
-function dateLabel(value){
-  if(!value)return "YOUR WEDDING DATE";
+function dateLabel(value,language="en"){
+  if(!value)return language==="hi"?"विवाह की तिथि":"YOUR WEDDING DATE";
   const d=new Date(value+"T12:00:00");
-  return Number.isNaN(d.valueOf())?"YOUR WEDDING DATE":d.toLocaleDateString("en-IN",{day:"2-digit",month:"long",year:"numeric"}).toUpperCase();
+  return Number.isNaN(d.valueOf())?(language==="hi"?"विवाह की तिथि":"YOUR WEDDING DATE"):d.toLocaleDateString(language==="hi"?"hi-IN":"en-IN",{day:"2-digit",month:"long",year:"numeric"});
 }
-function timeLabel(value){
+function timeLabel(value,language="en"){
   if(!value)return "";
   const [h,m]=value.split(":").map(Number);
-  const suffix=h>=12?"PM":"AM";
+  const suffix=language==="hi"?(h>=12?"अपराह्न":"पूर्वाह्न"):(h>=12?"PM":"AM");
   return (h%12||12)+":" +String(m).padStart(2,"0")+" "+suffix;
 }
+const hindiOccasions={Wedding:"विवाह समारोह",Engagement:"सगाई समारोह",Haldi:"हल्दी समारोह",Mehendi:"मेहंदी समारोह",Sangeet:"संगीत समारोह",Reception:"स्वागत समारोह","Save the Date":"तिथि सुरक्षित रखें"};
+const canvasFont=(language,serif=false)=>language==="hi"?(serif?'"Noto Serif Devanagari", "Noto Sans Devanagari", "Nirmala UI", Arial, sans-serif':'"Noto Sans Devanagari", "Nirmala UI", Arial, sans-serif'):(serif?"Georgia":"Arial");
 function refreshPreview(){
   const d=readData();
   const hindi=d.languageInput==="hi";
@@ -65,8 +67,8 @@ function refreshPreview(){
   $("previewGroom").textContent=d.groomInput.trim()||"Groom";
   $("previewHost").textContent=(d.hostInput.trim()||(hindi?"सपरिवार सादर आमंत्रित":"TOGETHER WITH THEIR FAMILIES")).toUpperCase();
   $("previewOccasion").textContent=hindi?"आपको सादर आमंत्रित करते हैं":(d.occasionInput==="Wedding"?"REQUEST THE PLEASURE OF YOUR COMPANY":"JOIN US TO CELEBRATE OUR "+d.occasionInput.toUpperCase());
-  $("previewDate").textContent=dateLabel(d.dateInput);
-  $("previewTime").textContent=timeLabel(d.timeInput);
+  $("previewDate").textContent=dateLabel(d.dateInput,d.languageInput);
+  $("previewTime").textContent=timeLabel(d.timeInput,d.languageInput);
   $("previewVenue").textContent=d.venueInput.trim().toUpperCase()||"VENUE TO BE ANNOUNCED";
   $("previewMessage").textContent=d.messageInput.trim();
   $("previewRsvp").textContent=d.rsvpInput.trim()?"RSVP · "+d.rsvpInput.trim():"";
@@ -178,7 +180,7 @@ function makeInvitationImage(){
   ctx.fillStyle=bg;ctx.fillRect(0,0,1200,1600);
   ctx.strokeStyle=accent;ctx.lineWidth=8;ctx.strokeRect(48,48,1104,1504);ctx.lineWidth=2;ctx.strokeRect(70,70,1060,1460);
   ctx.textAlign="center";ctx.fillStyle=ink;
-  const draw=(txt,y,size,font="Georgia",weight="normal")=>{ctx.font=weight+" "+size+"px "+font;ctx.fillText(txt,600,y,980);};
+  const draw=(txt,y,size,font=null,weight="normal")=>{ctx.font=weight+" "+size+"px "+(font||canvasFont(d.languageInput,true));ctx.fillText(txt,600,y,980);};
   draw(d.languageInput==="hi"?"॥ शुभ मंगल ॥":"॥ SHUBH VIVAH ॥",190,34);
   draw(d.designInput==="mughal"?"✿":d.designInput==="pastel"?"✧":"✺",260,78,"Georgia");
   const chosenPhotoKeys=["bride","groom"].filter(key=>photoImages[key]&&photoImages[key].complete&&photoImages[key].naturalWidth);
@@ -192,21 +194,21 @@ function makeInvitationImage(){
       ctx.strokeStyle=accent;ctx.lineWidth=6;ctx.beginPath();ctx.arc(x+size/2,y+size/2,size/2+4,0,Math.PI*2);ctx.stroke();
     });
   }
-  draw((d.hostInput||"TOGETHER WITH THEIR FAMILIES").toUpperCase(),520,25,"Arial");
+  draw((d.hostInput||(d.languageInput==="hi"?"सपरिवार":"TOGETHER WITH THEIR FAMILIES")).toUpperCase(),520,25,canvasFont(d.languageInput));
   draw(d.brideInput||"Bride",700,76);
   draw("&",790,45);
   draw(d.groomInput||"Groom",880,76);
   ctx.strokeStyle=accent;ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(300,960);ctx.lineTo(900,960);ctx.stroke();
-  draw(d.occasionInput==="Wedding"?"REQUEST THE PLEASURE OF YOUR COMPANY":"JOIN US TO CELEBRATE "+d.occasionInput.toUpperCase(),1040,23,"Arial");
-  draw(dateLabel(d.dateInput),1130,30,"Arial","bold");
-  draw(timeLabel(d.timeInput),1185,25,"Arial");
-  const venue=(d.venueInput||"VENUE TO BE ANNOUNCED").toUpperCase();
+  draw(d.languageInput==="hi"?(hindiOccasions[d.occasionInput]||"समारोह में"): (d.occasionInput==="Wedding"?"REQUEST THE PLEASURE OF YOUR COMPANY":"JOIN US TO CELEBRATE "+d.occasionInput.toUpperCase()),1040,23,canvasFont(d.languageInput));
+  draw(dateLabel(d.dateInput,d.languageInput),1130,30,canvasFont(d.languageInput),"bold");
+  draw(timeLabel(d.timeInput,d.languageInput),1185,25,canvasFont(d.languageInput));
+  const venue=(d.venueInput||(d.languageInput==="hi"?"स्थान की जानकारी शीघ्र":"VENUE TO BE ANNOUNCED")).toUpperCase();
   const words=venue.split(" ");let line="",y=1260;
-  ctx.font="28px Arial";
-  for(const word of words){const test=line?line+" "+word:word;if(ctx.measureText(test).width>850){draw(line,y,28,"Arial");y+=42;line=word;}else line=test;}
-  if(line)draw(line,y,28,"Arial");
+  ctx.font="28px "+canvasFont(d.languageInput);
+  for(const word of words){const test=line?line+" "+word:word;if(ctx.measureText(test).width>850){draw(line,y,28,canvasFont(d.languageInput));y+=42;line=word;}else line=test;}
+  if(line)draw(line,y,28,canvasFont(d.languageInput));
   if(d.messageInput)draw(d.messageInput,1400,22,"Arial");
-  if(d.rsvpInput)draw("RSVP · "+d.rsvpInput,1460,20,"Arial");
+  if(d.rsvpInput)draw((d.languageInput==="hi"?"उत्तर हेतु · ":"RSVP · ")+d.rsvpInput,1460,20,canvasFont(d.languageInput));
   draw(d.languageInput==="hi"?"॥ सादर आमंत्रित ॥":"WITH LOVE & BLESSINGS",1510,22);
   addFreeWatermark(ctx);
   return canvas;
@@ -226,16 +228,16 @@ function makeInvitationBackImage(){
   ctx.textAlign="center";ctx.fillStyle=ink;
   const draw=(txt,y,size,font="Georgia",weight="normal")=>{ctx.font=weight+" "+size+"px "+font;ctx.fillText(txt,600,y,980);};
   draw(d.languageInput==="hi"?"॥ सपरिवार ॥":"WITH LOVE & BLESSINGS",220,30,"Arial");
-  draw(d.languageInput==="hi"?"हमारे परिवार":"OUR FAMILIES",390,62,"Georgia");
+  draw(d.languageInput==="hi"?"हमारे परिवार":"OUR FAMILIES",390,62,canvasFont(d.languageInput,true));
   ctx.strokeStyle=accent;ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(300,450);ctx.lineTo(900,450);ctx.stroke();
   const names=d.relativesInput.split(/\n|,/).map(name=>name.trim()).filter(Boolean);
-  const list=names.length?names:["Your family names"];
+  const list=names.length?names:[d.languageInput==="hi"?"परिवार के नाम":"Your family names"];
   const maxVisible=12;
   const shown=list.slice(0,maxVisible);
   const startY=570;
   const lineGap= Math.min(76, Math.floor(820/Math.max(shown.length,1)));
   shown.forEach((name,index)=>draw(name,startY+index*lineGap,Math.min(38,Math.max(24,Math.floor(520/Math.max(name.length,1)))),"Georgia"));
-  if(list.length>maxVisible)draw("and "+(list.length-maxVisible)+" more family members",startY+maxVisible*lineGap+20,24,"Arial");
+  if(list.length>maxVisible)draw(d.languageInput==="hi"?"और "+(list.length-maxVisible)+" सदस्य":("and "+(list.length-maxVisible)+" more family members"),startY+maxVisible*lineGap+20,24,canvasFont(d.languageInput));
   draw(d.languageInput==="hi"?"आपकी उपस्थिति हमारे लिए अनमोल है":"WE LOOK FORWARD TO CELEBRATING WITH YOU",1430,20,"Arial");
   addFreeWatermark(ctx);
   return canvas;
