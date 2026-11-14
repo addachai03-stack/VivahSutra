@@ -226,8 +226,8 @@ function makeInvitationBackImage(){
   ctx.fillStyle=bg;ctx.fillRect(0,0,1200,1600);
   ctx.strokeStyle=accent;ctx.lineWidth=8;ctx.strokeRect(48,48,1104,1504);ctx.lineWidth=2;ctx.strokeRect(70,70,1060,1460);
   ctx.textAlign="center";ctx.fillStyle=ink;
-  const draw=(txt,y,size,font="Georgia",weight="normal")=>{ctx.font=weight+" "+size+"px "+font;ctx.fillText(txt,600,y,980);};
-  draw(d.languageInput==="hi"?"॥ सपरिवार ॥":"WITH LOVE & BLESSINGS",220,30,"Arial");
+  const draw=(txt,y,size,font=null,weight="normal")=>{ctx.font=weight+" "+size+"px "+(font||canvasFont(d.languageInput,true));ctx.fillText(txt,600,y,980);};
+  draw(d.languageInput==="hi"?"॥ सपरिवार ॥":"WITH LOVE & BLESSINGS",220,30,canvasFont(d.languageInput));
   draw(d.languageInput==="hi"?"हमारे परिवार":"OUR FAMILIES",390,62,canvasFont(d.languageInput,true));
   ctx.strokeStyle=accent;ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(300,450);ctx.lineTo(900,450);ctx.stroke();
   const names=d.relativesInput.split(/\n|,/).map(name=>name.trim()).filter(Boolean);
@@ -238,7 +238,7 @@ function makeInvitationBackImage(){
   const lineGap= Math.min(76, Math.floor(820/Math.max(shown.length,1)));
   shown.forEach((name,index)=>draw(name,startY+index*lineGap,Math.min(38,Math.max(24,Math.floor(520/Math.max(name.length,1)))),"Georgia"));
   if(list.length>maxVisible)draw(d.languageInput==="hi"?"और "+(list.length-maxVisible)+" सदस्य":("and "+(list.length-maxVisible)+" more family members"),startY+maxVisible*lineGap+20,24,canvasFont(d.languageInput));
-  draw(d.languageInput==="hi"?"आपकी उपस्थिति हमारे लिए अनमोल है":"WE LOOK FORWARD TO CELEBRATING WITH YOU",1430,20,"Arial");
+  draw(d.languageInput==="hi"?"आपकी उपस्थिति हमारे लिए अनमोल है":"WE LOOK FORWARD TO CELEBRATING WITH YOU",1430,20,canvasFont(d.languageInput));
   addFreeWatermark(ctx);
   return canvas;
 }
