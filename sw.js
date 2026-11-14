@@ -1,5 +1,5 @@
-const CACHE_NAME = "vivahsutra-shell-v16";
-const APP_SHELL = ["./", "./index.html", "./styles.css", "./app.js", "./icon.svg", "./manifest.webmanifest"];
+const CACHE_NAME = "vivahsutra-shell-v20";
+const APP_SHELL = ["./", "./index.html", "./styles.css?v=template-assets-v20", "./app.js?v=template-assets-v20", "./icon.svg", "./manifest.webmanifest", "./assets/rajwada-royale.svg", "./assets/garden-of-love.svg", "./assets/modern-heirloom.svg", "./assets/mangal-patrika.svg", "./assets/mughal-garden.svg", "./assets/pastel-bloom.svg"];
 self.addEventListener("install", event => {
   event.waitUntil(caches.open(CACHE_NAME).then(cache => cache.addAll(APP_SHELL)));
   self.skipWaiting();
@@ -11,8 +11,9 @@ self.addEventListener("activate", event => {
 self.addEventListener("fetch", event => {
   if (event.request.method !== "GET" || new URL(event.request.url).origin !== self.location.origin) return;
   event.respondWith(caches.match(event.request).then(cached => cached || fetch(event.request).then(response => {
+    if (!response.ok) return response;
     const copy = response.clone();
     caches.open(CACHE_NAME).then(cache => cache.put(event.request, copy));
     return response;
-  }).catch(() => caches.match("./index.html"))));
+  }).catch(() => event.request.mode === "navigate" ? caches.match("./index.html") : Response.error())));
 });

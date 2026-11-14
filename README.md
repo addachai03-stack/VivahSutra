@@ -4,6 +4,7 @@ A mobile-first Indian wedding invitation maker.
 
 ## Built features
 - Responsive premium landing page and template gallery
+- Six original SVG design motifs used in gallery cards, live preview and PNG/PDF canvas exports
 - Simple and Advanced editor modes
 - English and Hindi invitation preview text
 - Wedding, engagement, Haldi, Mehendi, Sangeet, reception and Save the Date occasions
@@ -28,7 +29,8 @@ Open `index.html` in a browser or host the repository as a static site.
 - PNG export is browser-generated from the current invitation fields. PDF uses the browser/iOS print flow.
 - AI generation is not connected. No AI button pretends to generate content.
 - No checkout, payment verification, paid template delivery, database, or authentication is configured.
-- Photo uploads and cloud sync are not part of this beta yet; invitation exports use the current text and design fields.
+- Optional bride/groom photos are resized and stored locally in this browser, then included in invitation exports after loading. No photo is uploaded to a VivahSutra server.
+- Cloud sync is not part of this beta.
 - Fonts are loaded from Google Fonts when online; system fallbacks are provided.
 
 ## Suggested production milestones
