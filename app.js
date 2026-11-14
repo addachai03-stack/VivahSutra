@@ -118,11 +118,15 @@ updateWeddingNote();
 fields.forEach(id=>$(id).addEventListener("input",()=>{refreshPreview();saveDraft();}));
 fields.forEach(id=>$(id).addEventListener("change",()=>{refreshPreview();saveDraft();}));
 
-document.querySelectorAll(".mode-button").forEach(button=>button.addEventListener("click",()=>{
-  document.querySelectorAll(".mode-button").forEach(b=>b.classList.toggle("active",b===button));
-  document.body.classList.toggle("advanced-mode",button.dataset.mode==="advanced");
-  $("saveStatus").textContent=button.dataset.mode==="advanced"?"Advanced controls shown.":"Simple editor selected.";
-}));
+const modeButtons=[...document.querySelectorAll(".mode-button")];
+modeButtons.forEach(button=>{
+  button.setAttribute("aria-pressed",String(button.classList.contains("active")));
+  button.addEventListener("click",()=>{
+    modeButtons.forEach(item=>{item.classList.toggle("active",item===button);item.setAttribute("aria-pressed",String(item===button));});
+    document.body.classList.toggle("advanced-mode",button.dataset.mode==="advanced");
+    $("saveStatus").textContent=button.dataset.mode==="advanced"?"Advanced controls shown.":"Simple editor selected.";
+  });
+});
 let photoData={bride:"",groom:""},photoImages={bride:null,groom:null};
 function waitForSelectedPhotos(){
   const pending=Object.entries(photoData).filter(([,source])=>Boolean(source)).map(([key])=>{
