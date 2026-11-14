@@ -29,7 +29,8 @@ Open `index.html` in a browser or host the repository as a static site.
 - PNG export is browser-generated from the current invitation fields. PDF uses the browser/iOS print flow.
 - AI generation is not connected. No AI button pretends to generate content.
 - No checkout, payment verification, paid template delivery, database, or authentication is configured.
-- Photo uploads and cloud sync are not part of this beta yet; invitation exports use the current text and design fields.
+- Optional bride/groom photos are resized and stored locally in this browser, then included in invitation exports after loading. No photo is uploaded to a VivahSutra server.
+- Cloud sync is not part of this beta.
 - Fonts are loaded from Google Fonts when online; system fallbacks are provided.
 
 ## Suggested production milestones
