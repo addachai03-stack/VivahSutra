@@ -240,3 +240,6 @@ body{padding-bottom:78px}
 
 /* Hide the fixed site actions while the full-screen invitation studio is open. */
 body.editor-open .bottom-action-bar{display:none}
+
+.export-card[data-language="hi"],.export-card[data-language="hi"] *{font-family:"Noto Sans Devanagari","Nirmala UI",Arial,sans-serif!important}
+.flip-card:has(.export-card[data-language="hi"]) .back-card-inner,.flip-card:has(.export-card[data-language="hi"]) .back-card-inner *{font-family:"Noto Sans Devanagari","Nirmala UI",Arial,sans-serif!important}
