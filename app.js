@@ -27,15 +27,16 @@ function updateWeddingNote(reset=true){
 
 const fields=["languageInput","occasionInput","traditionInput","brideInput","groomInput","hostInput","relativesInput","dateInput","timeInput","venueInput","rsvpInput","messageInput","designInput","colorInput"];
 const readData=()=>Object.fromEntries(fields.map(id=>[id,$(id).value]));
-const openEditor=()=>{modal.hidden=false;document.body.classList.add("editor-open");document.body.style.overflow="hidden";$("editorQuickNav").hidden=false;refreshPreview();};
-const closeEditor=()=>{modal.hidden=true;document.body.classList.remove("editor-open");document.body.style.overflow="";$("editorQuickNav").hidden=true;};
+let editorReturnFocus=null;
+const openEditor=()=>{editorReturnFocus=document.activeElement;modal.hidden=false;document.body.classList.add("editor-open");document.body.style.overflow="hidden";$("editorQuickNav").hidden=false;refreshPreview();$("closeEditor").focus();};
+const closeEditor=()=>{modal.hidden=true;document.body.classList.remove("editor-open");document.body.style.overflow="";$("editorQuickNav").hidden=true;if(editorReturnFocus&&typeof editorReturnFocus.focus==="function")editorReturnFocus.focus();};
 document.querySelectorAll("[data-editor-target]").forEach(button=>button.addEventListener("click",()=>{const target=$(button.dataset.editorTarget);if(!target)return;if(target.tagName==="DETAILS")target.open=true;target.scrollIntoView({behavior:"smooth",block:"start"});}));
 $("heroCreate").addEventListener("click",openEditor);
 $("topCreate").addEventListener("click",openEditor);
 if($("bottomCreate"))$("bottomCreate").addEventListener("click",openEditor);
 $("closeEditor").addEventListener("click",closeEditor);
 modal.addEventListener("click",e=>{if(e.target===modal)closeEditor();});
-document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!modal.hidden)closeEditor();});
+document.addEventListener("keydown",e=>{if(modal.hidden)return;if(e.key==="Escape"){e.preventDefault();closeEditor();return;}if(e.key!=="Tab")return;const focusable=[...modal.querySelectorAll('button:not([disabled]),a[href],input:not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])')].filter(el=>el.getClientRects().length);if(!focusable.length){e.preventDefault();return;}const first=focusable[0],last=focusable[focusable.length-1];if(e.shiftKey&&document.activeElement===first){e.preventDefault();last.focus();}else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first.focus();}});
 
 const filterButtons=[...document.querySelectorAll(".filter-chip")];
 const templateCards=[...document.querySelectorAll(".template-card")];
@@ -59,7 +60,7 @@ function timeLabel(value,language="en"){
   const suffix=language==="hi"?(h>=12?"अपराह्न":"पूर्वाह्न"):(h>=12?"PM":"AM");
   return (h%12||12)+":" +String(m).padStart(2,"0")+" "+suffix;
 }
-const traditionSymbols={Hindu:"ॐ",Muslim:"☪",Sikh:"☬",Christian:"✝",Jain:"卐","Secular / Other":"✦"};
+const traditionSymbols={Hindu:"ॐ",Muslim:"☪",Sikh:"☬",Christian:"✝",Jain:"अहिंसा","Secular / Other":"✦"};
 const traditionMantras={Hindu:"॥ श्री गणेशाय नमः ॥",Muslim:"بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ",Sikh:"ੴ ਸਤਿਨਾਮ",Christian:"✝ WITH GOD’S BLESSINGS",Jain:"अहिंसा परमो धर्मः","Secular / Other":"WITH LOVE & BLESSINGS"};
 const templateAssetPaths={royal:"./assets/rajwada-royale.svg",floral:"./assets/garden-of-love.svg",minimal:"./assets/modern-heirloom.svg",traditional:"./assets/mangal-patrika.svg",mughal:"./assets/mughal-garden.svg",pastel:"./assets/pastel-bloom.svg"};
 const templateAssetImages={};
@@ -88,7 +89,7 @@ function refreshPreview(){
   $("previewTime").textContent=timeLabel(d.timeInput,d.languageInput);
   $("previewVenue").textContent=d.venueInput.trim().toUpperCase()||(hindi?"स्थान की जानकारी शीघ्र":"VENUE TO BE ANNOUNCED");
   $("previewMessage").textContent=d.messageInput.trim();
-  $("previewTagline").textContent="दो परिवारों का मिलन, दो दिलों का संगम";
+  $("previewTagline").textContent=hindi?"दो परिवारों का मिलन, दो दिलों का संगम":"Two families united, two hearts as one.";
   $("previewRsvp").textContent=d.rsvpInput.trim()?(hindi?"उत्तर हेतु · ":"RSVP · ")+d.rsvpInput.trim():"";
   const familyNames=d.relativesInput.split(/[\n,;]+/).map(name=>name.trim()).filter(Boolean);
   $("previewRelatives").replaceChildren(...(familyNames.length?familyNames.map(name=>{const line=document.createElement("div");line.textContent=name;return line;}):[Object.assign(document.createElement("div"),{textContent:hindi?"परिवार के नाम यहाँ दिखेंगे":"Your family names will appear here"})]));
