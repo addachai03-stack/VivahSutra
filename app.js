@@ -58,6 +58,8 @@ function timeLabel(value,language="en"){
   const suffix=language==="hi"?(h>=12?"अपराह्न":"पूर्वाह्न"):(h>=12?"PM":"AM");
   return (h%12||12)+":" +String(m).padStart(2,"0")+" "+suffix;
 }
+const traditionSymbols={Hindu:"ॐ",Muslim:"☪",Sikh:"☬",Christian:"✝",Jain:"卐","Secular / Other":"✦"};
+const traditionMantras={Hindu:"॥ श्री गणेशाय नमः ॥",Muslim:"بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ",Sikh:"ੴ ਸਤਿਨਾਮ",Christian:"✝ WITH GOD’S BLESSINGS",Jain:"अहिंसा परमो धर्मः","Secular / Other":"WITH LOVE & BLESSINGS"};
 const hindiOccasions={Wedding:"विवाह समारोह",Engagement:"सगाई समारोह",Haldi:"हल्दी समारोह",Mehendi:"मेहंदी समारोह",Sangeet:"संगीत समारोह",Reception:"स्वागत समारोह","Save the Date":"तिथि सुरक्षित रखें"};
 const canvasFont=(language,serif=false)=>language==="hi"?(serif?'"Noto Serif Devanagari", "Noto Sans Devanagari", "Nirmala UI", Arial, sans-serif':'"Noto Sans Devanagari", "Nirmala UI", Arial, sans-serif'):(serif?"Georgia":"Arial");
 function refreshPreview(){
@@ -77,7 +79,8 @@ function refreshPreview(){
   $("backKicker").textContent=hindi?"॥ सपरिवार ॥":"WITH LOVE & BLESSINGS";
   $("backTitle").textContent=hindi?"हमारे परिवार":"Our Families";
   $("backFooter").textContent=hindi?"आपकी उपस्थिति हमारे लिए अनमोल है":"WE LOOK FORWARD TO CELEBRATING WITH YOU";
-  $("previewMantra").textContent=hindi?"॥ शुभ मंगल ॥":(d.traditionInput==="Hindu"||d.traditionInput==="Jain"?"॥ श्री गणेशाय नमः ॥":"WITH JOY & BLESSINGS");
+  $("previewMantra").textContent=traditionMantras[d.traditionInput]||traditionMantras["Secular / Other"];
+  $("previewTraditionSymbol").textContent=traditionSymbols[d.traditionInput]||"✦";
   $("exportCard").className="export-card design-"+d.designInput+" accent-"+d.colorInput;
   $("exportCard").dataset.language=d.languageInput;
   const photoWrap=$("previewPhotos");
@@ -184,8 +187,8 @@ function makeInvitationImage(){
   ctx.strokeStyle=accent;ctx.lineWidth=8;ctx.strokeRect(48,48,1104,1504);ctx.lineWidth=2;ctx.strokeRect(70,70,1060,1460);
   ctx.textAlign="center";ctx.fillStyle=ink;
   const draw=(txt,y,size,font=null,weight="normal")=>{ctx.font=weight+" "+size+"px "+(font||canvasFont(d.languageInput,true));ctx.fillText(txt,600,y,980);};
-  draw(d.languageInput==="hi"?"॥ शुभ मंगल ॥":"॥ SHUBH VIVAH ॥",190,34);
-  draw(d.designInput==="mughal"?"✿":d.designInput==="pastel"?"✧":"✺",260,78,"Georgia");
+  draw(traditionMantras[d.traditionInput]||traditionMantras["Secular / Other"],190,34,canvasFont(d.languageInput));
+  draw(traditionSymbols[d.traditionInput]||"✦",260,78,"Georgia");
   const chosenPhotoKeys=["bride","groom"].filter(key=>photoImages[key]&&photoImages[key].complete&&photoImages[key].naturalWidth);
   if(chosenPhotoKeys.length){
     const size=chosenPhotoKeys.length===1?170:132;
@@ -230,16 +233,17 @@ function makeInvitationBackImage(){
   ctx.strokeStyle=accent;ctx.lineWidth=8;ctx.strokeRect(48,48,1104,1504);ctx.lineWidth=2;ctx.strokeRect(70,70,1060,1460);
   ctx.textAlign="center";ctx.fillStyle=ink;
   const draw=(txt,y,size,font=null,weight="normal")=>{ctx.font=weight+" "+size+"px "+(font||canvasFont(d.languageInput,true));ctx.fillText(txt,600,y,980);};
-  draw(d.languageInput==="hi"?"॥ सपरिवार ॥":"WITH LOVE & BLESSINGS",220,30,canvasFont(d.languageInput));
+  draw(traditionMantras[d.traditionInput]||traditionMantras["Secular / Other"],220,30,canvasFont(d.languageInput));
+  draw(traditionSymbols[d.traditionInput]||"✦",310,76,"Georgia");
   draw(d.languageInput==="hi"?"हमारे परिवार":"OUR FAMILIES",390,62,canvasFont(d.languageInput,true));
   ctx.strokeStyle=accent;ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(300,450);ctx.lineTo(900,450);ctx.stroke();
-  const names=d.relativesInput.split(/\n|,/).map(name=>name.trim()).filter(Boolean);
+  const names=d.relativesInput.split(/[\n,;]+/).map(name=>name.trim()).filter(Boolean);
   const list=names.length?names:[d.languageInput==="hi"?"परिवार के नाम":"Your family names"];
   const maxVisible=12;
   const shown=list.slice(0,maxVisible);
   const startY=570;
   const lineGap= Math.min(76, Math.floor(820/Math.max(shown.length,1)));
-  shown.forEach((name,index)=>draw(name,startY+index*lineGap,Math.min(38,Math.max(24,Math.floor(520/Math.max(name.length,1)))),"Georgia"));
+  shown.forEach((name,index)=>draw(name,startY+index*lineGap,Math.min(38,Math.max(24,Math.floor(520/Math.max(name.length,1)))),canvasFont(d.languageInput,true)));
   if(list.length>maxVisible)draw(d.languageInput==="hi"?"और "+(list.length-maxVisible)+" सदस्य":("and "+(list.length-maxVisible)+" more family members"),startY+maxVisible*lineGap+20,24,canvasFont(d.languageInput));
   draw(d.languageInput==="hi"?"आपकी उपस्थिति हमारे लिए अनमोल है":"WE LOOK FORWARD TO CELEBRATING WITH YOU",1430,20,canvasFont(d.languageInput));
   addFreeWatermark(ctx);
