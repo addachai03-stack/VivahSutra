@@ -226,3 +226,14 @@ body{padding-bottom:78px}
  .bottom-action-bar{gap:7px;padding-left:10px;padding-right:10px}
  .bottom-action-bar .button{font-size:10px}
 }
+
+
+/* Keep every filter and option group in a vertical, non-scrolling flow */
+.filter-row{
+  display:flex;
+  flex-wrap:wrap;
+  overflow:visible;
+  white-space:normal;
+  scroll-snap-type:none;
+}
+.filter-chip{flex:0 0 auto}
