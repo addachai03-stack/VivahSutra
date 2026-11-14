@@ -63,7 +63,13 @@ const traditionSymbols={Hindu:"ॐ",Muslim:"☪",Sikh:"☬",Christian:"✝",Jain
 const traditionMantras={Hindu:"॥ श्री गणेशाय नमः ॥",Muslim:"بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ",Sikh:"ੴ ਸਤਿਨਾਮ",Christian:"✝ WITH GOD’S BLESSINGS",Jain:"अहिंसा परमो धर्मः","Secular / Other":"WITH LOVE & BLESSINGS"};
 const templateAssetPaths={royal:"./assets/rajwada-royale.svg",floral:"./assets/garden-of-love.svg",minimal:"./assets/modern-heirloom.svg",traditional:"./assets/mangal-patrika.svg",mughal:"./assets/mughal-garden.svg",pastel:"./assets/pastel-bloom.svg"};
 const templateAssetImages={};
-Object.entries(templateAssetPaths).forEach(([design,path])=>{const image=new Image();image.onload=()=>{templateAssetImages[design]=image;};image.src=path;});
+const templateAssetsReady=Promise.all(Object.entries(templateAssetPaths).map(([design,path])=>new Promise((resolve,reject)=>{
+  const image=new Image();
+  templateAssetImages[design]=image;
+  image.onload=()=>resolve();
+  image.onerror=()=>reject(new Error("Invitation design artwork could not be loaded."));
+  image.src=path;
+})));
 function drawTemplateAsset(ctx,design){
   const asset=templateAssetImages[design];
   if(!asset||!asset.complete||!asset.naturalWidth)return false;
@@ -310,45 +316,49 @@ function makeInvitationBackImage(){
   addFreeWatermark(ctx);
   return canvas;
 }
-$("downloadImage").addEventListener("click",()=>{
+$("downloadImage").addEventListener("click",async()=>{
   if(!requirePaidCheckout())return;
   try{
+    await templateAssetsReady;
     const canvas=makeInvitationImage();const link=document.createElement("a");
     link.download="VivahSutra-Invitation.png";link.href=canvas.toDataURL("image/png");link.click();
     $("saveStatus").textContent="Invitation image created.";
-  }catch(error){$("saveStatus").textContent="Image export failed in this browser. Try PDF print.";}
+  }catch(error){$("saveStatus").textContent="Design artwork or image export could not load. Please retry.";}
 });
-$("printPdf").addEventListener("click",()=>{
+$("printPdf").addEventListener("click",async()=>{
   if(!requirePaidCheckout())return;
+  const win=window.open("","_blank");
+  if(!win){$("saveStatus").textContent="Allow pop-ups for this site, then try again.";return;}
   try{
+    await templateAssetsReady;
     const front=makeInvitationImage().toDataURL("image/png");
     const back=makeInvitationBackImage().toDataURL("image/png");
-    const win=window.open("","_blank");
-    if(!win){$("saveStatus").textContent="Allow pop-ups for this site, then try again.";return;}
     win.document.write('<!doctype html><html><head><title>VivahSutra Two-Sided Invitation</title><style>@page{size:A5 portrait;margin:0}html,body{margin:0;padding:0} .page{width:100%;height:100vh;display:flex;align-items:center;justify-content:center;page-break-after:always;break-after:page} .page:last-child{page-break-after:auto;break-after:auto}img{width:100%;height:100%;object-fit:contain}</style></head><body><div class="page"><img src="'+front+'"></div><div class="page"><img src="'+back+'"></div><script>window.onload=()=>window.print()<\/script></body></html>');
     win.document.close();
     $("saveStatus").textContent="Two-sided PDF is ready: front and family-name back.";
-  }catch(error){$("saveStatus").textContent="PDF print could not open. Try image download.";}
+  }catch(error){win.close();$("saveStatus").textContent="Design artwork or PDF export could not load. Please retry.";}
 });
-$("downloadBackImage").addEventListener("click",()=>{
+$("downloadBackImage").addEventListener("click",async()=>{
   if(!requirePaidCheckout())return;
   try{
+    await templateAssetsReady;
     const link=document.createElement("a");
     link.download="VivahSutra-Invitation-Back.png";
     link.href=makeInvitationBackImage().toDataURL("image/png");
     link.click();
     $("saveStatus").textContent="Back-side image created.";
-  }catch(error){$("saveStatus").textContent="Back-side image export failed. Try the two-sided PDF.";}
+  }catch(error){$("saveStatus").textContent="Design artwork or back-side export could not load. Please retry.";}
 });
 $("shareInvite").addEventListener("click",async()=>{
   if(!requirePaidCheckout())return;
   try{
-    const blob=await new Promise(resolve=>makeInvitationImage().toBlob(resolve,"image/png"));
+    await templateAssetsReady;
+    const blob=await new Promise((resolve,reject)=>makeInvitationImage().toBlob(result=>result?resolve(result):reject(new Error("Image conversion failed.")),"image/png"));
     const file=new File([blob],"VivahSutra-Invitation.png",{type:"image/png"});
     if(navigator.canShare&&navigator.canShare({files:[file]})){await navigator.share({files:[file],title:"Our wedding invitation"});}
     else if(navigator.share){await navigator.share({title:"Our wedding invitation",text:"You're invited to celebrate with us! "+$("previewDate").textContent+" · "+$("previewVenue").textContent});}
     else{$("saveStatus").textContent="Use Download image, then share it from Photos.";}
-  }catch(error){if(error.name!=="AbortError")$("saveStatus").textContent="Sharing unavailable. Download the image instead.";}
+  }catch(error){if(error.name!=="AbortError")$("saveStatus").textContent="Design artwork or sharing could not load. Please retry.";}
 });
 if("serviceWorker"in navigator&&location.protocol.startsWith("http")){
   window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js").catch(()=>{}));
