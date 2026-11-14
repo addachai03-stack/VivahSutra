@@ -31,6 +31,7 @@ const openEditor=()=>{modal.hidden=false;document.body.style.overflow="hidden";r
 const closeEditor=()=>{modal.hidden=true;document.body.style.overflow="";};
 $("heroCreate").addEventListener("click",openEditor);
 $("topCreate").addEventListener("click",openEditor);
+if($("bottomCreate"))$("bottomCreate").addEventListener("click",openEditor);
 $("closeEditor").addEventListener("click",closeEditor);
 modal.addEventListener("click",e=>{if(e.target===modal)closeEditor();});
 document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!modal.hidden)closeEditor();});
