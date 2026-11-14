@@ -271,3 +271,16 @@ main>.steps-section{order:3}
 .export-mantra{max-width:100%;overflow-wrap:anywhere}
 .export-ornament{font-size:42px}
 @media(max-width:760px){.collections{padding-top:30px!important;padding-bottom:28px!important}.section-heading h2{font-size:30px}.template-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.template-art{height:190px}.hero{padding-top:34px}.hero-art{height:280px}.invite-card{width:230px;height:315px}}
+
+
+/* Signature Hindi wedding line on every editable invitation front */
+.export-tagline{color:var(--card-accent);font:600 11px/1.65 "Noto Serif Devanagari","Noto Sans Devanagari","Nirmala UI",serif;letter-spacing:0;margin:0 0 10px;max-width:100%;text-wrap:balance}
+
+/* Always-available editor shortcuts */
+.editor-quick-nav{position:fixed;z-index:30;left:0;right:0;bottom:0;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;padding:9px max(12px,env(safe-area-inset-right)) calc(9px + env(safe-area-inset-bottom)) max(12px,env(safe-area-inset-left));background:rgba(255,255,255,.98);border-top:1px solid #e6d8c9;box-shadow:0 -6px 22px #35101b18}
+.editor-quick-nav[hidden]{display:none}
+.editor-quick-nav button{min-height:44px;border:1px solid #d8c4a4;border-radius:4px;background:#fff;color:#4b1724;font:700 12px "DM Sans",sans-serif}
+.editor-quick-nav button:first-child{background:#4b1724;color:#f0d69f;border-color:#4b1724}
+.editor-workspace{padding-bottom:78px}
+body.editor-open .bottom-action-bar{display:none}
+@media(min-width:761px){.editor-quick-nav{left:50%;right:auto;transform:translateX(-50%);width:min(560px,90vw);border:1px solid #e6d8c9;border-bottom:0;border-radius:10px 10px 0 0}}
