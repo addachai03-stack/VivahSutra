@@ -40,10 +40,10 @@ document.addEventListener("keydown",e=>{if(modal.hidden)return;if(e.key==="Escap
 
 const filterButtons=[...document.querySelectorAll(".filter-chip")];
 const templateCards=[...document.querySelectorAll(".template-card")];
-filterButtons.forEach(button=>button.addEventListener("click",()=>{
-  filterButtons.forEach(item=>item.classList.toggle("active",item===button));
+filterButtons.forEach(button=>{button.setAttribute("aria-pressed",String(button.classList.contains("active")));button.addEventListener("click",()=>{
+  filterButtons.forEach(item=>{item.classList.toggle("active",item===button);item.setAttribute("aria-pressed",String(item===button));});
   templateCards.forEach(card=>{card.hidden=button.dataset.filter!=="all"&&card.dataset.category!==button.dataset.filter;});
-}));
+});});
 document.querySelectorAll(".choose-template").forEach((button,index)=>button.addEventListener("click",()=>{
   $("designInput").value=button.dataset.design||["royal","floral","minimal","traditional","mughal","pastel"][index]||"royal";
   openEditor();
@@ -81,6 +81,7 @@ const canvasFont=(language,serif=false)=>language==="hi"?(serif?'"Noto Serif Dev
 function refreshPreview(){
   const d=readData();
   const hindi=d.languageInput==="hi";
+  document.documentElement.lang=hindi?"hi":"en";
   $("previewBride").textContent=d.brideInput.trim()||"Bride";
   $("previewGroom").textContent=d.groomInput.trim()||"Groom";
   $("previewHost").textContent=(d.hostInput.trim()||(hindi?"सपरिवार सादर आमंत्रित":"TOGETHER WITH THEIR FAMILIES")).toUpperCase();
@@ -96,6 +97,9 @@ function refreshPreview(){
   $("backKicker").textContent=hindi?"॥ सपरिवार ॥":"WITH LOVE & BLESSINGS";
   $("backTitle").textContent=hindi?"हमारे परिवार":"Our Families";
   $("backFooter").textContent=hindi?"आपकी उपस्थिति हमारे लिए अनमोल है":"WE LOOK FORWARD TO CELEBRATING WITH YOU";
+  const flipped=$("flipCard").classList.contains("is-flipped");
+  $("cardSideLabel").textContent=hindi?(flipped?"अंदर · परिवार के नाम":"मुखपृष्ठ"):(flipped?"Inside · Family names":"Front cover");
+  $("flipCardButton").textContent=hindi?(flipped?"बंद करें / सामने देखें ↻":"खोलें / पीछे देखें ↻"):(flipped?"Fold / Flip to front ↻":"Open / Flip card ↻");
   $("previewMantra").textContent=traditionMantras[d.traditionInput]||traditionMantras["Secular / Other"];
   $("previewTraditionSymbol").textContent=traditionSymbols[d.traditionInput]||"✦";
   $("exportCard").className="export-card design-"+d.designInput+" accent-"+d.colorInput;
@@ -136,6 +140,7 @@ function waitForSelectedPhotos(){
   });
   return Promise.all(pending);
 }
+function waitForInvitationAssets(){return Promise.all([templateAssetsReady,waitForSelectedPhotos(),document.fonts?.ready||Promise.resolve()]);}
 function saveDraft(){
   try{
     localStorage.setItem("vivahsutra-draft-v1",JSON.stringify({...readData(),photoData}));
@@ -336,7 +341,7 @@ function makeInvitationBackImage(){
 $("downloadImage").addEventListener("click",async()=>{
   if(!requirePaidCheckout())return;
   try{
-    await Promise.all([templateAssetsReady,waitForSelectedPhotos()]);
+    await waitForInvitationAssets();
     const canvas=makeInvitationImage();const link=document.createElement("a");
     link.download="VivahSutra-Invitation.png";link.href=canvas.toDataURL("image/png");link.click();
     $("saveStatus").textContent="Invitation image created.";
