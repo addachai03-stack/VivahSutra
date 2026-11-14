@@ -318,3 +318,24 @@ body.editor-open .bottom-action-bar{display:none}
   .editor-quick-nav{gap:4px;padding-left:7px;padding-right:7px}
   .editor-quick-nav button{font-size:10px;letter-spacing:-.2px}
 }
+
+
+/* Prevent the Devanagari wedding blessing from being clipped on narrow cards. */
+.card-footer{
+  display:block;
+  width:100%;
+  flex:0 0 auto;
+  margin-top:auto;
+  padding:5px 0 2px;
+  white-space:nowrap;
+  overflow:visible;
+  font-family:"Noto Serif Devanagari","Noto Sans Devanagari","Nirmala UI",serif;
+  font-size:15px;
+  line-height:1.7;
+  letter-spacing:0;
+  color:#e8c98f;
+}
+.invite-border{overflow:visible}
+@media(max-width:760px){
+  .card-footer{font-size:14px;line-height:1.65;padding-bottom:4px}
+}
