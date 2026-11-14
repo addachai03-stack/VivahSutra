@@ -339,3 +339,72 @@ body.editor-open .bottom-action-bar{display:none}
 @media(max-width:760px){
   .card-footer{font-size:14px;line-height:1.65;padding-bottom:4px}
 }
+
+
+/* Compact mobile experience: reduce page travel and keep editor navigation within reach */
+@media(max-width:760px){
+  html{scroll-padding-top:12px}
+  .hero{min-height:0;padding:34px 20px 28px;gap:0}
+  .hero h1{font-size:clamp(39px,10vw,52px);margin:14px 0 10px}
+  .hero-description{font-size:12px;line-height:1.55}
+  .hero-actions{margin-top:18px;flex-wrap:wrap}
+  .hero-note{margin-top:18px}
+  .hero-art{height:290px}
+  .art-glow{width:260px;height:260px}
+  .invite-card{transform:scale(.82) rotate(2deg)}
+  .trust-strip{height:auto;min-height:42px;padding:10px 12px;flex-wrap:wrap;row-gap:5px}
+  .collections{padding-top:38px;padding-bottom:38px}
+  .filter-row{padding:18px 0 14px}
+  .template-art{height:178px;padding:12px}
+  .template-grid{gap:9px}
+  .collection-footnote{margin-top:12px;line-height:1.4}
+  .steps-section{padding:34px 0}
+  .steps-inner{gap:20px}
+  .steps{gap:12px}
+  .step{padding-bottom:10px}
+  .footer{min-height:0;padding:14px 18px}
+  .editor-workspace{overscroll-behavior:contain}
+  .editor-title-row{padding:10px 13px 7px}
+  .editor-title-row h2{font-size:23px;margin:4px 0}
+  .plan-picker{margin:0 12px 7px;padding:9px 10px}
+  .plan-heading{margin-bottom:7px}
+  .plan-heading h3{font-size:14px}
+  .plan-options{gap:5px}
+  .plan-option{padding:7px}
+  .plan-option.selected{padding:6px}
+  .plan-option strong{font-size:18px}
+  .plan-option small{font-size:7px}
+  .plan-status{font-size:8px;margin-top:6px}
+  .studio-grid{padding:6px 12px 78px;gap:9px}
+  .preview-panel{padding:8px}
+  .preview-toolbar{margin-bottom:6px}
+  .card-stage{min-height:0;padding:8px}
+  .export-card{width:min(62vw,228px)}
+  .card-flip-controls{margin-top:6px}
+  .export-actions{margin-top:7px;gap:5px}
+  .export-actions .button{padding:9px 4px;font-size:8px}
+  .preview-note{font-size:8px;margin-top:6px}
+  .studio-controls{gap:7px}
+  .field-section{padding:9px;gap:7px}
+  .field-section label{gap:3px}
+  .field-section input,.field-section select,.field-section textarea{padding:8px;font-size:12px}
+  .field-section textarea{min-height:58px}
+  .studio-actions{position:sticky;bottom:62px;z-index:4;padding:8px;background:#fbf7f0ed;border:1px solid #e7dac8;backdrop-filter:blur(8px)}
+  .editor-quick-nav{position:fixed;left:10px;right:10px;bottom:calc(8px + env(safe-area-inset-bottom));z-index:30;display:flex;justify-content:space-around;gap:5px;padding:7px;background:#35101bf2;border:1px solid #c99a4b;border-radius:8px;box-shadow:0 6px 24px #160b0e45}
+  .editor-quick-nav[hidden]{display:none}
+  .editor-quick-nav button{flex:1;min-width:0;border:0;border-radius:4px;background:transparent;color:#fff4df;padding:9px 4px;font-size:10px;font-weight:700}
+  .editor-quick-nav button:active,.editor-quick-nav button:focus-visible{background:#c99a4b;color:#281914;outline:0}
+  .bottom-action-bar{padding-bottom:calc(8px + env(safe-area-inset-bottom))}
+}
+@media(max-width:390px){
+  .hero{padding-left:16px;padding-right:16px}
+  .hero-art{height:260px}
+  .template-art{height:160px}
+  .editor-title-row h2{font-size:21px}
+  .editor-quick-nav button{font-size:9px;padding:8px 2px}
+  .export-card{width:min(60vw,210px)}
+}
+@media(prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+  *,*::before,*::after{scroll-behavior:auto!important;transition-duration:.01ms!important;animation-duration:.01ms!important}
+}
