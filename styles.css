@@ -243,3 +243,31 @@ body.editor-open .bottom-action-bar{display:none}
 
 .export-card[data-language="hi"],.export-card[data-language="hi"] *{font-family:"Noto Sans Devanagari","Nirmala UI",Arial,sans-serif!important}
 .flip-card:has(.export-card[data-language="hi"]) .back-card-inner,.flip-card:has(.export-card[data-language="hi"]) .back-card-inner *{font-family:"Noto Sans Devanagari","Nirmala UI",Arial,sans-serif!important}
+
+
+/* VivahSutra home refresh: maroon + white, invitation cards first */
+main{display:flex;flex-direction:column}
+main>.collections{order:0;background:#fff}
+main>.hero{order:1;background:#fff;color:var(--wine)}
+main>.trust-strip{order:2;background:#fff}
+main>.steps-section{order:3}
+.hero{background:#fff!important}
+.invite-card{background:#4b1724;background-image:radial-gradient(#f0d69f18 .7px,transparent .7px);background-size:8px 8px}
+.invite-border{color:#f0d69f;border-color:#c99a4b;outline-color:#c99a4b}
+.card-topline,.card-kicker,.card-place,.card-footer,.card-divider{color:#e8c98f}
+.card-divider{border-color:#c99a4b}
+.card-divider span{background:#4b1724;color:#e8c98f}
+.card-names,.card-invite,.card-date{color:#f5e4bd}
+.card-invite{font-family:Georgia,serif;font-size:9px;letter-spacing:.6px;line-height:1.8}
+.ganesh-symbol{color:#e8c98f!important}
+.flip-card{perspective:1400px;transform:none!important;filter:drop-shadow(0 18px 28px #3b211c24)}
+.flip-card .flip-card-inner{transition:transform .85s cubic-bezier(.2,.7,.2,1);transform-style:preserve-3d}
+.flip-card.is-flipped .flip-card-inner{transform:rotateY(180deg)}
+.flip-card-face{transform-style:preserve-3d}
+.flip-card-back{transform:rotateY(180deg) translateZ(1px)}
+.back-card-inner{overflow:hidden;justify-content:flex-start}
+.back-family-names{width:100%;max-height:62%;overflow:auto;display:flex;flex-direction:column;justify-content:center;gap:9px;padding:8px 4px;font:16px/1.45 "Playfair Display",serif;white-space:normal;overflow-wrap:anywhere}
+.back-family-names>div{padding:2px 0}
+.export-mantra{max-width:100%;overflow-wrap:anywhere}
+.export-ornament{font-size:42px}
+@media(max-width:760px){.collections{padding-top:30px!important;padding-bottom:28px!important}.section-heading h2{font-size:30px}.template-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.template-art{height:190px}.hero{padding-top:34px}.hero-art{height:280px}.invite-card{width:230px;height:315px}}
