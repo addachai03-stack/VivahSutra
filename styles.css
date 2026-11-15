@@ -1012,3 +1012,36 @@ body.editor-open{overflow:hidden}
     height: clamp(132px, 38vw, 158px) !important;
   }
 }
+
+
+/* v46: make all six invitation previews larger and easier to see. */
+#collections #templateGrid .template-art{
+  height:290px!important;
+  padding:22px!important;
+}
+#collections #templateGrid .template-art small{font-size:9px!important;line-height:1.5}
+#collections #templateGrid .template-art strong{font-size:clamp(30px,3vw,38px)!important;line-height:1.12}
+#collections #templateGrid .template-art .mini-names{font-size:20px!important}
+#collections #templateGrid .art-royal .mini-mantra{font-size:13px!important}
+#collections #templateGrid .art-floral .floral-sprig,
+#collections #templateGrid .art-mughal .mughal-motif,
+#collections #templateGrid .art-pastel .pastel-motif{font-size:48px!important}
+@media screen and (max-width:800px){
+  #collections #templateGrid .template-art{
+    height:clamp(215px,60vw,245px)!important;
+    min-height:215px!important;
+    padding:15px!important;
+  }
+  #collections #templateGrid .template-art small{font-size:8px!important}
+  #collections #templateGrid .template-art strong{font-size:clamp(25px,7vw,32px)!important}
+  #collections #templateGrid .template-art .mini-names{font-size:17px!important}
+  #collections #templateGrid .art-royal .mini-mantra{font-size:11px!important}
+}
+@media screen and (max-width:390px){
+  #collections #templateGrid .template-art{
+    height:210px!important;
+    min-height:210px!important;
+  }
+  #collections #templateGrid .template-art strong{font-size:25px!important}
+  #collections #templateGrid .template-art .mini-names{font-size:15px!important}
+}
