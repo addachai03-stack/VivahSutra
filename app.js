@@ -56,20 +56,6 @@ function timeLabel(value,language="en"){
 }
 const traditionSymbols={Hindu:"ॐ",Muslim:"☪",Sikh:"☬",Christian:"✝",Jain:"अहिंसा","Secular / Other":"✦"};
 const traditionMantras={Hindu:"॥ श्री गणेशाय नमः ॥",Muslim:"بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ",Sikh:"ੴ ਸਤਿਨਾਮ",Christian:"✝ WITH GOD’S BLESSINGS",Jain:"अहिंसा परमो धर्मः","Secular / Other":"WITH LOVE & BLESSINGS"};
-const templateAssetPaths={royal:"./assets/rajwada-royale.svg",floral:"./assets/garden-of-love.svg",minimal:"./assets/modern-heirloom.svg",traditional:"./assets/mangal-patrika.svg",mughal:"./assets/mughal-garden.svg",pastel:"./assets/pastel-bloom.svg"};
-const templateAssetImages={};
-const templateAssetsReady=Promise.all(Object.entries(templateAssetPaths).map(([design,path])=>new Promise((resolve,reject)=>{
-  const image=new Image();
-  templateAssetImages[design]=image;
-  image.onload=()=>resolve();
-  image.onerror=()=>reject(new Error("Invitation design artwork could not be loaded."));
-  image.src=path;
-})));
-function drawTemplateAsset(ctx,design){
-  const asset=templateAssetImages[design];
-  if(!asset||!asset.complete||!asset.naturalWidth)return false;
-  ctx.save();ctx.globalAlpha=.34;ctx.drawImage(asset,0,0,1200,1600);ctx.restore();return true;
-}
 const hindiOccasions={Wedding:"विवाह समारोह",Engagement:"सगाई समारोह",Haldi:"हल्दी समारोह",Mehendi:"मेहंदी समारोह",Sangeet:"संगीत समारोह",Reception:"स्वागत समारोह","Save the Date":"तिथि सुरक्षित रखें"};
 const canvasFont=(language,serif=false)=>language==="hi"?(serif?'"Noto Serif Devanagari", "Noto Sans Devanagari", "Nirmala UI", Arial, sans-serif':'"Noto Sans Devanagari", "Nirmala UI", Arial, sans-serif'):(serif?"Georgia":"Arial");
 function refreshPreview(){
@@ -138,7 +124,7 @@ function waitForSelectedPhotos(){
   });
   return Promise.all(pending);
 }
-function waitForInvitationAssets(){return Promise.all([templateAssetsReady,waitForSelectedPhotos(),document.fonts?.ready||Promise.resolve()]);}
+function waitForInvitationAssets(){return Promise.all([waitForSelectedPhotos(),document.fonts?.ready||Promise.resolve()]);}
 function saveDraft(){
   try{
     localStorage.setItem("vivahsutra-draft-v1",JSON.stringify({...readData(),photoData}));
@@ -222,13 +208,15 @@ function setCanvasFont(ctx,text,maxWidth,startSize,minSize=20,font=canvasFont(re
 function wrapCanvasText(ctx,text,maxWidth,maxLines=2){
   const words=String(text||"").trim().split(/\s+/).filter(Boolean);
   if(!words.length)return [];
+  const segmenter=typeof Intl!=="undefined"&&Intl.Segmenter?new Intl.Segmenter(undefined,{granularity:"grapheme"}):null;
+  const splitGraphemes=value=>segmenter?Array.from(segmenter.segment(value),part=>part.segment):Array.from(value);
   const lines=[];let line="";
   words.forEach(word=>{
     const candidate=line?line+" "+word:word;
     if(line&&ctx.measureText(candidate).width>maxWidth&&lines.length<maxLines-1){lines.push(line);line=word;}
     else if(!line&&ctx.measureText(word).width>maxWidth){
       let chunk="";
-      for(const char of word){if(chunk&&ctx.measureText(chunk+char).width>maxWidth){lines.push(chunk);chunk=char;}else chunk+=char;}
+      for(const grapheme of splitGraphemes(word)){if(chunk&&ctx.measureText(chunk+grapheme).width>maxWidth){lines.push(chunk);chunk=grapheme;}else chunk+=grapheme;}
       line=chunk;
     }else line=candidate;
   });
@@ -236,6 +224,7 @@ function wrapCanvasText(ctx,text,maxWidth,maxLines=2){
   if(lines.length>maxLines){lines.length=maxLines;lines[maxLines-1]=lines[maxLines-1].replace(/[.…]*$/,"")+"…";}
   return lines;
 }
+
 function drawCanvasLines(ctx,lines,x,y,lineGap){
   lines.forEach((line,index)=>ctx.fillText(line,x,y+index*lineGap));
 }
@@ -353,7 +342,7 @@ $("printPdf").addEventListener("click",async()=>{
     const back=makeInvitationBackImage().toDataURL("image/png");
     win.document.write('<!doctype html><html><head><title>VivahSutra Two-Sided Invitation</title><style>@page{size:A5 portrait;margin:0}html,body{margin:0;padding:0} .page{width:100%;height:100vh;display:flex;align-items:center;justify-content:center;page-break-after:always;break-after:page} .page:last-child{page-break-after:auto;break-after:auto}img{width:100%;height:100%;object-fit:contain}</style></head><body><div class="page"><img src="'+front+'"></div><div class="page"><img src="'+back+'"></div><script>window.onload=()=>window.print()<\/script></body></html>');
     win.document.close();
-    $("saveStatus").textContent="Two-sided PDF is ready: front and family-name back.";
+    $("saveStatus").textContent="Print dialog opened. Choose “Save to Files” or “Save as PDF” to save both sides.";
   }catch(error){win.close();$("saveStatus").textContent="Design artwork or PDF export could not load. Please retry.";}
 });
 $("downloadBackImage").addEventListener("click",async()=>{
