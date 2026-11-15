@@ -678,3 +678,29 @@ body.editor-open{overflow:hidden}
   .editor-modal.editor-workspace{max-height:94dvh;overflow-y:auto;overscroll-behavior:contain}
   .editor-header{position:sticky;top:0;z-index:8}
 }
+
+
+/* v31: matching, ornate wedding-card layout on both faces */
+.export-inner{position:relative;isolation:isolate}
+.export-inner::before{z-index:0}
+.export-inner::after{
+  content:"";position:absolute;inset:0;z-index:0;pointer-events:none;
+  background:url("./assets/floral-side-ornaments.svg") center/100% 100% no-repeat;
+  opacity:.78
+}
+.export-inner>*{z-index:1}
+.export-mantra{max-width:84%;white-space:normal;overflow-wrap:anywhere;text-align:center;line-height:1.7}
+.export-ornament{line-height:1.15;margin:9px 0 13px}
+.export-host{max-width:82%;white-space:normal;overflow-wrap:anywhere}
+.export-names{max-width:84%;overflow-wrap:anywhere;line-height:1.12}
+.export-tagline{max-width:82%;margin:2px auto 10px;line-height:1.55;overflow-wrap:anywhere}
+.back-card-inner{position:relative;isolation:isolate;overflow:hidden}
+.back-card-inner::before{
+  content:"";position:absolute;inset:0;z-index:0;pointer-events:none;
+  background:url("./assets/floral-side-ornaments.svg") center/100% 100% no-repeat;
+  opacity:.78
+}
+.back-card-inner>*{position:relative;z-index:1}
+.back-card-inner h3{max-width:82%;line-height:1.25}
+.back-family-names{width:100%;max-height:66%;overflow:auto;display:flex;flex-direction:column;justify-content:center;gap:8px;padding:10px 8px;font-size:clamp(12px,4vw,16px);line-height:1.45;overflow-wrap:anywhere}
+.back-family-names>div{max-width:100%;padding:3px 0}
