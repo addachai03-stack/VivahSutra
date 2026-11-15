@@ -381,3 +381,15 @@ $("shareInvite").addEventListener("click",async()=>{
 if("serviceWorker"in navigator&&location.protocol.startsWith("http")){
   window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js").catch(()=>{}));
 }
+
+/* Bottom app navigation: all destinations map to existing working features. */
+const navCreateButton=$("navCreate");
+const navPreviewButton=$("navPreview");
+if(navCreateButton)navCreateButton.addEventListener("click",openEditor);
+if(navPreviewButton)navPreviewButton.addEventListener("click",()=>{
+  openEditor();
+  requestAnimationFrame(()=>$("previewPanel").scrollIntoView({behavior:"smooth",block:"start"}));
+});
+document.querySelectorAll(".app-nav-item[href]").forEach(link=>link.addEventListener("click",()=>{
+  document.querySelectorAll(".app-nav-item[href]").forEach(item=>item.classList.toggle("active",item===link));
+}));
