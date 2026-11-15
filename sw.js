@@ -1,5 +1,5 @@
-const CACHE_NAME = "vivahsutra-shell-v31";
-const APP_SHELL = ["./", "./index.html", "./styles.css?v=template-assets-v31", "./app.js?v=template-assets-v31", "./icon.svg", "./manifest.webmanifest", "./assets/rajwada-royale.svg", "./assets/garden-of-love.svg", "./assets/modern-heirloom.svg", "./assets/mangal-patrika.svg", "./assets/mughal-garden.svg", "./assets/pastel-bloom.svg"];
+const CACHE_NAME = "vivahsutra-shell-v32";
+const APP_SHELL = ["./", "./index.html", "./styles.css?v=template-assets-v32", "./app.js?v=template-assets-v32", "./icon.svg", "./manifest.webmanifest", "./assets/rajwada-royale.svg", "./assets/garden-of-love.svg", "./assets/modern-heirloom.svg", "./assets/mangal-patrika.svg", "./assets/mughal-garden.svg", "./assets/pastel-bloom.svg", "./assets/floral-side-ornaments.svg"];
 self.addEventListener("install", event => {
   event.waitUntil(caches.open(CACHE_NAME).then(cache => cache.addAll(APP_SHELL)));
   self.skipWaiting();
