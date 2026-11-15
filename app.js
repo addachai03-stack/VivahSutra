@@ -347,12 +347,21 @@ $("shareInvite").addEventListener("click",async()=>{
   if(!requirePaidCheckout())return;
   try{
     await waitForInvitationAssets();
-    const blob=await new Promise((resolve,reject)=>makeInvitationImage().toBlob(result=>result?resolve(result):reject(new Error("Image conversion failed.")),"image/png"));
-    const file=new File([blob],"VivahSutra-Invitation.png",{type:"image/png"});
-    if(navigator.canShare&&navigator.canShare({files:[file]})){await navigator.share({files:[file],title:"Our wedding invitation"});}
-    else if(navigator.share){await navigator.share({title:"Our wedding invitation",text:"You're invited to celebrate with us! "+$("previewDate").textContent+" · "+$("previewVenue").textContent});}
-    else{$("saveStatus").textContent="Use Download image, then share it from Photos.";}
-  }catch(error){if(error.name!=="AbortError")$("saveStatus").textContent="Design artwork or sharing could not load. Please retry.";}
+    const makeFile=(canvas,name)=>new Promise((resolve,reject)=>canvas.toBlob(blob=>blob?resolve(new File([blob],name,{type:"image/png"})):reject(new Error("Image conversion failed.")),"image/png"));
+    const files=await Promise.all([
+      makeFile(makeInvitationImage(),"VivahSutra-Invitation-Front.png"),
+      makeFile(makeInvitationBackImage(),"VivahSutra-Invitation-Back.png")
+    ]);
+    if(navigator.canShare&&navigator.canShare({files})){
+      await navigator.share({files,title:"Our wedding invitation"});
+      $("saveStatus").textContent="Front and back shared together.";
+    }else if(navigator.share){
+      $("saveStatus").textContent="This browser cannot share both image files together. Download Front PNG and Back PNG, then select both in Photos to share.";
+    }else{
+      files.forEach(file=>{const url=URL.createObjectURL(file);const link=document.createElement("a");link.href=url;link.download=file.name;link.click();setTimeout(()=>URL.revokeObjectURL(url),1000);});
+      $("saveStatus").textContent="Front and back images downloaded separately. Select both in Photos to share together.";
+    }
+  }catch(error){if(error.name!=="AbortError")$("saveStatus").textContent="Front and back sharing could not complete. Please retry.";}
 });
 if("serviceWorker"in navigator&&location.protocol.startsWith("http")){
   window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js").catch(()=>{}));
