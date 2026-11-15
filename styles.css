@@ -847,3 +847,68 @@ body.editor-open{overflow:hidden}
   .app-bottom-nav{padding-bottom:calc(7px + env(safe-area-inset-bottom))}
   .bottom-action-bar{bottom:calc(66px + env(safe-area-inset-bottom))}
 }
+
+
+/* v40: compact two-column invitation collection on iPhone. */
+@media(max-width:760px){
+  .collections{
+    padding-top:22px!important;
+    padding-bottom:18px!important;
+  }
+  .collections .section-heading{
+    align-items:flex-end;
+    gap:8px;
+  }
+  .collections .section-heading h2{
+    margin-top:8px;
+    font-size:clamp(24px,6.5vw,29px);
+    line-height:1.12;
+  }
+  .filter-row{
+    padding:11px 0 9px!important;
+    gap:7px;
+  }
+  .filter-chip{
+    padding:8px 12px;
+    font-size:9px;
+  }
+  .template-grid{
+    display:grid!important;
+    grid-template-columns:repeat(2,minmax(0,1fr))!important;
+    grid-auto-flow:row;
+    gap:12px 9px!important;
+    overflow:visible!important;
+    padding:0!important;
+  }
+  .template-card{
+    width:100%!important;
+    min-width:0!important;
+    max-width:none!important;
+    margin:0!important;
+    flex:none!important;
+  }
+  .template-art{
+    height:clamp(132px,38vw,158px)!important;
+    min-height:0;
+    padding:9px!important;
+  }
+  .template-meta{
+    min-height:43px;
+    padding:7px 0 3px!important;
+    gap:4px;
+  }
+  .template-meta strong{font-size:12px!important;line-height:1.15}
+  .template-meta small{font-size:8px!important;line-height:1.2}
+  .round-arrow{width:27px;height:27px;flex:0 0 27px}
+  .collection-footnote{
+    margin:9px 0 0!important;
+    font-size:9px;
+    line-height:1.35;
+  }
+}
+@media(max-width:390px){
+  .template-grid{gap:10px 8px!important}
+  .template-art{height:132px!important}
+  .template-meta strong{font-size:11px!important}
+  .template-meta small{font-size:7px!important}
+}
