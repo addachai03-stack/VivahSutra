@@ -142,7 +142,9 @@ function drawDesignArtwork(ctx,d){
   if(!artwork||!artwork.complete||!artwork.naturalWidth)return;
   ctx.save();ctx.globalAlpha=0.3;ctx.drawImage(artwork,35,35,1130,1530);ctx.restore();
 }
-const floralSideArtwork=new Image();\nconst floralSideArtworkReady=new Promise((resolve,reject)=>{floralSideArtwork.onload=resolve;floralSideArtwork.onerror=()=>reject(new Error("Floral side artwork could not be loaded."));floralSideArtwork.src="./assets/floral-side-ornaments.svg";});\nfunction waitForInvitationAssets(){return Promise.all([waitForSelectedPhotos(),waitForDesignArtwork(),floralSideArtworkReady,document.fonts?.ready||Promise.resolve()]);}
+const floralSideArtwork=new Image();
+const floralSideArtworkReady=new Promise((resolve,reject)=>{floralSideArtwork.onload=resolve;floralSideArtwork.onerror=()=>reject(new Error("Floral side artwork could not be loaded."));floralSideArtwork.src="./assets/floral-side-ornaments.svg";});
+function waitForInvitationAssets(){return Promise.all([waitForSelectedPhotos(),waitForDesignArtwork(),floralSideArtworkReady,document.fonts?.ready||Promise.resolve()]);}
 function saveDraft(){
   try{
     localStorage.setItem("vivahsutra-draft-v1",JSON.stringify({...readData(),photoData}));
