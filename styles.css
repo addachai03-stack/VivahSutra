@@ -740,3 +740,43 @@ body.editor-open{overflow:hidden}
 /* Privacy notice page and footer link */
 .footer-privacy{color:#d8c5b5;font-size:10px;text-decoration:underline;text-underline-offset:4px}.footer-privacy:hover{color:#fff}
 .privacy-main{max-width:900px;margin:0 auto;padding:54px 24px 76px}.privacy-eyebrow{font-size:9px;letter-spacing:2px;color:#9b7542;font-weight:700}.privacy-main h1{font-size:clamp(38px,6vw,58px);margin:14px 0 10px}.privacy-updated{font-size:11px;color:#8b7c70;margin:0 0 26px}.privacy-intro{font-size:14px;line-height:1.8;color:#65564e;max-width:720px}.privacy-card{background:#fffdfa;border:1px solid #e9dfd3;padding:22px 24px;margin:14px 0}.privacy-card h2{font-size:22px;letter-spacing:-.3px;margin:0 0 10px;color:var(--wine)}.privacy-card p,.privacy-card li{font-size:12px;line-height:1.8;color:#6e625a}.privacy-card ul{padding-left:20px}.privacy-back{display:inline-block;margin-top:18px;color:var(--wine);font-size:12px;font-weight:700;text-decoration:none;border-bottom:1px solid #c9b69b;padding-bottom:5px}@media(max-width:760px){.privacy-main{padding:38px 18px 58px}.privacy-card{padding:18px}.footer-privacy{margin-top:0}}
+
+
+/* v38: keep the editor above app navigation and clear iPhone safe areas. */
+@media(max-width:760px){
+  .modal-backdrop{
+    z-index:40;
+    height:100%;
+    height:100dvh;
+    padding:0;
+    overflow:hidden;
+  }
+  .editor-modal.editor-workspace{
+    position:relative;
+    z-index:41;
+    height:100%;
+    height:100dvh;
+    max-height:100%;
+    max-height:100dvh;
+    min-height:0;
+    padding-top:env(safe-area-inset-top);
+    padding-bottom:calc(28px + env(safe-area-inset-bottom));
+    scroll-padding-top:calc(64px + env(safe-area-inset-top));
+    scroll-padding-bottom:calc(28px + env(safe-area-inset-bottom));
+  }
+  .editor-header{
+    top:0;
+    min-height:58px;
+  }
+  .field-section,
+  .studio-actions,
+  .export-actions{
+    scroll-margin-top:calc(68px + env(safe-area-inset-top));
+    scroll-margin-bottom:calc(28px + env(safe-area-inset-bottom));
+  }
+  body.editor-open .app-bottom-nav,
+  body.editor-open .bottom-action-bar{
+    visibility:hidden;
+    pointer-events:none;
+  }
+}
