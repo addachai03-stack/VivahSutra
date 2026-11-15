@@ -283,7 +283,7 @@ function makeInvitationImage(){
     const size=chosenPhotoKeys.length===1?230:200,gap=34,total=chosenPhotoKeys.length*size+(chosenPhotoKeys.length-1)*gap;
     chosenPhotoKeys.forEach((key,index)=>{
       const x=600-total/2+index*(size+gap),y=475-size/2;
-      ctx.save();ctx.beginPath();ctx.arc(x+size/2,y+size/2,size/2,size?0:0,Math.PI*2);ctx.clip();ctx.drawImage(photoImages[key],x,y,size,size);ctx.restore();
+      ctx.save();ctx.beginPath();ctx.arc(x+size/2,y+size/2,size/2,0,Math.PI*2);ctx.clip();ctx.drawImage(photoImages[key],x,y,size,size);ctx.restore();
       ctx.strokeStyle=accent;ctx.lineWidth=8;ctx.beginPath();ctx.arc(x+size/2,y+size/2,size/2+6,0,Math.PI*2);ctx.stroke();
     });
   }
