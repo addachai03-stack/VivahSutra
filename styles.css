@@ -985,3 +985,30 @@ body.editor-open{overflow:hidden}
     flex: none !important;
   }
 }
+
+
+/* v44: two-column by three-row invitation gallery on iPhone. */
+@media screen and (max-width: 800px) {
+  html body #collections #templateGrid {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    grid-auto-flow: row !important;
+    grid-auto-columns: auto !important;
+    width: 100% !important;
+    gap: 14px 10px !important;
+    overflow: visible !important;
+    padding: 0 !important;
+  }
+  html body #collections #templateGrid > article.template-card {
+    display: block !important;
+    grid-column: auto !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: none !important;
+    margin: 0 !important;
+    flex: none !important;
+  }
+  html body #collections #templateGrid .template-art {
+    height: clamp(132px, 38vw, 158px) !important;
+  }
+}
