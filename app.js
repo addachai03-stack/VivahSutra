@@ -332,19 +332,6 @@ $("downloadImage").addEventListener("click",async()=>{
     $("saveStatus").textContent="Invitation image created.";
   }catch(error){$("saveStatus").textContent="Design artwork or image export could not load. Please retry.";}
 });
-$("printPdf").addEventListener("click",async()=>{
-  if(!requirePaidCheckout())return;
-  const win=window.open("","_blank");
-  if(!win){$("saveStatus").textContent="Allow pop-ups for this site, then try again.";return;}
-  try{
-    await waitForInvitationAssets();
-    const front=makeInvitationImage().toDataURL("image/png");
-    const back=makeInvitationBackImage().toDataURL("image/png");
-    win.document.write('<!doctype html><html><head><title>VivahSutra Two-Sided Invitation</title><style>@page{size:A5 portrait;margin:0}html,body{margin:0;padding:0} .page{width:100%;height:100vh;display:flex;align-items:center;justify-content:center;page-break-after:always;break-after:page} .page:last-child{page-break-after:auto;break-after:auto}img{width:100%;height:100%;object-fit:contain}</style></head><body><div class="page"><img src="'+front+'"></div><div class="page"><img src="'+back+'"></div><script>window.onload=()=>window.print()<\/script></body></html>');
-    win.document.close();
-    $("saveStatus").textContent="Print dialog opened. Choose “Save to Files” or “Save as PDF” to save both sides.";
-  }catch(error){win.close();$("saveStatus").textContent="Design artwork or PDF export could not load. Please retry.";}
-});
 $("downloadBackImage").addEventListener("click",async()=>{
   if(!requirePaidCheckout())return;
   try{
