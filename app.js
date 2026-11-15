@@ -140,7 +140,7 @@ function waitForDesignArtwork(){
 function drawDesignArtwork(ctx,d){
   const artwork=designArtworkCache[d.designInput||"royal"];
   if(!artwork||!artwork.complete||!artwork.naturalWidth)return;
-  ctx.save();ctx.globalAlpha=0.3;ctx.drawImage(artwork,0,0,1200,1600);ctx.restore();
+  ctx.save();ctx.globalAlpha=0.3;ctx.drawImage(artwork,35,35,1130,1530);ctx.restore();
 }
 function waitForInvitationAssets(){return Promise.all([waitForSelectedPhotos(),waitForDesignArtwork(),document.fonts?.ready||Promise.resolve()]);}
 function saveDraft(){
@@ -249,15 +249,16 @@ function drawCanvasLines(ctx,lines,x,y,lineGap){
 function makeInvitationImage(){
   const d=readData();
   const canvas=document.createElement("canvas");
-  canvas.width=1200;canvas.height=1600;
+  canvas.width=1200;canvas.height=1680;
   const ctx=canvas.getContext("2d");
+  ctx.scale(1,1.05);
   const themes={royal:["#4b1724","#f0d69f"],floral:["#f3e5e0","#70484d"],minimal:["#eee7da","#493b34"],traditional:["#f0d49a","#71352b"],mughal:["#29483b","#f3dfb5"],pastel:["#f7e9e7","#77545d"]};
   const [bg,ink]=themes[d.designInput]||themes.royal;
   const defaultAccents={royal:"#c99a4b",floral:"#b77d78",minimal:"#ad8d5d",traditional:"#9e5639",mughal:"#d1ad6e",pastel:"#c68c91"};const accents={gold:defaultAccents[d.designInput]||defaultAccents.royal,rose:"#c77b83",green:"#719078",blue:"#6b98a0"};
   const accent=accents[d.colorInput]||accents.gold;
   ctx.fillStyle=bg;ctx.fillRect(0,0,1200,1600);
   drawDesignArtwork(ctx,d);
-  ctx.strokeStyle=accent;ctx.lineWidth=8;ctx.strokeRect(48,48,1104,1504);ctx.lineWidth=2;ctx.strokeRect(70,70,1060,1460);
+  ctx.strokeStyle=accent;ctx.lineWidth=4;ctx.strokeRect(35,35,1130,1530);ctx.lineWidth=3;ctx.strokeRect(56,56,1088,1488);
   ctx.textAlign="center";ctx.fillStyle=ink;
   const font=canvasFont(d.languageInput,true),plain=canvasFont(d.languageInput);
   const draw=(txt,y,size,fontFace=font,weight="normal",maxWidth=960)=>{
@@ -265,11 +266,11 @@ function makeInvitationImage(){
     setCanvasFont(ctx,safe,maxWidth,size,18,fontFace,weight);
     ctx.fillText(safe,600,y,maxWidth);
   };
-  draw(traditionMantras[d.traditionInput]||traditionMantras["Secular / Other"],180,32,plain);
-  draw(traditionSymbols[d.traditionInput]||"✦",250,72,"Georgia");
+  draw(traditionMantras[d.traditionInput]||traditionMantras["Secular / Other"],180,39,plain);
+  draw(traditionSymbols[d.traditionInput]||"✦",250,112,"Georgia");
   const chosenPhotoKeys=["bride","groom"].filter(key=>photoImages[key]&&photoImages[key].complete&&photoImages[key].naturalWidth);
   if(chosenPhotoKeys.length){
-    const size=chosenPhotoKeys.length===1?156:122,gap=34,total=chosenPhotoKeys.length*size+(chosenPhotoKeys.length-1)*gap;
+    const size=chosenPhotoKeys.length===1?205:170,gap=42,total=chosenPhotoKeys.length*size+(chosenPhotoKeys.length-1)*gap;
     chosenPhotoKeys.forEach((key,index)=>{
       const x=600-total/2+index*(size+gap),y=315-size/2;
       ctx.save();ctx.beginPath();ctx.arc(x+size/2,y+size/2,size/2,0,Math.PI*2);ctx.clip();ctx.drawImage(photoImages[key],x,y,size,size);ctx.restore();
@@ -277,32 +278,32 @@ function makeInvitationImage(){
     });
   }
   draw((d.hostInput||(d.languageInput==="hi"?"सपरिवार":"TOGETHER WITH THEIR FAMILIES")).toUpperCase(),435,24,plain);
-  draw(d.brideInput||"Bride",600,72);
+  draw(d.brideInput||"Bride",600,108);
   draw("&",680,42,"Georgia");
-  draw(d.groomInput||"Groom",760,72);
-  ctx.strokeStyle=accent;ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(300,825);ctx.lineTo(900,825);ctx.stroke();
-  draw("दो परिवारों का मिलन, दो दिलों का संगम",890,28,canvasFont("hi",true),"bold");
+  draw(d.groomInput||"Groom",760,108);
+  ctx.strokeStyle=accent;ctx.lineWidth=4;ctx.beginPath();ctx.moveTo(220,825);ctx.lineTo(980,825);ctx.stroke();
+  draw("दो परिवारों का मिलन, दो दिलों का संगम",890,38,canvasFont("hi",true),"bold");
   const occasion=d.languageInput==="hi"?(hindiOccasions[d.occasionInput]||"समारोह में"):(d.occasionInput==="Wedding"?"REQUEST THE PLEASURE OF YOUR COMPANY":"JOIN US TO CELEBRATE "+d.occasionInput.toUpperCase());
-  draw(occasion,950,22,plain);
-  draw(dateLabel(d.dateInput,d.languageInput),1020,29,plain,"bold");
-  draw(timeLabel(d.timeInput,d.languageInput),1065,24,plain);
+  draw(occasion,950,25,plain);
+  draw(dateLabel(d.dateInput,d.languageInput),1020,35,plain,"bold");
+  draw(timeLabel(d.timeInput,d.languageInput),1065,28,plain);
   const venue=(d.venueInput||(d.languageInput==="hi"?"स्थान की जानकारी शीघ्र":"VENUE TO BE ANNOUNCED")).toUpperCase();
-  ctx.font="normal 27px "+plain;
+  ctx.font="normal 28px "+plain;
   const venueLines=wrapCanvasText(ctx,venue,850,2);
   drawCanvasLines(ctx,venueLines,600,1130,36);
   let nextY=1190;
   if(d.messageInput){
-    ctx.font="normal 21px "+plain;
+    ctx.font="italic 32px Georgia";
     const lines=wrapCanvasText(ctx,d.messageInput,850,2);
     drawCanvasLines(ctx,lines,600,nextY,30);nextY+=lines.length*30+12;
   }
   if(d.rsvpInput){
     const rsvp=(d.languageInput==="hi"?"उत्तर हेतु · ":"RSVP · ")+d.rsvpInput;
-    ctx.font="normal 19px "+plain;
+    ctx.font="normal 25px "+plain;
     const lines=wrapCanvasText(ctx,rsvp,850,2);
     drawCanvasLines(ctx,lines,600,nextY,27);nextY+=lines.length*27+8;
   }
-  draw(d.languageInput==="hi"?"॥ सादर आमंत्रित ॥":"WITH LOVE & BLESSINGS",Math.min(1510,Math.max(1450,nextY+28)),21,plain);
+  draw(d.languageInput==="hi"?"॥ सादर आमंत्रित ॥":"WITH LOVE & BLESSINGS",Math.min(1510,Math.max(1450,nextY+28)),50,plain);
   addFreeWatermark(ctx);
   return canvas;
 }
@@ -310,15 +311,12 @@ function makeInvitationImage(){
 function makeInvitationBackImage(){
   const d=readData();
   const canvas=document.createElement("canvas");
-  canvas.width=1200;canvas.height=1600;
+  canvas.width=1200;canvas.height=1680;
   const ctx=canvas.getContext("2d");
-  const themes={royal:["#4b1724","#f0d69f"],floral:["#f3e5e0","#70484d"],minimal:["#eee7da","#493b34"],traditional:["#f0d49a","#71352b"],mughal:["#29483b","#f3dfb5"],pastel:["#f7e9e7","#77545d"]};
-  const [bg,ink]=themes[d.designInput]||themes.royal;
-  const defaultAccents={royal:"#c99a4b",floral:"#b77d78",minimal:"#ad8d5d",traditional:"#9e5639",mughal:"#d1ad6e",pastel:"#c68c91"};const accents={gold:defaultAccents[d.designInput]||defaultAccents.royal,rose:"#c77b83",green:"#719078",blue:"#6b98a0"};
-  const accent=accents[d.colorInput]||accents.gold;
+  ctx.scale(1,1.05);
+  const bg="#4b1724",ink="#f4dfb6",accent="#c99a4b";
   ctx.fillStyle=bg;ctx.fillRect(0,0,1200,1600);
-  drawDesignArtwork(ctx,d);
-  ctx.strokeStyle=accent;ctx.lineWidth=8;ctx.strokeRect(48,48,1104,1504);ctx.lineWidth=2;ctx.strokeRect(70,70,1060,1460);
+  ctx.strokeStyle=accent;ctx.lineWidth=4;ctx.strokeRect(35,35,1130,1530);ctx.lineWidth=3;ctx.strokeRect(56,56,1088,1488);
   ctx.textAlign="center";ctx.fillStyle=ink;
   const font=canvasFont(d.languageInput,true),plain=canvasFont(d.languageInput);
   const draw=(txt,y,size,fontFace=font,weight="normal",maxWidth=940)=>{
@@ -326,9 +324,9 @@ function makeInvitationBackImage(){
     setCanvasFont(ctx,safe,maxWidth,size,18,fontFace,weight);
     ctx.fillText(safe,600,y,maxWidth);
   };
-  draw(traditionMantras[d.traditionInput]||traditionMantras["Secular / Other"],210,28,plain);
-  draw(traditionSymbols[d.traditionInput]||"✦",290,70,"Georgia");
-  draw(d.languageInput==="hi"?"हमारे परिवार":"OUR FAMILIES",380,58);
+  draw(traditionMantras[d.traditionInput]||traditionMantras["Secular / Other"],210,36,plain);
+  draw(traditionSymbols[d.traditionInput]||"✦",290,110,"Georgia");
+  draw(d.languageInput==="hi"?"हमारे परिवार":"OUR FAMILIES",380,106);
   ctx.strokeStyle=accent;ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(300,440);ctx.lineTo(900,440);ctx.stroke();
   const names=d.relativesInput.split(/[\n,;]+/).map(name=>name.trim()).filter(Boolean);
   const list=names.length?names:["Your family names"];
