@@ -277,33 +277,33 @@ function makeInvitationImage(){
   const mantra=traditionMantras[d.traditionInput]||traditionMantras["Secular / Other"];
   draw(mantra,160,40,plain,"bold",900);
   draw(traditionSymbols[d.traditionInput]||"✦",260,116,"Georgia","normal",180);
-  draw((d.hostInput||(d.languageInput==="hi"?"सपरिवार":"TOGETHER WITH THEIR FAMILIES")).toUpperCase(),335,24,plain,"normal",820);
+  draw((d.hostInput||(d.languageInput==="hi"?"सपरिवार":"TOGETHER WITH THEIR FAMILIES")).toUpperCase(),330,23,plain,"normal",820);
   const chosenPhotoKeys=["bride","groom"].filter(key=>photoImages[key]&&photoImages[key].complete&&photoImages[key].naturalWidth);
   if(chosenPhotoKeys.length){
-    const size=chosenPhotoKeys.length===1?164:142,gap=42,total=chosenPhotoKeys.length*size+(chosenPhotoKeys.length-1)*gap;
+    const size=chosenPhotoKeys.length===1?230:200,gap=34,total=chosenPhotoKeys.length*size+(chosenPhotoKeys.length-1)*gap;
     chosenPhotoKeys.forEach((key,index)=>{
-      const x=600-total/2+index*(size+gap),y=430-size/2;
+      const x=600-total/2+index*(size+gap),y=475-size/2;
       ctx.save();ctx.beginPath();ctx.arc(x+size/2,y+size/2,size/2,0,Math.PI*2);ctx.clip();ctx.drawImage(photoImages[key],x,y,size,size);ctx.restore();
-      ctx.strokeStyle=accent;ctx.lineWidth=6;ctx.beginPath();ctx.arc(x+size/2,y+size/2,size/2+5,0,Math.PI*2);ctx.stroke();
+      ctx.strokeStyle=accent;ctx.lineWidth=8;ctx.beginPath();ctx.arc(x+size/2,y+size/2,size/2+6,0,Math.PI*2);ctx.stroke();
     });
   }
-  draw(d.brideInput||"Bride",585,96,font,"normal",800);
-  draw("&",675,42,"Georgia","normal",180);
-  draw(d.groomInput||"Groom",765,96,font,"normal",800);
-  ctx.strokeStyle=accent;ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(350,805);ctx.lineTo(850,805);ctx.stroke();
+  draw(d.brideInput||"Bride",625,92,font,"normal",800);
+  draw("&",710,40,"Georgia","normal",180);
+  draw(d.groomInput||"Groom",795,92,font,"normal",800);
+  ctx.strokeStyle=accent;ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(350,850);ctx.lineTo(850,850);ctx.stroke();
   const tagline=d.languageInput==="hi"?"दो परिवारों का मिलन, दो दिलों का संगम":"Two families united, two hearts as one.";
-  ctx.font="bold 38px "+canvasFont(d.languageInput==="hi"?"hi":"en",true);
+  ctx.font="bold 36px "+canvasFont(d.languageInput==="hi"?"hi":"en",true);
   const taglineLines=wrapCanvasText(ctx,tagline,780,2);
-  drawCanvasLines(ctx,taglineLines,600,875,48);
+  drawCanvasLines(ctx,taglineLines,600,915,46);
   const occasion=d.languageInput==="hi"?(hindiOccasions[d.occasionInput]||"समारोह में"):(d.occasionInput==="Wedding"?"REQUEST THE PLEASURE OF YOUR COMPANY":"JOIN US TO CELEBRATE "+d.occasionInput.toUpperCase());
-  draw(occasion,985,25,plain,"normal",820);
-  draw(dateLabel(d.dateInput,d.languageInput),1060,35,plain,"bold",820);
-  draw(timeLabel(d.timeInput,d.languageInput),1120,28,plain,"normal",820);
+  draw(occasion,1010,24,plain,"normal",820);
+  draw(dateLabel(d.dateInput,d.languageInput),1080,34,plain,"bold",820);
+  draw(timeLabel(d.timeInput,d.languageInput),1140,27,plain,"normal",820);
   const venue=(d.venueInput||(d.languageInput==="hi"?"स्थान की जानकारी शीघ्र":"VENUE TO BE ANNOUNCED")).toUpperCase();
-  ctx.font="normal 27px "+plain;
+  ctx.font="normal 26px "+plain;
   const venueLines=wrapCanvasText(ctx,venue,800,2);
-  drawCanvasLines(ctx,venueLines,600,1190,36);
-  let nextY=1270;
+  drawCanvasLines(ctx,venueLines,600,1210,35);
+  let nextY=1280;
   if(d.messageInput){
     ctx.font="italic 29px "+font;
     const lines=wrapCanvasText(ctx,d.messageInput,790,2);

@@ -719,3 +719,12 @@ body.editor-open{overflow:hidden}
  .preview-photos .preview-photo{width:62px;height:62px;flex-basis:62px}
  .export-names{margin:9px 0 7px}
 }
+
+
+/* v34: larger, recognisable couple portraits and a separate family host line */
+.export-host{display:block;position:relative;z-index:3;width:100%;max-width:88%;margin:8px auto 18px;padding:0 12px;text-align:center;line-height:1.7;overflow-wrap:anywhere;}
+.preview-photos{display:flex;position:relative;z-index:2;justify-content:center;align-items:center;gap:12px;margin:8px auto 18px;min-height:0;}
+ .preview-photos .preview-photo{width:104px;height:104px;flex:0 0 104px;max-width:none;border-width:4px;object-fit:cover;}
+.export-names{position:relative;z-index:2;margin:14px 0 12px;}
+@media(max-width:760px){.export-host{max-width:90%;margin:6px auto 15px;font-size:7px;letter-spacing:.8px;line-height:1.7;}.preview-photos{gap:9px;margin:6px auto 15px;}.preview-photos .preview-photo{width:86px;height:86px;flex-basis:86px;border-width:3px;}.export-names{margin:12px 0 9px;}}
+@media(max-width:390px){.preview-photos .preview-photo{width:80px;height:80px;flex-basis:80px;}}
