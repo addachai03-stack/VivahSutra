@@ -964,3 +964,24 @@ body.editor-open{overflow:hidden}
     flex: initial !important;
   }
 }
+
+/* v43: honor the requested one-design-per-row gallery on iPhone. */
+@media screen and (max-width: 800px) {
+  html body #collections #templateGrid {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+    grid-auto-flow: row !important;
+    width: 100% !important;
+    gap: 14px !important;
+    overflow: visible !important;
+  }
+  html body #collections #templateGrid > article.template-card {
+    display: block !important;
+    grid-column: 1 / -1 !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 680px !important;
+    margin: 0 auto !important;
+    flex: none !important;
+  }
+}
