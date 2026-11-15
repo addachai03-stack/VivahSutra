@@ -10,7 +10,6 @@ const weddingNotes={
   Reception:["आपकी मौजूदगी हमारी शाम को खास बनाएगी।","मिलें, मुस्कुराएँ और खुशियाँ साथ मनाएँ।","एक यादगार शाम, अपनों के नाम।"],
   "Save the Date":["तारीख़ याद रखें — खुशियों का दिन आने वाला है।","एक खास दिन, एक प्यारा निमंत्रण।","हमारी नई कहानी की तारीख़ नोट कर लें।"]
 };
-let weddingNoteTimer;
 let weddingNoteIndex=0;
 function updateWeddingNote(reset=true){
   const occasion=$("occasionInput").value||"Wedding";
@@ -18,11 +17,6 @@ function updateWeddingNote(reset=true){
   if(reset)weddingNoteIndex=0;
   const target=$("weddingNote");
   if(target)target.textContent=lines[weddingNoteIndex%lines.length];
-  clearInterval(weddingNoteTimer);
-  weddingNoteTimer=setInterval(()=>{
-    weddingNoteIndex=(weddingNoteIndex+1)%lines.length;
-    if(target)target.textContent=lines[weddingNoteIndex];
-  },4200);
 }
 
 const fields=["languageInput","occasionInput","traditionInput","brideInput","groomInput","hostInput","relativesInput","dateInput","timeInput","venueInput","rsvpInput","messageInput","designInput","colorInput"];
@@ -99,7 +93,7 @@ function refreshPreview(){
   $("backFooter").textContent=hindi?"आपकी उपस्थिति हमारे लिए अनमोल है":"WE LOOK FORWARD TO CELEBRATING WITH YOU";
   const flipped=$("flipCard").classList.contains("is-flipped");
   $("cardSideLabel").textContent=hindi?(flipped?"अंदर · परिवार के नाम":"मुखपृष्ठ"):(flipped?"Inside · Family names":"Front cover");
-  $("flipCardButton").textContent=hindi?(flipped?"बंद करें / सामने देखें ↻":"खोलें / पीछे देखें ↻"):(flipped?"Fold / Flip to front ↻":"Open / Flip card ↻");
+  $("flipCardButton").textContent=hindi?(flipped?"सामने देखें":"पीछे देखें"):(flipped?"Show front":"Flip card");
   $("previewMantra").textContent=traditionMantras[d.traditionInput]||traditionMantras["Secular / Other"];
   $("previewTraditionSymbol").textContent=traditionSymbols[d.traditionInput]||"✦";
   $("exportCard").className="export-card design-"+d.designInput+" accent-"+d.colorInput;
@@ -245,6 +239,35 @@ function wrapCanvasText(ctx,text,maxWidth,maxLines=2){
 function drawCanvasLines(ctx,lines,x,y,lineGap){
   lines.forEach((line,index)=>ctx.fillText(line,x,y+index*lineGap));
 }
+function setCanvasFont(ctx,text,maxWidth,startSize,minSize=20,font=canvasFont(readData().languageInput,true),weight="normal"){
+  let size=startSize;
+  do{
+    ctx.font=weight+" "+size+"px "+font;
+    if(ctx.measureText(text).width<=maxWidth||size<=minSize)break;
+    size-=2;
+  }while(size>=minSize);
+  return size;
+}
+function wrapCanvasText(ctx,text,maxWidth,maxLines=2){
+  const words=String(text||"").trim().split(/\s+/).filter(Boolean);
+  if(!words.length)return [];
+  const lines=[];let line="";
+  words.forEach(word=>{
+    const candidate=line?line+" "+word:word;
+    if(line&&ctx.measureText(candidate).width>maxWidth&&lines.length<maxLines-1){lines.push(line);line=word;}
+    else if(!line&&ctx.measureText(word).width>maxWidth){
+      let chunk="";
+      for(const char of word){if(chunk&&ctx.measureText(chunk+char).width>maxWidth){lines.push(chunk);chunk=char;}else chunk+=char;}
+      line=chunk;
+    }else line=candidate;
+  });
+  if(line)lines.push(line);
+  if(lines.length>maxLines){lines.length=maxLines;lines[maxLines-1]=lines[maxLines-1].replace(/[.…]*$/,"")+"…";}
+  return lines;
+}
+function drawCanvasLines(ctx,lines,x,y,lineGap){
+  lines.forEach((line,index)=>ctx.fillText(line,x,y+index*lineGap));
+}
 function makeInvitationImage(){
   const d=readData();
   const canvas=document.createElement("canvas");
@@ -256,7 +279,6 @@ function makeInvitationImage(){
   const accent=accents[d.colorInput]||accents.gold;
   ctx.fillStyle=bg;ctx.fillRect(0,0,1200,1600);
   ctx.strokeStyle=accent;ctx.lineWidth=8;ctx.strokeRect(48,48,1104,1504);ctx.lineWidth=2;ctx.strokeRect(70,70,1060,1460);
-  drawTemplateAsset(ctx,d.designInput);
   ctx.textAlign="center";ctx.fillStyle=ink;
   const font=canvasFont(d.languageInput,true),plain=canvasFont(d.languageInput);
   const draw=(txt,y,size,fontFace=font,weight="normal",maxWidth=960)=>{
@@ -317,7 +339,6 @@ function makeInvitationBackImage(){
   const accent=accents[d.colorInput]||accents.gold;
   ctx.fillStyle=bg;ctx.fillRect(0,0,1200,1600);
   ctx.strokeStyle=accent;ctx.lineWidth=8;ctx.strokeRect(48,48,1104,1504);ctx.lineWidth=2;ctx.strokeRect(70,70,1060,1460);
-  drawTemplateAsset(ctx,d.designInput);
   ctx.textAlign="center";ctx.fillStyle=ink;
   const font=canvasFont(d.languageInput,true),plain=canvasFont(d.languageInput);
   const draw=(txt,y,size,fontFace=font,weight="normal",maxWidth=940)=>{
