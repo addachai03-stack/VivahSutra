@@ -124,7 +124,25 @@ function waitForSelectedPhotos(){
   });
   return Promise.all(pending);
 }
-function waitForInvitationAssets(){return Promise.all([waitForSelectedPhotos(),document.fonts?.ready||Promise.resolve()]);}
+const designArtworkPaths={royal:"./assets/rajwada-royale.svg",floral:"./assets/garden-of-love.svg",minimal:"./assets/modern-heirloom.svg",traditional:"./assets/mangal-patrika.svg",mughal:"./assets/mughal-garden.svg",pastel:"./assets/pastel-bloom.svg"};
+const designArtworkCache={};
+function waitForDesignArtwork(){
+  const key=readData().designInput||"royal";
+  if(designArtworkCache[key])return designArtworkCache[key];
+  designArtworkCache[key]=new Promise((resolve,reject)=>{
+    const image=new Image();
+    image.onload=()=>resolve(image);
+    image.onerror=()=>{delete designArtworkCache[key];reject(new Error("Selected template artwork could not be loaded."));};
+    image.src=designArtworkPaths[key]||designArtworkPaths.royal;
+  });
+  return designArtworkCache[key];
+}
+function drawDesignArtwork(ctx,d){
+  const artwork=designArtworkCache[d.designInput||"royal"];
+  if(!artwork||!artwork.complete||!artwork.naturalWidth)return;
+  ctx.save();ctx.globalAlpha=0.3;ctx.drawImage(artwork,0,0,1200,1600);ctx.restore();
+}
+function waitForInvitationAssets(){return Promise.all([waitForSelectedPhotos(),waitForDesignArtwork(),document.fonts?.ready||Promise.resolve()]);}
 function saveDraft(){
   try{
     localStorage.setItem("vivahsutra-draft-v1",JSON.stringify({...readData(),photoData}));
@@ -235,9 +253,10 @@ function makeInvitationImage(){
   const ctx=canvas.getContext("2d");
   const themes={royal:["#4b1724","#f0d69f"],floral:["#f3e5e0","#70484d"],minimal:["#eee7da","#493b34"],traditional:["#f0d49a","#71352b"],mughal:["#29483b","#f3dfb5"],pastel:["#f7e9e7","#77545d"]};
   const [bg,ink]=themes[d.designInput]||themes.royal;
-  const accents={gold:"#c99a4b",rose:"#b76d75",green:"#64816a",blue:"#54808a"};
+  const defaultAccents={royal:"#c99a4b",floral:"#b77d78",minimal:"#ad8d5d",traditional:"#9e5639",mughal:"#d1ad6e",pastel:"#c68c91"};const accents={gold:defaultAccents[d.designInput]||defaultAccents.royal,rose:"#c77b83",green:"#719078",blue:"#6b98a0"};
   const accent=accents[d.colorInput]||accents.gold;
   ctx.fillStyle=bg;ctx.fillRect(0,0,1200,1600);
+  drawDesignArtwork(ctx,d);
   ctx.strokeStyle=accent;ctx.lineWidth=8;ctx.strokeRect(48,48,1104,1504);ctx.lineWidth=2;ctx.strokeRect(70,70,1060,1460);
   ctx.textAlign="center";ctx.fillStyle=ink;
   const font=canvasFont(d.languageInput,true),plain=canvasFont(d.languageInput);
@@ -295,9 +314,10 @@ function makeInvitationBackImage(){
   const ctx=canvas.getContext("2d");
   const themes={royal:["#4b1724","#f0d69f"],floral:["#f3e5e0","#70484d"],minimal:["#eee7da","#493b34"],traditional:["#f0d49a","#71352b"],mughal:["#29483b","#f3dfb5"],pastel:["#f7e9e7","#77545d"]};
   const [bg,ink]=themes[d.designInput]||themes.royal;
-  const accents={gold:"#c99a4b",rose:"#b76d75",green:"#64816a",blue:"#54808a"};
+  const defaultAccents={royal:"#c99a4b",floral:"#b77d78",minimal:"#ad8d5d",traditional:"#9e5639",mughal:"#d1ad6e",pastel:"#c68c91"};const accents={gold:defaultAccents[d.designInput]||defaultAccents.royal,rose:"#c77b83",green:"#719078",blue:"#6b98a0"};
   const accent=accents[d.colorInput]||accents.gold;
   ctx.fillStyle=bg;ctx.fillRect(0,0,1200,1600);
+  drawDesignArtwork(ctx,d);
   ctx.strokeStyle=accent;ctx.lineWidth=8;ctx.strokeRect(48,48,1104,1504);ctx.lineWidth=2;ctx.strokeRect(70,70,1060,1460);
   ctx.textAlign="center";ctx.fillStyle=ink;
   const font=canvasFont(d.languageInput,true),plain=canvasFont(d.languageInput);
