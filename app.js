@@ -10,7 +10,6 @@ const weddingNotes={
   Reception:["आपकी मौजूदगी हमारी शाम को खास बनाएगी।","मिलें, मुस्कुराएँ और खुशियाँ साथ मनाएँ।","एक यादगार शाम, अपनों के नाम।"],
   "Save the Date":["तारीख़ याद रखें — खुशियों का दिन आने वाला है।","एक खास दिन, एक प्यारा निमंत्रण।","हमारी नई कहानी की तारीख़ नोट कर लें।"]
 };
-let weddingNoteTimer;
 let weddingNoteIndex=0;
 function updateWeddingNote(reset=true){
   const occasion=$("occasionInput").value||"Wedding";
@@ -18,11 +17,6 @@ function updateWeddingNote(reset=true){
   if(reset)weddingNoteIndex=0;
   const target=$("weddingNote");
   if(target)target.textContent=lines[weddingNoteIndex%lines.length];
-  clearInterval(weddingNoteTimer);
-  weddingNoteTimer=setInterval(()=>{
-    weddingNoteIndex=(weddingNoteIndex+1)%lines.length;
-    if(target)target.textContent=lines[weddingNoteIndex];
-  },4200);
 }
 
 const fields=["languageInput","occasionInput","traditionInput","brideInput","groomInput","hostInput","relativesInput","dateInput","timeInput","venueInput","rsvpInput","messageInput","designInput","colorInput"];
@@ -99,7 +93,7 @@ function refreshPreview(){
   $("backFooter").textContent=hindi?"आपकी उपस्थिति हमारे लिए अनमोल है":"WE LOOK FORWARD TO CELEBRATING WITH YOU";
   const flipped=$("flipCard").classList.contains("is-flipped");
   $("cardSideLabel").textContent=hindi?(flipped?"अंदर · परिवार के नाम":"मुखपृष्ठ"):(flipped?"Inside · Family names":"Front cover");
-  $("flipCardButton").textContent=hindi?(flipped?"बंद करें / सामने देखें ↻":"खोलें / पीछे देखें ↻"):(flipped?"Fold / Flip to front ↻":"Open / Flip card ↻");
+  $("flipCardButton").textContent=hindi?(flipped?"सामने देखें":"पीछे देखें"):(flipped?"Show front":"Flip card");
   $("previewMantra").textContent=traditionMantras[d.traditionInput]||traditionMantras["Secular / Other"];
   $("previewTraditionSymbol").textContent=traditionSymbols[d.traditionInput]||"✦";
   $("exportCard").className="export-card design-"+d.designInput+" accent-"+d.colorInput;
@@ -256,7 +250,6 @@ function makeInvitationImage(){
   const accent=accents[d.colorInput]||accents.gold;
   ctx.fillStyle=bg;ctx.fillRect(0,0,1200,1600);
   ctx.strokeStyle=accent;ctx.lineWidth=8;ctx.strokeRect(48,48,1104,1504);ctx.lineWidth=2;ctx.strokeRect(70,70,1060,1460);
-  drawTemplateAsset(ctx,d.designInput);
   ctx.textAlign="center";ctx.fillStyle=ink;
   const font=canvasFont(d.languageInput,true),plain=canvasFont(d.languageInput);
   const draw=(txt,y,size,fontFace=font,weight="normal",maxWidth=960)=>{
@@ -317,7 +310,6 @@ function makeInvitationBackImage(){
   const accent=accents[d.colorInput]||accents.gold;
   ctx.fillStyle=bg;ctx.fillRect(0,0,1200,1600);
   ctx.strokeStyle=accent;ctx.lineWidth=8;ctx.strokeRect(48,48,1104,1504);ctx.lineWidth=2;ctx.strokeRect(70,70,1060,1460);
-  drawTemplateAsset(ctx,d.designInput);
   ctx.textAlign="center";ctx.fillStyle=ink;
   const font=canvasFont(d.languageInput,true),plain=canvasFont(d.languageInput);
   const draw=(txt,y,size,fontFace=font,weight="normal",maxWidth=940)=>{
