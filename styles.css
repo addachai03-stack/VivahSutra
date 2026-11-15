@@ -728,3 +728,10 @@ body.editor-open{overflow:hidden}
 .export-names{position:relative;z-index:2;margin:14px 0 12px;}
 @media(max-width:760px){.export-host{max-width:90%;margin:6px auto 15px;font-size:7px;letter-spacing:.8px;line-height:1.7;}.preview-photos{gap:9px;margin:6px auto 15px;}.preview-photos .preview-photo{width:86px;height:86px;flex-basis:86px;border-width:3px;}.export-names{margin:12px 0 9px;}}
 @media(max-width:390px){.preview-photos .preview-photo{width:80px;height:80px;flex-basis:80px;}}
+
+/* Family names: fit the complete list into the reverse-card preview without a scroll-only cutoff. */
+.back-card-inner{min-height:0;overflow:hidden;padding:22px 14px}
+.back-card-inner h3{margin:10px 0 12px;flex:none}
+.back-family-names{display:grid;flex:1 1 auto;min-height:0;width:100%;align-content:center;overflow:hidden;white-space:normal;font-size:14px;line-height:1.2;overflow-wrap:anywhere}
+.back-family-names>div{min-width:0;overflow-wrap:anywhere}
+.back-footer{flex:none;margin-top:8px}

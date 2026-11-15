@@ -73,7 +73,16 @@ function refreshPreview(){
   $("previewTagline").textContent=hindi?"दो परिवारों का मिलन, दो दिलों का संगम":"Two families united, two hearts as one.";
   $("previewRsvp").textContent=d.rsvpInput.trim()?(hindi?"उत्तर हेतु · ":"RSVP · ")+d.rsvpInput.trim():"";
   const familyNames=d.relativesInput.split(/[\n,;]+/).map(name=>name.trim()).filter(Boolean);
-  $("previewRelatives").replaceChildren(...(familyNames.length?familyNames.map(name=>{const line=document.createElement("div");line.textContent=name;return line;}):[Object.assign(document.createElement("div"),{textContent:hindi?"परिवार के नाम यहाँ दिखेंगे":"Your family names will appear here"})]));
+  const relativesPreview=$("previewRelatives");
+  const previewNames=familyNames.length?familyNames:[hindi?"परिवार के नाम यहाँ दिखेंगे":"Your family names will appear here"];
+  const previewColumns=previewNames.length>72?5:previewNames.length>36?4:previewNames.length>18?3:previewNames.length>8?2:1;
+  const previewRows=Math.ceil(previewNames.length/previewColumns);
+  relativesPreview.style.display="grid";
+  relativesPreview.style.gridTemplateColumns="repeat("+previewColumns+",minmax(0,1fr))";
+  relativesPreview.style.fontSize=Math.max(6,Math.min(16,300/previewRows*0.72))+"px";
+  relativesPreview.style.lineHeight="1.2";
+  relativesPreview.style.gap="2px 5px";
+  relativesPreview.replaceChildren(...previewNames.map(name=>{const line=document.createElement("div");line.textContent=name;line.style.minWidth="0";line.style.overflowWrap="anywhere";return line;}));
   $("backKicker").textContent=hindi?"॥ सपरिवार ॥":"WITH LOVE & BLESSINGS";
   $("backTitle").textContent=hindi?"हमारे परिवार":"Our Families";
   $("backFooter").textContent=hindi?"आपकी उपस्थिति हमारे लिए अनमोल है":"WE LOOK FORWARD TO CELEBRATING WITH YOU";
@@ -342,25 +351,21 @@ function makeInvitationBackImage(){
   ctx.strokeStyle=accent;ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(365,430);ctx.lineTo(835,430);ctx.stroke();
   const names=d.relativesInput.split(/[\n,;]+/).map(name=>name.trim()).filter(Boolean);
   const list=names.length?names:["Your family names"];
-  const maxVisible=12,shown=list.slice(0,maxVisible),areaTop=500,areaBottom=1390,available=areaBottom-areaTop;
-  let fontSize=31,lineHeight=43;
-  let wrapped=[];
-  for(let attempt=0;attempt<5;attempt++){
-    ctx.font="normal "+fontSize+"px "+font;
-    wrapped=shown.map(name=>wrapCanvasText(ctx,name,820,2));
-    const totalLines=wrapped.reduce((sum,lines)=>sum+Math.max(1,lines.length),0);
-    lineHeight=Math.min(43,Math.floor(available/Math.max(totalLines,1)));
-    if(lineHeight>=fontSize*1.18)break;
-    fontSize=Math.max(20,fontSize-3);
-    lineHeight=Math.max(25,Math.min(38,Math.floor(available/Math.max(totalLines,1))));
-  }
-  let y=areaTop+lineHeight/2;
-  wrapped.forEach(lines=>{
-    ctx.font="normal "+fontSize+"px "+font;
-    lines.forEach(line=>{ctx.fillText(line,600,y,840);y+=lineHeight;});
-    y+=Math.max(5,Math.floor(lineHeight*.22));
+  const areaTop=500,areaBottom=1390,available=areaBottom-areaTop;
+  const columns=list.length>100?5:list.length>60?4:list.length>24?3:list.length>8?2:1;
+  const rows=Math.ceil(list.length/columns);
+  const cellWidth=840/columns;
+  const lineHeight=available/Math.max(rows,1);
+  const fontSize=Math.max(9,Math.min(30,lineHeight*.68));
+  ctx.textAlign="center";ctx.textBaseline="middle";ctx.fillStyle=ink;
+  list.forEach((name,index)=>{
+    const column=Math.floor(index/rows);
+    const row=index%rows;
+    const x=180+cellWidth*(column+.5);
+    const y=areaTop+lineHeight*(row+.5);
+    setCanvasFont(ctx,name,cellWidth-14,fontSize,8,font,"normal");
+    ctx.fillText(name,x,y,cellWidth-14);
   });
-  if(list.length>maxVisible)draw(d.languageInput==="hi"?"और "+(list.length-maxVisible)+" सदस्य":"and "+(list.length-maxVisible)+" more family members",Math.min(1450,y+10),22,plain,"normal",800);
   draw(d.languageInput==="hi"?"आपकी उपस्थिति हमारे लिए अनमोल है":"WE LOOK FORWARD TO CELEBRATING WITH YOU",1540,19,plain,"normal",850);
   addFreeWatermark(ctx);
   return canvas;
