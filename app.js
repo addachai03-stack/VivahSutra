@@ -239,35 +239,6 @@ function wrapCanvasText(ctx,text,maxWidth,maxLines=2){
 function drawCanvasLines(ctx,lines,x,y,lineGap){
   lines.forEach((line,index)=>ctx.fillText(line,x,y+index*lineGap));
 }
-function setCanvasFont(ctx,text,maxWidth,startSize,minSize=20,font=canvasFont(readData().languageInput,true),weight="normal"){
-  let size=startSize;
-  do{
-    ctx.font=weight+" "+size+"px "+font;
-    if(ctx.measureText(text).width<=maxWidth||size<=minSize)break;
-    size-=2;
-  }while(size>=minSize);
-  return size;
-}
-function wrapCanvasText(ctx,text,maxWidth,maxLines=2){
-  const words=String(text||"").trim().split(/\s+/).filter(Boolean);
-  if(!words.length)return [];
-  const lines=[];let line="";
-  words.forEach(word=>{
-    const candidate=line?line+" "+word:word;
-    if(line&&ctx.measureText(candidate).width>maxWidth&&lines.length<maxLines-1){lines.push(line);line=word;}
-    else if(!line&&ctx.measureText(word).width>maxWidth){
-      let chunk="";
-      for(const char of word){if(chunk&&ctx.measureText(chunk+char).width>maxWidth){lines.push(chunk);chunk=char;}else chunk+=char;}
-      line=chunk;
-    }else line=candidate;
-  });
-  if(line)lines.push(line);
-  if(lines.length>maxLines){lines.length=maxLines;lines[maxLines-1]=lines[maxLines-1].replace(/[.…]*$/,"")+"…";}
-  return lines;
-}
-function drawCanvasLines(ctx,lines,x,y,lineGap){
-  lines.forEach((line,index)=>ctx.fillText(line,x,y+index*lineGap));
-}
 function makeInvitationImage(){
   const d=readData();
   const canvas=document.createElement("canvas");
