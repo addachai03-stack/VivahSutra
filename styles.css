@@ -912,3 +912,30 @@ body.editor-open{overflow:hidden}
   .template-meta strong{font-size:11px!important}
   .template-meta small{font-size:7px!important}
 }
+
+
+/* v41: force the invitation gallery into a true two-column grid on phones.
+   The ID selector intentionally outranks legacy mobile single-column rules. */
+@media screen and (max-width:760px){
+  #templateGrid.template-grid{
+    display:grid!important;
+    grid-template-columns:repeat(2,minmax(0,1fr))!important;
+    grid-auto-flow:row!important;
+    align-items:stretch;
+    gap:12px 9px!important;
+    overflow:visible!important;
+    padding:0!important;
+  }
+  #templateGrid.template-grid>.template-card{
+    display:block!important;
+    grid-column:auto!important;
+    width:auto!important;
+    min-width:0!important;
+    max-width:none!important;
+    margin:0!important;
+    flex:none!important;
+  }
+}
+@media screen and (max-width:390px){
+  #templateGrid.template-grid{gap:10px 8px!important}
+}
