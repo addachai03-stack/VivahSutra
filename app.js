@@ -338,7 +338,7 @@ function makeInvitationBackImage(){
   draw(traditionSymbols[d.traditionInput]||"✦",245,110,"Georgia","normal",180);
   draw(d.languageInput==="hi"?"हमारे परिवार":"OUR FAMILIES",365,64,font,"normal",850);
   ctx.strokeStyle=accent;ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(365,430);ctx.lineTo(835,430);ctx.stroke();
-  const names=d.relativesInput.split(/[\\n,;]+/).map(name=>name.trim()).filter(Boolean);
+  const names=d.relativesInput.split(/[\n,;]+/).map(name=>name.trim()).filter(Boolean);
   const list=names.length?names:["Your family names"];
   const maxVisible=12,shown=list.slice(0,maxVisible),areaTop=500,areaBottom=1390,available=areaBottom-areaTop;
   let fontSize=31,lineHeight=43;
