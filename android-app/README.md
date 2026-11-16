@@ -1,5 +1,5 @@
 # VivahSutra — native Android app (Expo / React Native)
-This is a separate Android-first application. The existing GitHub Pages website in the repository root remains untouched.
+This is a separate Android-first application (Expo SDK 57 / Android API 36). The existing GitHub Pages website in the repository root remains untouched.
 
 ## Included in v1
 - Animated royal double-door entrance with a Skip Intro control (no external media needed)
