@@ -61,6 +61,7 @@ function AppContent(){
   const [drafts,setDrafts]=useState([]);
   const [loaded,setLoaded]=useState(false);
   const [busy,setBusy]=useState(false);
+  const [hasUnsavedEdits,setHasUnsavedEdits]=useState(false);
   
   const shot=useRef(null);
   const listRef=useRef(null);
@@ -70,16 +71,23 @@ function AppContent(){
     finally{setLoaded(true);}
   })();},[]);
   useEffect(()=>{const subscription=BackHandler.addEventListener('hardwareBackPress',()=>{if(intro){setIntro(false);return true;}if(tab!=='home'){setTab('home');return true;}return false;});return()=>subscription.remove();},[tab,intro]);
-  const editField=(field,value)=>setInvite(p=>({...p,[field]:value}));
-  const newInvite=(designId='rajwada')=>{setInvite(makeNew(designId));setSide('front');setTab('editor');};
-  const editSaved=(data)=>{setInvite({...makeNew(),...data});setSide('front');setTab('editor');};
+  const editField=(field,value)=>{setHasUnsavedEdits(true);setInvite(p=>({...p,[field]:value}));};
+  const confirmDiscard=(proceed)=>{
+    if(!hasUnsavedEdits){proceed();return;}
+    Alert.alert('Unsaved changes','Starting another invitation will discard your unsaved edits.',[
+      {text:'Keep editing',style:'cancel',onPress:()=>setTab('editor')},
+      {text:'Discard changes',style:'destructive',onPress:proceed}
+    ]);
+  };
+  const newInvite=(designId='rajwada')=>confirmDiscard(()=>{setInvite(makeNew(designId));setHasUnsavedEdits(false);setSide('front');setTab('editor');});
+  const editSaved=(data)=>confirmDiscard(()=>{setInvite({...makeNew(),...data});setHasUnsavedEdits(false);setSide('front');setTab('editor');});
   const save=async()=>{
     if(!loaded){Alert.alert('Loading drafts','Your saved invitations are still loading. Please try again.');return;}
     if(!invite.bride?.trim()||!invite.groom?.trim()){Alert.alert('Names required','Add both names before saving your invitation.');return;}
     const id=invite.id||nowId();
     const entry={...invite,id,createdAt:invite.createdAt||new Date().toISOString(),updatedAt:new Date().toISOString()};
     const next=[entry,...drafts.filter(d=>d.id!==id)];
-    try{await AsyncStorage.setItem(KEY,JSON.stringify(next));setDrafts(next);setInvite(entry);Alert.alert('Invitation saved','Your draft is saved privately on this device.');}
+    try{await AsyncStorage.setItem(KEY,JSON.stringify(next));setDrafts(next);setInvite(entry);setHasUnsavedEdits(false);Alert.alert('Invitation saved','Your draft is saved privately on this device.');}
     catch(e){Alert.alert('Could not save','Please check your device storage and try again.');}
   };
   const remove=(id)=>Alert.alert('Delete invitation?','This deletes this local draft and cannot be undone.',[
