@@ -114,15 +114,15 @@ function AppContent(){
     }catch(e){Alert.alert('Export failed','Could not create the PNG. Please try again.');}
     finally{setBusy(false);}
   };
-  const nav=(to)=>{setTab(to);if(to==='editor')setSide('front');};
+  const nav=(to)=>{setTab(to);if(to==='editor')setSide('front');if(to==='designs')setDesignFilter('All');};
   const categories=['All','Royal','Floral','Traditional','Modern'];
   const filtered=designFilter==='All'?DESIGNS:DESIGNS.filter(d=>d.category===designFilter);
   const Field=({title,field,placeholder,multiline=false})=><View style={{marginBottom:14}}><Text style={s.fieldLabel}>{title}</Text><TextInput value={invite[field]||''} onChangeText={v=>editField(field,v)} placeholder={placeholder||title} placeholderTextColor="#817466" style={[s.field,multiline&&{height:91,textAlignVertical:'top'}]} multiline={multiline} maxLength={multiline?500:140} selectionColor={C.gold}/></View>;
   const Pill=({label,selected,onPress})=><Pressable accessibilityRole="button" onPress={onPress} style={[s.pill,selected&&s.pillSelected]}><Text style={[s.pillText,selected&&{color:C.bg}]}>{label}</Text></Pressable>;
   const Header=()=> <View style={s.header}><View><Text style={s.brand}>❦  VivahSutra</Text><Small style={{letterSpacing:2.5,fontSize:8,color:C.gold,marginTop:4}}>THE ART OF INVITING</Small></View><Pressable accessibilityRole="button" onPress={()=>newInvite()} style={s.headerAdd}><Text style={{fontSize:19,color:C.gold}}>＋</Text></Pressable></View>;
-  const DesignTile=({design,grid=false})=><Pressable accessibilityRole="button" onPress={()=>newInvite(design.id)} style={[s.tile,grid&&{width:'48%',flexGrow:0,flexShrink:0}]}>
-    <View style={{alignItems:'center',paddingTop:12,paddingBottom:4}}><InvitationCard data={{...NEW_INVITE,designId:design.id}} compact/></View>
-    <View style={{padding:12}}><Text style={{color:C.soft,fontFamily:'serif',fontSize:16}}>{design.name}</Text><Small style={{marginTop:4}}>{design.subtitle}</Small><Text style={{color:C.gold,fontSize:10,fontWeight:'800',marginTop:12}}>CUSTOMISE  ↗</Text></View>
+  const DesignTile=({design,grid=false})=><Pressable accessibilityRole="button" onPress={()=>newInvite(design.id)} style={[s.tile,grid&&{width:'100%',flexGrow:0,flexShrink:0,flexDirection:'row',alignItems:'center'}]}>
+    <View style={{alignItems:'center',paddingVertical:12,paddingLeft:12}}><InvitationCard data={{...NEW_INVITE,designId:design.id}} compact/></View>
+    <View style={{padding:12,flex:1}}><Text style={{color:C.soft,fontFamily:'serif',fontSize:16,flexShrink:1}}>{design.name}</Text><Small style={{marginTop:4}}>{design.subtitle}</Small><Text style={{color:C.gold,fontSize:10,fontWeight:'800',marginTop:12}}>CUSTOMISE  ↗</Text></View>
   </Pressable>;
   const Home=()=> <View>
     <View style={s.homeWelcome}><Label>A CELEBRATION STARTS HERE</Label><Text style={s.bigTitle}>Your forever,{'\n'}<Text style={{color:C.gold,fontStyle:'italic'}}>beautifully invited.</Text></Text><Small style={{fontSize:13,lineHeight:21,marginTop:16}}>Create beautiful Indian wedding invitations with your story, your style and your loved ones.</Small><GoldButton title="CREATE MY INVITATION    ↗" onPress={()=>newInvite()} style={{marginTop:23,alignSelf:'flex-start'}}/></View>
@@ -135,7 +135,7 @@ function AppContent(){
   </View>;
   const DesignsScreen=()=> <View><FancyTitle top="THE COLLECTION" title="Six ways to say forever." subtitle="Every invitation starts with a carefully crafted design. Choose one to personalise."/>
     <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{marginHorizontal:-18,marginBottom:16}} contentContainerStyle={{paddingHorizontal:18,gap:7}}>{categories.map(c=><Pill key={c} label={c} selected={designFilter===c} onPress={()=>setDesignFilter(c)}/>)}</ScrollView>
-    <View style={s.grid}>{filtered.map(d=><DesignTile key={d.id} design={d} grid/>)}</View>
+    <Small style={{marginBottom:12,color:C.gold}}>{filtered.length} of {DESIGNS.length} designs available</Small><View style={s.grid}>{filtered.map(d=><DesignTile key={d.id} design={d} grid/>)}</View>{filtered.length===0?<Section><Small>No designs match this filter.</Small><GoldButton title="SHOW ALL DESIGNS" onPress={()=>setDesignFilter('All')}/></Section>:null}
   </View>;
   const Editor=()=> <View>
     <FancyTitle top="VIVAHSUTRA STUDIO" title="Make it your own." subtitle="Your details stay on this device until you choose to share."/>
