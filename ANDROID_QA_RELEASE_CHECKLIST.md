@@ -1,11 +1,11 @@
 # VivahSutra Android — Device QA and APPLIQ release gate
 
-Status: **NOT YET TESTED ON A PHYSICAL ANDROID DEVICE**. A GitHub Actions compile is not proof of functional correctness.
+Status: **PARTIALLY TESTED ON A PHYSICAL ANDROID DEVICE**. User-supplied Android phone footage shows the app running and navigating among screens, but does not establish that all functions pass. GitHub Actions checks and an APK build are not substitutes for on-device tests.
 
 ## APK build
 - [ ] GitHub Actions `Android APK — VivahSutra` succeeds on the latest PR commit
 - [ ] Artifact `VivahSutra-Android-Test-APK` exists and is nonempty
-- [ ] Install on an Android phone (test-only APK, not a production signed release)
+- [x] Install an earlier test APK on an Android phone (recorded footage provided; latest build needs reinstall)
 - [ ] Cold launch and reopen without crashes
 
 ## Royal entrance
@@ -15,7 +15,7 @@ Status: **NOT YET TESTED ON A PHYSICAL ANDROID DEVICE**. A GitHub Actions compil
 - [ ] Android Back does not trap the user in the intro
 
 ## Core screens
-- [ ] Home, Designs, Create and Saved tabs open and respond
+- [x] Home, Designs, Create and Saved screens shown during earlier phone test (current build still needs retest)
 - [ ] All six templates appear and are selectable
 - [ ] Filter Royal / Floral / Traditional / Modern works
 - [ ] No clipped cards on a narrow Android phone
@@ -52,3 +52,10 @@ Status: **NOT YET TESTED ON A PHYSICAL ANDROID DEVICE**. A GitHub Actions compil
 - Existing website localStorage drafts are not migrated into the app.
 - Local drafts are not cloud-backed; clearing app data or uninstalling can erase them.
 - iOS is out of scope for this Android-first PR.
+
+## Latest source-level QA improvements (not yet device-verified)
+- Preview can scroll horizontally if the 300px invitation does not fit in a narrow editor panel.
+- Save/Share UI states explicitly that only the selected front or back side is exported.
+- Saving is blocked until the existing local drafts have finished loading, preventing an early write from overwriting data.
+- Six-template smoke checks run as part of the Android APK workflow.
+- Green display lines are also visible on the Android launcher's home screen in the user-provided footage, so the footage does not support treating those lines as an app-only rendering defect.
