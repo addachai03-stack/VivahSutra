@@ -38,8 +38,8 @@ export function InvitationCard({data=NEW_INVITE, compact=false, back=false, wate
   const accent=ACCENTS.find(x=>x.id===data.accent)?.color||design.line;
   const factor=compact?0.58:1;
   const ink=design.ink;
-  const h=compact?244:440, w=compact?166:300;
-  const sidePadding=compact?11:24;
+  const h=compact?221:440, w=compact?148:300;
+  const sidePadding=compact?8:24;
   const names=String(data.bride||'Bride')+'  &  '+String(data.groom||'Groom');
   const isHindi=data.language==='hi';
   const mark=isHindi?'शुभ विवाह':(data.occasion||'Wedding').toUpperCase();
