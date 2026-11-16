@@ -74,6 +74,7 @@ function AppContent(){
   const newInvite=(designId='rajwada')=>{setInvite(makeNew(designId));setSide('front');setTab('editor');};
   const editSaved=(data)=>{setInvite({...makeNew(),...data});setSide('front');setTab('editor');};
   const save=async()=>{
+    if(!loaded){Alert.alert('Loading drafts','Your saved invitations are still loading. Please try again.');return;}
     if(!invite.bride?.trim()||!invite.groom?.trim()){Alert.alert('Names required','Add both names before saving your invitation.');return;}
     const id=invite.id||nowId();
     const entry={...invite,id,createdAt:invite.createdAt||new Date().toISOString(),updatedAt:new Date().toISOString()};
@@ -151,7 +152,7 @@ function AppContent(){
       </ScrollView>
       <Small style={{marginTop:12,textAlign:'center'}}>Export saves the selected {side} side only · FREE BETA watermark included</Small>
       <View style={{flexDirection:'row',gap:9,marginTop:15,width:'100%'}}><GoldButton title={busy?'EXPORTING…':side==='front'?'SAVE FRONT PNG':'SAVE BACK PNG'} disabled={busy} onPress={()=>capture('save')} style={{flex:1}}/><GoldButton title="SHARE PNG" disabled={busy} onPress={()=>capture('share')} outline style={{flex:1}}/></View>
-    </Section><GoldButton title={invite.id?'UPDATE SAVED INVITATION':'SAVE MY INVITATION'} onPress={save} style={{marginBottom:18}}/><Small style={{textAlign:'center',marginBottom:20}}>Private local drafts · No payment or account required</Small>
+    </Section><GoldButton title={!loaded?'LOADING SAVED DRAFTS…':invite.id?'UPDATE SAVED INVITATION':'SAVE MY INVITATION'} disabled={!loaded} onPress={save} style={{marginBottom:18}}/><Small style={{textAlign:'center',marginBottom:20}}>Private local drafts · No payment or account required</Small>
   </View>;
   const Saved=()=> <View><FancyTitle top="YOUR CREATIONS" title="My invitations" subtitle="Saved on this device. Open any draft to edit or export."/>
     {!loaded?<ActivityIndicator color={C.gold}/>:drafts.length===0?<Section style={{alignItems:'center',paddingVertical:37}}><Text style={{fontSize:45,color:C.gold,marginBottom:12}}>✦</Text><Text style={[s.heading,{fontSize:23,textAlign:'center'}]}>Your story starts here</Text><Small style={{textAlign:'center',marginVertical:14}}>Create your first invitation to see it here.</Small><GoldButton title="CREATE INVITATION" onPress={()=>newInvite()}/></Section>:drafts.map(d=><Section key={d.id} style={{flexDirection:'row',gap:13,alignItems:'center'}}><View style={{width:42,height:64,borderRadius:7,backgroundColor:DESIGNS.find(x=>x.id===d.designId)?.background[0]||C.panel2,borderColor:C.gold,borderWidth:1,alignItems:'center',justifyContent:'center'}}><Text style={{color:C.gold,fontSize:23}}>❦</Text></View><View style={{flex:1}}><Text style={{fontSize:15,color:C.soft,fontFamily:'serif'}} numberOfLines={1}>{d.bride} & {d.groom}</Text><Small>{DESIGNS.find(x=>x.id===d.designId)?.name||'Invitation'} · {d.occasion}</Small><View style={{flexDirection:'row',gap:18,marginTop:12}}><Pressable onPress={()=>editSaved(d)}><Text style={{color:C.gold,fontSize:12,fontWeight:'800'}}>OPEN / EDIT</Text></Pressable><Pressable onPress={()=>remove(d.id)}><Text style={{color:C.rose,fontSize:12,fontWeight:'800'}}>DELETE</Text></Pressable></View></View></Section>)}
