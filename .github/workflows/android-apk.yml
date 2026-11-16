@@ -32,13 +32,15 @@ jobs:
         with:
           distribution: temurin
           java-version: '17'
-      - uses: android-actions/setup-android@v3
-      - name: Install Android 37
-        run: sdkmanager "platforms;android-37" "build-tools;37.0.0"
+      - name: Configure preinstalled Android SDK
+        run: |
+          echo "ANDROID_HOME=$ANDROID_HOME"
+          yes | sdkmanager --licenses > /dev/null || true
+          sdkmanager "platforms;android-37" "build-tools;37.0.0"
       - name: Install app dependencies
         run: npm install --no-audit --no-fund
-      - name: Validate Expo dependencies
-        run: npx expo install --check
+      - name: Align Expo dependency versions
+        run: npx expo install --fix
       - name: Generate native Android project
         run: npx expo prebuild --platform android --non-interactive --no-install
       - name: Build standalone APK for device testing
