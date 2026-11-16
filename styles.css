@@ -1045,3 +1045,101 @@ body.editor-open{overflow:hidden}
   #collections #templateGrid .template-art strong{font-size:25px!important}
   #collections #templateGrid .template-art .mini-names{font-size:15px!important}
 }
+
+
+/* v47: premium finishing details across all six invitation designs. */
+#collections #templateGrid .template-art{
+  isolation:isolate;
+  border-radius:5px;
+  box-shadow:0 12px 26px rgba(49,25,20,.12),inset 0 0 0 1px rgba(255,255,255,.16);
+  transition:transform .25s ease,box-shadow .25s ease;
+}
+#collections #templateGrid .template-card:hover .template-art{
+  transform:translateY(-3px);
+  box-shadow:0 17px 32px rgba(49,25,20,.17),inset 0 0 0 1px rgba(255,255,255,.2);
+}
+#collections #templateGrid .template-art::before{
+  content:"";
+  position:absolute;
+  inset:10px;
+  z-index:0;
+  pointer-events:none;
+  border:1px solid currentColor;
+  opacity:.38;
+}
+#collections #templateGrid .template-art::after{
+  position:absolute;
+  z-index:2;
+  top:13px;
+  right:17px;
+  pointer-events:none;
+  font:17px Georgia,serif;
+  opacity:.72;
+}
+#collections #templateGrid .template-art>*{position:relative;z-index:1}
+#collections #templateGrid .art-royal{
+  background:linear-gradient(145deg,#682637 0%,#451522 58%,#35101b 100%);
+  border:7px double #d7b36f;
+  outline:1px solid #e5c98d;
+  outline-offset:-13px;
+  color:#f8e4b8;
+}
+#collections #templateGrid .art-royal::before{inset:13px;border:1px solid #e6c783;outline:1px solid #e6c783;outline-offset:3px;opacity:.7}
+#collections #templateGrid .art-royal::after{content:"✦";color:#f0d18d}
+#collections #templateGrid .art-royal strong{text-shadow:0 2px 12px rgba(0,0,0,.2);letter-spacing:.3px}
+#collections #templateGrid .art-floral{
+  background:linear-gradient(145deg,#f8eee8,#ead8d0);
+  border:1px solid #d8b9ae;
+  color:#70464c;
+}
+#collections #templateGrid .art-floral::before{inset:9px;border:1px solid #b9827b;border-radius:42% 42% 3px 3px;opacity:.58}
+#collections #templateGrid .art-floral::after{content:"❀";color:#a96f70;font-size:22px;top:12px;right:15px}
+#collections #templateGrid .art-floral strong{letter-spacing:-.5px;text-shadow:0 1px 0 rgba(255,255,255,.6)}
+#collections #templateGrid .art-minimal{
+  background:linear-gradient(145deg,#f3ecdf,#e4d9c7);
+  border:1px solid #cdbb9e;
+  color:#4d3a31;
+}
+#collections #templateGrid .art-minimal::before{inset:12px;border:1px solid #aa8956;opacity:.68}
+#collections #templateGrid .art-minimal::after{content:"✧";color:#a77c42;font-size:21px;top:12px;right:15px}
+#collections #templateGrid .art-minimal strong{letter-spacing:1px}
+#collections #templateGrid .art-traditional{
+  background:linear-gradient(145deg,#f5dba7,#e6bd78);
+  border:7px double #a34d34;
+  outline:1px solid #b97845;
+  outline-offset:-13px;
+  color:#702c25;
+}
+#collections #templateGrid .art-traditional::before{inset:13px;border:1px solid #a34d34;outline:1px solid #a34d34;outline-offset:3px;opacity:.72}
+#collections #templateGrid .art-traditional::after{content:"❖";color:#9c4d32;font-size:19px}
+#collections #templateGrid .art-traditional strong{text-shadow:0 1px rgba(255,255,255,.35)}
+#collections #templateGrid .art-mughal{
+  background:linear-gradient(145deg,#365e4b,#203e33);
+  border:7px double #d9bd7d;
+  outline:1px solid #d9bd7d;
+  outline-offset:-13px;
+  color:#f6e5bd;
+}
+#collections #templateGrid .art-mughal::before{inset:13px;border:1px solid #d9bd7d;border-radius:48% 48% 2px 2px;opacity:.72}
+#collections #templateGrid .art-mughal::after{content:"✥";color:#e5c98c;font-size:18px}
+#collections #templateGrid .art-mughal strong{text-shadow:0 2px 12px rgba(0,0,0,.2)}
+#collections #templateGrid .art-pastel{
+  background:linear-gradient(145deg,#fff3ef,#f0dcda);
+  border:1px solid #d8b2b2;
+  color:#76515a;
+}
+#collections #templateGrid .art-pastel::before{inset:10px;border:1px solid #c88d93;border-radius:3px;opacity:.65}
+#collections #templateGrid .art-pastel::after{content:"✿";color:#bd858d;font-size:20px}
+#collections #templateGrid .art-pastel strong{letter-spacing:-.3px}
+@media(max-width:800px){
+  #collections #templateGrid .template-art{border-radius:4px}
+  #collections #templateGrid .template-art::before{inset:8px}
+  #collections #templateGrid .art-royal::before,
+  #collections #templateGrid .art-traditional::before,
+  #collections #templateGrid .art-mughal::before{inset:11px}
+  #collections #templateGrid .template-art::after{top:11px;right:13px}
+}
+@media(prefers-reduced-motion:reduce){
+  #collections #templateGrid .template-art{transition:none}
+  #collections #templateGrid .template-card:hover .template-art{transform:none}
+}
