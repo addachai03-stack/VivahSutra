@@ -1,5 +1,5 @@
 import React, {useEffect,useRef,useState} from 'react';
-import {ActivityIndicator, Alert, Animated, BackHandler, Easing, Image, KeyboardAvoidingView, Platform, Pressable, ScrollView, StatusBar, StyleSheet, Text, TextInput, View} from 'react-native';
+import {ActivityIndicator, Alert, Animated, BackHandler, Easing, Dimensions, Image, KeyboardAvoidingView, Platform, Pressable, ScrollView, StatusBar, StyleSheet, Text, TextInput, View} from 'react-native';
 import {SafeAreaProvider, SafeAreaView} from 'react-native-safe-area-context';
 import {LinearGradient} from 'expo-linear-gradient';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -37,8 +37,8 @@ function RoyalDoorIntro({onFinish}) {
     },750));
     return()=>{timers.current.forEach(clearTimeout);left.stopAnimation();right.stopAnimation();glow.stopAnimation();};
   },[]);
-  const moveLeft=left.interpolate({inputRange:[0,1],outputRange:['0%','-96%']});
-  const moveRight=right.interpolate({inputRange:[0,1],outputRange:['0%','96%']});
+  const moveLeft=left.interpolate({inputRange:[0,1],outputRange:[0,-Dimensions.get('window').width/2]});
+  const moveRight=right.interpolate({inputRange:[0,1],outputRange:[0,Dimensions.get('window').width/2]});
   return <View style={s.introWrap}>
     <LinearGradient colors={['#180F12','#663F26','#E7C589']} style={StyleSheet.absoluteFill}/>
     <Animated.View style={[s.introLight,{opacity:glow}]}><Text style={{color:'#FDE9BD',fontSize:44}}>✺</Text><Text style={{color:'#FFF6E3',fontSize:42,fontFamily:'serif',textAlign:'center'}}>Welcome to{ '\n' }VivahSutra</Text><Text style={{color:'#F5DDB7',letterSpacing:3,fontSize:11,marginTop:12}}>YOUR FOREVER BEGINS HERE</Text></Animated.View>
@@ -81,7 +81,7 @@ function AppContent(){
     catch(e){Alert.alert('Could not save','Please check your device storage and try again.');}
   };
   const remove=(id)=>Alert.alert('Delete invitation?','This deletes this local draft and cannot be undone.',[
-    {text:'Cancel',style:'cancelled'},
+    {text:'Cancel',style:'cancel'},
     {text:'Delete',style:'destructive',onPress:async()=>{
       const next=drafts.filter(x=>x.id!==id);
       try{await AsyncStorage.setItem(KEY,JSON.stringify(next));setDrafts(next);}
@@ -120,7 +120,7 @@ function AppContent(){
   const Field=({title,field,placeholder,multiline=false})=><View style={{marginBottom:14}}><Text style={s.fieldLabel}>{title}</Text><TextInput value={invite[field]||''} onChangeText={v=>editField(field,v)} placeholder={placeholder||title} placeholderTextColor="#817466" style={[s.field,multiline&&{height:91,textAlignVertical:'top'}]} multiline={multiline} maxLength={multiline?500:140} selectionColor={C.gold}/></View>;
   const Pill=({label,selected,onPress})=><Pressable accessibilityRole="button" onPress={onPress} style={[s.pill,selected&&s.pillSelected]}><Text style={[s.pillText,selected&&{color:C.bg}]}>{label}</Text></Pressable>;
   const Header=()=> <View style={s.header}><View><Text style={s.brand}>❦  VivahSutra</Text><Small style={{letterSpacing:2.5,fontSize:8,color:C.gold,marginTop:4}}>THE ART OF INVITING</Small></View><Pressable accessibilityRole="button" onPress={()=>newInvite()} style={s.headerAdd}><Text style={{fontSize:19,color:C.gold}}>＋</Text></Pressable></View>;
-  const DesignTile=({design})=><Pressable accessibilityRole="button" onPress={()=>newInvite(design.id)} style={s.tile}>
+  const DesignTile=({design,grid=false})=><Pressable accessibilityRole="button" onPress={()=>newInvite(design.id)} style={[s.tile,grid&&{width:'48%',flexGrow:0,flexShrink:0}]}>
     <View style={{alignItems:'center',paddingTop:12,paddingBottom:4}}><InvitationCard data={{...NEW_INVITE,designId:design.id}} compact/></View>
     <View style={{padding:12}}><Text style={{color:C.soft,fontFamily:'serif',fontSize:16}}>{design.name}</Text><Small style={{marginTop:4}}>{design.subtitle}</Small><Text style={{color:C.gold,fontSize:10,fontWeight:'800',marginTop:12}}>CUSTOMISE  ↗</Text></View>
   </Pressable>;
@@ -135,7 +135,7 @@ function AppContent(){
   </View>;
   const DesignsScreen=()=> <View><FancyTitle top="THE COLLECTION" title="Six ways to say forever." subtitle="Every invitation starts with a carefully crafted design. Choose one to personalise."/ >
     <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{marginHorizontal:-18,marginBottom:16}} contentContainerStyle={{paddingHorizontal:18,gap:7}}>{categories.map(c=><Pill key={c} label={c} selected={designFilter===c} onPress={()=>setDesignFilter(c)}/>)}</ScrollView>
-    <View style={s.grid}>{filtered.map(d=><DesignTile key={d.id} design={d}/>)}</View>
+    <View style={s.grid}>{filtered.map(d=><DesignTile key={d.id} design={d} grid/>)}</View>
   </View>;
   const Editor=()=> <View>
     <FancyTitle top="VIVAHSUTRA STUDIO" title="Make it your own." subtitle="Your details stay on this device until you choose to share."/>
@@ -155,7 +155,7 @@ function AppContent(){
     <Small style={{marginTop:15}}>These drafts are not synced to the website or to another device.</Small>
   </View>;
   const navItems=[['home','⌂','Home'],['designs','✧','Designs'],['editor','＋','Create'],['saved','▣','Saved']];
-  return <View style={{flex:1,backgroundColor:C.bg}}><StatusBar barStyle="light-content" backgroundColor={C.bg}/>
+  return <View style={{flex:1,backgroundColor:C.bg}}><StatusBar barStyle="light-content"/>
     <SafeAreaView style={{flex:1}} edges={['top','left','right']}>
       <Header/>
       <KeyboardAvoidingView style={{flex:1}} behavior={Platform.OS==='ios'?'padding':undefined}>
