@@ -133,7 +133,7 @@ function AppContent(){
     </ScrollView>
     <Section style={{marginTop:18}}><Label>HOW IT WORKS</Label>{[['01','Choose your design'],['02','Make the details yours'],['03','Save or share your invitation']].map(([n,t])=><View key={n} style={{flexDirection:'row',paddingVertical:10,alignItems:'center',gap:17}}><Text style={{color:C.gold,fontFamily:'serif',fontSize:19}}>{n}</Text><Text style={{color:C.soft,fontSize:13}}>{t}</Text></View>)}</Section>
   </View>;
-  const DesignsScreen=()=> <View><FancyTitle top="THE COLLECTION" title="Six ways to say forever." subtitle="Every invitation starts with a carefully crafted design. Choose one to personalise."/ >
+  const DesignsScreen=()=> <View><FancyTitle top="THE COLLECTION" title="Six ways to say forever." subtitle="Every invitation starts with a carefully crafted design. Choose one to personalise."/>
     <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{marginHorizontal:-18,marginBottom:16}} contentContainerStyle={{paddingHorizontal:18,gap:7}}>{categories.map(c=><Pill key={c} label={c} selected={designFilter===c} onPress={()=>setDesignFilter(c)}/>)}</ScrollView>
     <View style={s.grid}>{filtered.map(d=><DesignTile key={d.id} design={d} grid/>)}</View>
   </View>;
