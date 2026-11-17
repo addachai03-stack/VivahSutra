@@ -2,7 +2,7 @@
 
 ## Proposed store listing (editable)
 - **App title:** VivahSutra
-- **Version in development:** 1.1.0 (Android versionCode 2)
+- **Version in development:** 1.1.1 (Android versionCode 3)
 - **Category:** Lifestyle / Wedding invitations (confirm available APPLIQ category before listing)
 - **Short description:** Create beautiful Indian wedding invitations on your phone.
 - **Full description:** Choose from six wedding invitation designs, personalise the couple's names, celebration details and optional photos, and preview the front and back of your card. Save drafts privately on your Android device. Export your invitation as a PNG or share it through Android's share menu. Includes Hindi and English invitation editing options. No account or payment is required for this free beta.
