@@ -12,6 +12,12 @@ on:
       - '.github/workflows/android-apk.yml'
   workflow_dispatch:
 
+# Retain only the latest APK build per development branch, including PR-triggered runs.
+# Prevents wasting free GitHub Actions minutes on superseded commits.
+concurrency:
+  group: vivahsutra-android-${{ github.head_ref || github.ref_name }}
+  cancel-in-progress: true
+
 permissions:
   contents: read
 
