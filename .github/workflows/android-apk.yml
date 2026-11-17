@@ -64,7 +64,11 @@ jobs:
           grep -q "name='com.vivahsutra.invites'" <<< "$BADGING"
           grep -q "versionCode='2'" <<< "$BADGING"
           echo "Signature certificate fingerprint (public metadata):"
-          "$ANDROID_HOME/build-tools/36.0.0/apksigner" verify --verbose --print-certs "$APK"
+          SIGNATURE_REPORT="$("$ANDROID_HOME/build-tools/36.0.0/apksigner" verify --verbose --print-certs "$APK")"
+          printf '%s\n' "$SIGNATURE_REPORT"
+          # Pin the current TEST certificate so an accidental signer change fails CI.
+          # This does not prove that previously distributed APKs used the same certificate.
+          grep -Fq 'Signer #1 certificate SHA-256 digest: fac61745dc0903786fb9ede62a962b399f7348f0bb6f899b8332667591033b9c' <<< "$SIGNATURE_REPORT"
           echo "APK SHA-256:"
           sha256sum "$APK"
       - name: Upload unsigned-production TEST APK
