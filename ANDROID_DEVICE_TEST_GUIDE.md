@@ -1,4 +1,4 @@
-# VivahSutra v1.1 — Android phone test guide (Hinglish)
+# VivahSutra v1.1.1 — Android phone test guide (Hinglish)
 
 **Only test after the latest feature-branch APK build is successful.** This guide is for real-device checks, not proof they already passed.
 
@@ -8,6 +8,7 @@
 3. **Old VivahSutra ko uninstall mat karna** if you have saved invitations. First try installing the newer APK over the existing app. Clearing app storage/uninstalling may permanently remove local invitations. If Android reports a signature conflict, stop and report it instead of deleting data.
 
 ## Real-device pass checklist
+- [ ] **Installed build:** app header must show `BETA V1.1.1`; if not, you are still testing an older APK.
 - [ ] **Royal intro:** app launch, doors open, Skip works; repeat after reopening.
 - [ ] **Tabs:** Home / Designs / Create / Saved all tap/open; Android Back works.
 - [ ] **Design collection:** All = 6; Royal = 2; Floral = 2; Traditional = 1; Modern = 1. Open and customise at least one from each category.
