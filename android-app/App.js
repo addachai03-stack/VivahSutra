@@ -12,6 +12,7 @@ import {ACCENTS, DESIGNS, InvitationCard, NEW_INVITE, OCCASIONS} from './src/des
 
 const C={bg:'#171310',panel:'#24201C',panel2:'#30271F',gold:'#D6B174',soft:'#F9EDDB',muted:'#AEA194',line:'#4D4033',rose:'#C9928B'};
 const KEY='vivahsutra-native-drafts-v1';
+const BETA_VERSION='1.1.1';
 const nowId=()=>String(Date.now())+'-'+Math.random().toString(36).slice(2,7);
 // Keep template-gallery sample names, but never prefill a real new invitation with demo wedding details.
 const makeNew=(designId='rajwada')=>({...NEW_INVITE,id:null,designId,bride:'',groom:'',date:'',time:'',venue:'',host:'',message:'',relatives:'',rsvp:''});
@@ -169,7 +170,7 @@ function AppContent(){
   const filtered=designFilter==='All'?DESIGNS:DESIGNS.filter(d=>d.category===designFilter);
   const Field=({title,field,placeholder,multiline=false})=><View style={{marginBottom:14}}><Text style={s.fieldLabel}>{title}</Text><TextInput accessibilityLabel={title} value={invite[field]||''} onChangeText={v=>editField(field,v)} placeholder={placeholder||title} placeholderTextColor="#817466" style={[s.field,multiline&&{height:91,textAlignVertical:'top'}]} multiline={multiline} maxLength={multiline?500:140} selectionColor={C.gold}/></View>;
   const Pill=({label,selected,onPress})=><Pressable accessibilityRole="button" accessibilityLabel={label} accessibilityState={{selected}} onPress={onPress} style={[s.pill,selected&&s.pillSelected]}><Text style={[s.pillText,selected&&{color:C.bg}]}>{label}</Text></Pressable>;
-  const Header=()=> <View style={s.header}><View><Text style={s.brand}>❦  VivahSutra</Text><Small style={{letterSpacing:2.5,fontSize:8,color:C.gold,marginTop:4}}>THE ART OF INVITING</Small></View><Pressable accessibilityRole="button" accessibilityLabel="Create new invitation" onPress={()=>newInvite()} style={s.headerAdd}><Text style={{fontSize:19,color:C.gold}}>＋</Text></Pressable></View>;
+  const Header=()=> <View style={s.header}><View><Text style={s.brand}>❦  VivahSutra</Text><Small style={{letterSpacing:2.5,fontSize:8,color:C.gold,marginTop:4}}>THE ART OF INVITING · BETA V{BETA_VERSION}</Small></View><Pressable accessibilityRole="button" accessibilityLabel="Create new invitation" onPress={()=>newInvite()} style={s.headerAdd}><Text style={{fontSize:19,color:C.gold}}>＋</Text></Pressable></View>;
   const DesignTile=({design,grid=false})=><Pressable accessibilityRole="button" accessibilityLabel={'Customise '+design.name+' invitation'} onPress={()=>newInvite(design.id)} style={[s.tile,grid&&{width:'100%',flexGrow:0,flexShrink:0,flexDirection:'row',alignItems:'center'}]}>
     <View style={{alignItems:'center',paddingVertical:12,paddingLeft:12}}><InvitationCard data={{...NEW_INVITE,designId:design.id}} compact/></View>
     <View style={{padding:12,flex:1}}><Text style={{color:C.soft,fontFamily:'serif',fontSize:16,flexShrink:1}}>{design.name}</Text><Small style={{marginTop:4}}>{design.subtitle}</Small><Small style={{marginTop:8,color:C.gold}}>{design.category.toUpperCase()} DESIGN</Small><Text style={{color:C.gold,fontSize:11,fontWeight:'800',marginTop:12}}>TAP TO CUSTOMISE  ↗</Text></View>
