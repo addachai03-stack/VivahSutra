@@ -42,26 +42,27 @@ export function InvitationCard({data=NEW_INVITE, compact=false, back=false, wate
   const sidePadding=compact?8:24;
   const names=String(data.bride||'Bride')+'  &  '+String(data.groom||'Groom');
   const isHindi=data.language==='hi';
-  const mark=isHindi?'शुभ विवाह':(data.occasion||'Wedding').toUpperCase();
+  const hindiOccasions={Wedding:'शुभ विवाह',Engagement:'सगाई',Haldi:'हल्दी',Mehendi:'मेहंदी',Sangeet:'संगीत',Reception:'स्वागत समारोह','Save the Date':'शुभ तिथि'};
+  const mark=isHindi?(hindiOccasions[data.occasion]||data.occasion||'शुभ विवाह'):(data.occasion||'Wedding').toUpperCase();
   const Thin=({children,style})=><Text style={[{color:ink,textAlign:'center',fontSize:10*factor,letterSpacing:1.15},style]} numberOfLines={compact?2:4}>{children}</Text>;
   return (
     <LinearGradient colors={design.background} style={{width:w,height:h,padding:compact?8:12,borderRadius:compact?8:16,overflow:'hidden'}}>
       <View style={{flex:1,borderWidth:1.2,borderColor:accent,paddingHorizontal:sidePadding,paddingTop:compact?11:19,paddingBottom:compact?9:14,alignItems:'center',justifyContent:'space-between'}}>
         <View style={{alignItems:'center',width:'100%'}}>
           <Text style={{color:accent,fontSize:compact?17:25,textAlign:'center'}}>{design.motif}   ✦   {design.motif}</Text>
-          <Thin style={{marginTop:compact?3:7,letterSpacing:compact?1:2}}>{back?'WITH LOVE & BLESSINGS':mark}</Thin>
+          <Thin style={{marginTop:compact?3:7,letterSpacing:compact?1:2}}>{back?(isHindi?'स्नेह एवं आशीर्वाद सहित':'WITH LOVE & BLESSINGS'):mark}</Thin>
           <View style={{height:1,width:'30%',backgroundColor:accent,marginTop:compact?6:13,opacity:.7}} />
         </View>
         {back?(
           <View style={{alignItems:'center',width:'100%',gap:10*factor}}>
-            <Text style={{color:ink,fontFamily:'serif',fontSize:28*factor,textAlign:'center'}}>Our Families</Text>
-            <Thin style={{fontSize:13*factor,lineHeight:21*factor}}>{data.relatives?.trim()||data.host||'With love from our families'}</Thin>
+            <Text style={{color:ink,fontFamily:'serif',fontSize:28*factor,textAlign:'center'}}>{isHindi?'हमारा परिवार':'Our Families'}</Text>
+            <Thin style={{fontSize:13*factor,lineHeight:21*factor}}>{data.relatives?.trim()||data.host||(isHindi?'परिवार की ओर से सप्रेम':'With love from our families')}</Thin>
             <Text style={{color:accent,fontSize:23*factor}}>❦</Text>
-            <Thin>{data.rsvp?.trim()?('RSVP  •  '+data.rsvp):'WE CAN’T WAIT TO CELEBRATE WITH YOU'}</Thin>
+            <Thin>{data.rsvp?.trim()?((isHindi?'संपर्क  •  ':'RSVP  •  ')+data.rsvp):(isHindi?'आपकी उपस्थिति सादर अपेक्षित है':'WE CAN’T WAIT TO CELEBRATE WITH YOU')}</Thin>
           </View>
         ):(
           <View style={{alignItems:'center',width:'100%',flexShrink:1}}>
-            <Thin style={{marginBottom:compact?6:10}}>{data.host||'TOGETHER WITH THEIR FAMILIES'}</Thin>
+            <Thin style={{marginBottom:compact?6:10}}>{data.host||(isHindi?'परिवार सहित सादर आमंत्रित':'TOGETHER WITH THEIR FAMILIES')}</Thin>
             {(data.bridePhoto||data.groomPhoto)&&(
               <View style={{flexDirection:'row',gap:6,marginBottom:compact?5:9}}>
                 {[data.bridePhoto,data.groomPhoto].filter(Boolean).map((uri,i)=><Image key={i} source={{uri}} style={{width:compact?30:54,height:compact?30:54,borderRadius:50,borderWidth:1.5,borderColor:accent}} />)}
@@ -69,14 +70,14 @@ export function InvitationCard({data=NEW_INVITE, compact=false, back=false, wate
             )}
             <Text numberOfLines={2} adjustsFontSizeToFit minimumFontScale={.65} style={[typography.name,{fontSize:compact?21:37,lineHeight:compact?27:46,color:ink,marginBottom:compact?2:6}]}>{names}</Text>
             <Text style={{color:accent,fontSize:compact?12:22,marginBottom:compact?3:6}}>✦ ── ❧ ── ✦</Text>
-            <Thin style={{letterSpacing:compact?.6:1}}>{data.message?.trim()||'JOIN US TO CELEBRATE'}</Thin>
+            <Thin style={{letterSpacing:compact?.6:1}}>{data.message?.trim()||(isHindi?'पधारकर आशीर्वाद दें':'JOIN US TO CELEBRATE')}</Thin>
           </View>
         )}
         <View style={{alignItems:'center',width:'100%'}}>
           {!back&&<>
-            <Text numberOfLines={2} style={{color:ink,fontFamily:'serif',fontSize:compact?12:18,textAlign:'center'}}>{data.date||'Wedding date'}</Text>
-            <Thin style={{marginTop:compact?2:5}}>{data.time||'Time'}</Thin>
-            <Thin style={{marginTop:compact?3:8}}>{data.venue||'Venue'}</Thin>
+            <Text numberOfLines={2} style={{color:ink,fontFamily:'serif',fontSize:compact?12:18,textAlign:'center'}}>{data.date||(isHindi?'शुभ तिथि':'Wedding date')}</Text>
+            <Thin style={{marginTop:compact?2:5}}>{data.time||(isHindi?'समय':'Time')}</Thin>
+            <Thin style={{marginTop:compact?3:8}}>{data.venue||(isHindi?'स्थान':'Venue')}</Thin>
           </>}
           <View style={{height:1,width:'42%',backgroundColor:accent,marginTop:compact?5:11,marginBottom:compact?3:8,opacity:.7}} />
           <Thin style={{letterSpacing:compact?1:2}}>{isHindi?'॥ मंगलमय शुभकामनाएं ॥':'THE ART OF INVITING'}</Thin>
