@@ -114,14 +114,17 @@ function AppContent(){
     catch(e){Alert.alert('Could not save','Please check your device storage and try again.');}
     finally{savingInFlight.current=false;setSaving(false);}
   };
-  const remove=(id)=>Alert.alert('Delete invitation?','This deletes this local draft and cannot be undone.',[
+  const remove=(id)=>{
+    if(storageError){Alert.alert('Drafts unavailable','Retry loading your invitations before deleting anything.');return;}
+    Alert.alert('Delete invitation?','This deletes this local draft and cannot be undone.',[
     {text:'Cancel',style:'cancel'},
     {text:'Delete',style:'destructive',onPress:async()=>{
       const next=drafts.filter(x=>x.id!==id);
       try{await AsyncStorage.setItem(KEY,JSON.stringify(next));setDrafts(next);}
       catch(e){Alert.alert('Delete failed','The saved invitation was not changed.');}
     }}
-  ]);
+    ]);
+  };
   const choosePhoto=async(field)=>{
     try{
       const result=await ImagePicker.launchImageLibraryAsync({mediaTypes:['images'],allowsEditing:true,quality:.82,aspect:[1,1]});
@@ -189,7 +192,7 @@ function AppContent(){
   </View>;
   const Saved=()=> <View><FancyTitle top="YOUR CREATIONS" title="My invitations" subtitle="Saved on this device. Open any draft to edit or export."/>
     {storageError?<Section><Text style={{color:C.rose,fontSize:14,marginBottom:12}}>Cannot read saved invitations. Saving is paused to protect existing data.</Text><GoldButton title="RETRY LOADING DRAFTS" onPress={loadDrafts}/></Section>:null}
-    {!loaded?<ActivityIndicator color={C.gold}/>:drafts.length===0?<Section style={{alignItems:'center',paddingVertical:37}}><Text style={{fontSize:45,color:C.gold,marginBottom:12}}>✦</Text><Text style={[s.heading,{fontSize:23,textAlign:'center'}]}>Your story starts here</Text><Small style={{textAlign:'center',marginVertical:14}}>Create your first invitation to see it here.</Small><GoldButton title="CREATE INVITATION" onPress={()=>newInvite()}/></Section>:drafts.map(d=><Section key={d.id} style={{flexDirection:'row',gap:13,alignItems:'center'}}><View style={{width:42,height:64,borderRadius:7,backgroundColor:DESIGNS.find(x=>x.id===d.designId)?.background[0]||C.panel2,borderColor:C.gold,borderWidth:1,alignItems:'center',justifyContent:'center'}}><Text style={{color:C.gold,fontSize:23}}>❦</Text></View><View style={{flex:1}}><Text style={{fontSize:15,color:C.soft,fontFamily:'serif'}} numberOfLines={1}>{d.bride} & {d.groom}</Text><Small>{DESIGNS.find(x=>x.id===d.designId)?.name||'Invitation'} · {d.occasion}</Small><View style={{flexDirection:'row',gap:18,marginTop:12}}><Pressable onPress={()=>editSaved(d)}><Text style={{color:C.gold,fontSize:12,fontWeight:'800'}}>OPEN / EDIT</Text></Pressable><Pressable onPress={()=>remove(d.id)}><Text style={{color:C.rose,fontSize:12,fontWeight:'800'}}>DELETE</Text></Pressable></View></View></Section>)}
+    {storageError?null:!loaded?<ActivityIndicator color={C.gold}/>:drafts.length===0?<Section style={{alignItems:'center',paddingVertical:37}}><Text style={{fontSize:45,color:C.gold,marginBottom:12}}>✦</Text><Text style={[s.heading,{fontSize:23,textAlign:'center'}]}>Your story starts here</Text><Small style={{textAlign:'center',marginVertical:14}}>Create your first invitation to see it here.</Small><GoldButton title="CREATE INVITATION" onPress={()=>newInvite()}/></Section>:drafts.map(d=><Section key={d.id} style={{flexDirection:'row',gap:13,alignItems:'center'}}><View style={{width:42,height:64,borderRadius:7,backgroundColor:DESIGNS.find(x=>x.id===d.designId)?.background[0]||C.panel2,borderColor:C.gold,borderWidth:1,alignItems:'center',justifyContent:'center'}}><Text style={{color:C.gold,fontSize:23}}>❦</Text></View><View style={{flex:1}}><Text style={{fontSize:15,color:C.soft,fontFamily:'serif'}} numberOfLines={1}>{d.bride} & {d.groom}</Text><Small>{DESIGNS.find(x=>x.id===d.designId)?.name||'Invitation'} · {d.occasion}</Small><View style={{flexDirection:'row',gap:18,marginTop:12}}><Pressable onPress={()=>editSaved(d)}><Text style={{color:C.gold,fontSize:12,fontWeight:'800'}}>OPEN / EDIT</Text></Pressable><Pressable onPress={()=>remove(d.id)}><Text style={{color:C.rose,fontSize:12,fontWeight:'800'}}>DELETE</Text></Pressable></View></View></Section>)}
     <Small style={{marginTop:15}}>These drafts are not synced to the website or to another device.</Small>
   </View>;
   const navItems=[['home','⌂','Home'],['designs','✧','Designs'],['editor','＋','Create'],['saved','▣','Saved']];
