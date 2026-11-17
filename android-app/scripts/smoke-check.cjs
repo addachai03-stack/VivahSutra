@@ -36,7 +36,8 @@ for (const category of categories) {
 }
 
 assert.equal(packageInfo.version, config.expo.version, 'App and package versions must agree');
-assert.ok(config.expo.android.versionCode >= 2, 'Android update versionCode was not incremented');
+assert.equal(config.expo.android.versionCode, 3, 'Android v1.1.1 versionCode must be 3');
+assert.ok(appSource.includes("const BETA_VERSION='"+packageInfo.version+"'"), 'Visible beta version must match package version');
 assert.equal(config.expo.extra.appMode, 'free-beta', 'Beta mode must not be silently removed');
 assert.equal(config.expo.extra.distribution, 'APPLIQ-candidate', 'Do not mark as published');
 
