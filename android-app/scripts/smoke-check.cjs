@@ -48,6 +48,8 @@ for (const [name, source, needle] of [
   ['local storage failure guard', appSource, 'if(storageError)'],
   ['no duplicate saves', appSource, 'if(savingInFlight.current)return'],
   ['unsaved edit warning', appSource, 'confirmDiscard'],
+  ['blank details for real new invitations', appSource, "bride:'',groom:'',date:'',time:'',venue:''"],
+  ['fresh invitation action in Create tab', appSource, "if(tab!=='editor')newInvite()"],
   ['optional local photo picker', appSource, 'ImagePicker.launchImageLibraryAsync'],
   ['local copy of photos', appSource, 'FileSystem.copyAsync'],
   ['front/back selection', appSource, "setSide('back')"],
