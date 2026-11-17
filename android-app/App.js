@@ -83,6 +83,14 @@ function AppContent(){
   useEffect(()=>{loadDrafts();},[]);
   useEffect(()=>{const subscription=BackHandler.addEventListener('hardwareBackPress',()=>{if(intro){setIntro(false);return true;}if(tab!=='home'){setTab('home');return true;}return false;});return()=>subscription.remove();},[tab,intro]);
   const editField=(field,value)=>{setHasUnsavedEdits(true);setInvite(p=>({...p,[field]:value}));};
+  const switchLanguage=(language)=>{
+    setHasUnsavedEdits(true);
+    setInvite(p=>({
+      ...p,language,
+      host:language==='hi'&&p.host===NEW_INVITE.host?'परिवार सहित सादर आमंत्रित':language==='en'&&p.host==='परिवार सहित सादर आमंत्रित'?NEW_INVITE.host:p.host,
+      message:language==='hi'&&p.message===NEW_INVITE.message?'आपकी उपस्थिति हमारे समारोह को और भी सुंदर बनाएगी।':language==='en'&&p.message==='आपकी उपस्थिति हमारे समारोह को और भी सुंदर बनाएगी।'?NEW_INVITE.message:p.message
+    }));
+  };
   const confirmDiscard=(proceed)=>{
     if(!hasUnsavedEdits){proceed();return;}
     Alert.alert('Unsaved changes','Starting another invitation will discard your unsaved edits.',[
@@ -166,7 +174,7 @@ function AppContent(){
   </View>;
   const Editor=()=> <View>
     <FancyTitle top="VIVAHSUTRA STUDIO" title={tr('Make it your own.','अपना निमंत्रण बनाएं')} subtitle={tr('Your details stay on this device until you choose to share.','जब तक आप साझा न करें, आपकी जानकारी इसी फ़ोन पर रहती है।')}/>
-    <Section><Label>{tr('01  •  OCCASION','01  •  अवसर')}</Label><ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{gap:7}}>{OCCASIONS.map(o=><Pill key={o} label={o} selected={invite.occasion===o} onPress={()=>editField('occasion',o)}/>)}</ScrollView><View style={{marginTop:15}}><Label>{tr('LANGUAGE','भाषा')}</Label><View style={{flexDirection:'row',gap:8}}>{[['en','English'],['hi','हिन्दी']].map(([id,label])=><Pill key={id} label={label} selected={invite.language===id} onPress={()=>editField('language',id)}/>)}</View></View></Section>
+    <Section><Label>{tr('01  •  OCCASION','01  •  अवसर')}</Label><ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{gap:7}}>{OCCASIONS.map(o=><Pill key={o} label={o} selected={invite.occasion===o} onPress={()=>editField('occasion',o)}/>)}</ScrollView><View style={{marginTop:15}}><Label>{tr('LANGUAGE','भाषा')}</Label><View style={{flexDirection:'row',gap:8}}>{[['en','English'],['hi','हिन्दी']].map(([id,label])=><Pill key={id} label={label} selected={invite.language===id} onPress={()=>switchLanguage(id)}/>)}</View></View></Section>
     <Section><Label>{tr('02  •  YOUR PEOPLE','02  •  परिवार')}</Label>{Field({title:tr("Bride's name",'दुल्हन का नाम'),field:"bride"})}{Field({title:tr("Groom's name",'दूल्हे का नाम'),field:"groom"})}{Field({title:tr("Host / family line",'आमंत्रित करने वाला परिवार'),field:"host"})}{Field({title:tr("Family names (back of card)",'परिवार के नाम (पीछे)'),field:"relatives",multiline:true})}</Section>
     <Section><Label>{tr('03  •  THE CELEBRATION','03  •  समारोह')}</Label>{Field({title:tr("Date","तारीख"),field:"date",placeholder:tr("18 February 2027","18 फ़रवरी 2027")})}{Field({title:tr("Time","समय"),field:"time",placeholder:tr("7:00 PM","शाम 7:00 बजे")})}{Field({title:tr("Venue","स्थान"),field:"venue"})}{Field({title:tr("RSVP / contact","संपर्क / RSVP"),field:"rsvp"})}{Field({title:tr("Personal message","शुभकामना संदेश"),field:"message",multiline:true})}</Section>
     <Section><Label>{tr('04  •  DESIGN','04  •  डिज़ाइन')}</Label><ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{gap:10,marginBottom:16}}>{DESIGNS.map(d=><Pressable key={d.id} onPress={()=>editField('designId',d.id)} style={[s.designSelect,invite.designId===d.id&&{borderColor:C.gold}]}><View style={{width:23,height:23,borderRadius:8,backgroundColor:d.background[0],borderWidth:1,borderColor:d.line}}/><Text style={{color:C.soft,fontSize:11,marginLeft:7}}>{d.name}</Text></Pressable>)}</ScrollView><Label>{tr('ACCENT COLOUR','रंग चुनें')}</Label><View style={{flexDirection:'row',gap:11,flexWrap:'wrap'}}>{ACCENTS.map(a=><Pressable accessibilityLabel={'Choose '+a.label} accessibilityRole="button" key={a.id} onPress={()=>editField('accent',a.id)} style={{height:35,width:35,borderRadius:18,backgroundColor:a.color,borderWidth:invite.accent===a.id?3:0,borderColor:C.soft}}/>)}</View></Section>
