@@ -54,6 +54,8 @@ for (const [name, source, needle] of [
   ['local copy of photos', appSource, 'FileSystem.copyAsync'],
   ['front/back selection', appSource, "setSide('back')"],
   ['PNG capture', appSource, 'shot.current.capture()'],
+  ['prevent duplicate PNG exports', appSource, 'if(!shot.current||exportInFlight.current)return'],
+  ['Hindi occasion selection', appSource, 'hindiOccasions[o]||o'],
   ['image saving', appSource, 'MediaLibrary.createAssetAsync'],
   ['native PNG sharing', appSource, 'Sharing.shareAsync'],
   ['Hindi editor labels', appSource, "दुल्हन का नाम"],
