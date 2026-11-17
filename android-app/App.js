@@ -63,6 +63,7 @@ function AppContent(){
   const [loaded,setLoaded]=useState(false);
   const [storageError,setStorageError]=useState(false);
   const [busy,setBusy]=useState(false);
+  const exportInFlight=useRef(false);
   const [hasUnsavedEdits,setHasUnsavedEdits]=useState(false);
   const [saving,setSaving]=useState(false);
   const savingInFlight=useRef(false);
@@ -136,7 +137,8 @@ function AppContent(){
     }catch(e){Alert.alert('Photo unavailable','Could not use this photo. Please try another image.');}
   };
   const capture=async(action)=>{
-    if(!shot.current||busy)return;
+    if(!shot.current||exportInFlight.current)return;
+    exportInFlight.current=true;
     setBusy(true);
     try{
       const uri=await shot.current.capture();
@@ -150,7 +152,7 @@ function AppContent(){
         Alert.alert('Saved to photos','Your watermarked invitation PNG is in your gallery.');
       }
     }catch(e){Alert.alert('Export failed','Could not create the PNG. Please try again.');}
-    finally{setBusy(false);}
+    finally{exportInFlight.current=false;setBusy(false);}
   };
   const nav=(to)=>{
     if(to==='editor'){
@@ -162,6 +164,7 @@ function AppContent(){
     if(to==='designs')setDesignFilter('All');
   };
   const tr=(en,hi)=>invite.language==='hi'?hi:en;
+  const hindiOccasions={Wedding:'विवाह',Engagement:'सगाई',Haldi:'हल्दी',Mehendi:'मेहंदी',Sangeet:'संगीत',Reception:'स्वागत समारोह','Save the Date':'शुभ तिथि'};
   const categories=['All','Royal','Floral','Traditional','Modern'];
   const filtered=designFilter==='All'?DESIGNS:DESIGNS.filter(d=>d.category===designFilter);
   const Field=({title,field,placeholder,multiline=false})=><View style={{marginBottom:14}}><Text style={s.fieldLabel}>{title}</Text><TextInput accessibilityLabel={title} value={invite[field]||''} onChangeText={v=>editField(field,v)} placeholder={placeholder||title} placeholderTextColor="#817466" style={[s.field,multiline&&{height:91,textAlignVertical:'top'}]} multiline={multiline} maxLength={multiline?500:140} selectionColor={C.gold}/></View>;
@@ -186,7 +189,7 @@ function AppContent(){
   </View>;
   const Editor=()=> <View>
     <FancyTitle top="VIVAHSUTRA STUDIO" title={tr('Make it your own.','अपना निमंत्रण बनाएं')} subtitle={tr('Your details stay on this device until you choose to share.','जब तक आप साझा न करें, आपकी जानकारी इसी फ़ोन पर रहती है।')}/>
-    <Section><Label>{tr('01  •  OCCASION','01  •  अवसर')}</Label><ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{gap:7}}>{OCCASIONS.map(o=><Pill key={o} label={o} selected={invite.occasion===o} onPress={()=>editField('occasion',o)}/>)}</ScrollView><View style={{marginTop:15}}><Label>{tr('LANGUAGE','भाषा')}</Label><View style={{flexDirection:'row',gap:8}}>{[['en','English'],['hi','हिन्दी']].map(([id,label])=><Pill key={id} label={label} selected={invite.language===id} onPress={()=>switchLanguage(id)}/>)}</View></View></Section>
+    <Section><Label>{tr('01  •  OCCASION','01  •  अवसर')}</Label><ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{gap:7}}>{OCCASIONS.map(o=><Pill key={o} label={tr(o,hindiOccasions[o]||o)} selected={invite.occasion===o} onPress={()=>editField('occasion',o)}/>)}</ScrollView><View style={{marginTop:15}}><Label>{tr('LANGUAGE','भाषा')}</Label><View style={{flexDirection:'row',gap:8}}>{[['en','English'],['hi','हिन्दी']].map(([id,label])=><Pill key={id} label={label} selected={invite.language===id} onPress={()=>switchLanguage(id)}/>)}</View></View></Section>
     <Section><Label>{tr('02  •  YOUR PEOPLE','02  •  परिवार')}</Label>{Field({title:tr("Bride's name",'दुल्हन का नाम'),field:"bride"})}{Field({title:tr("Groom's name",'दूल्हे का नाम'),field:"groom"})}{Field({title:tr("Host / family line",'आमंत्रित करने वाला परिवार'),field:"host"})}{Field({title:tr("Family names (back of card)",'परिवार के नाम (पीछे)'),field:"relatives",multiline:true})}</Section>
     <Section><Label>{tr('03  •  THE CELEBRATION','03  •  समारोह')}</Label>{Field({title:tr("Date","तारीख"),field:"date",placeholder:tr("18 February 2027","18 फ़रवरी 2027")})}{Field({title:tr("Time","समय"),field:"time",placeholder:tr("7:00 PM","शाम 7:00 बजे")})}{Field({title:tr("Venue","स्थान"),field:"venue"})}{Field({title:tr("RSVP / contact","संपर्क / RSVP"),field:"rsvp"})}{Field({title:tr("Personal message","शुभकामना संदेश"),field:"message",multiline:true})}</Section>
     <Section><Label>{tr('04  •  DESIGN','04  •  डिज़ाइन')}</Label><ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{gap:10,marginBottom:16}}>{DESIGNS.map(d=><Pressable key={d.id} onPress={()=>editField('designId',d.id)} style={[s.designSelect,invite.designId===d.id&&{borderColor:C.gold}]}><View style={{width:23,height:23,borderRadius:8,backgroundColor:d.background[0],borderWidth:1,borderColor:d.line}}/><Text style={{color:C.soft,fontSize:11,marginLeft:7}}>{d.name}</Text></Pressable>)}</ScrollView><Label>{tr('ACCENT COLOUR','रंग चुनें')}</Label><View style={{flexDirection:'row',gap:11,flexWrap:'wrap'}}>{ACCENTS.map(a=><Pressable accessibilityLabel={'Choose '+a.label} accessibilityRole="button" key={a.id} onPress={()=>editField('accent',a.id)} style={{height:35,width:35,borderRadius:18,backgroundColor:a.color,borderWidth:invite.accent===a.id?3:0,borderColor:C.soft}}/>)}</View></Section>
