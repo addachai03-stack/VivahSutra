@@ -59,9 +59,10 @@ jobs:
           APK="$(find android/app/build/outputs/apk/release -maxdepth 1 -type f -name '*.apk' | head -n 1)"
           test -n "$APK" && test -s "$APK"
           echo "APK package/version:"
-          "$ANDROID_HOME/build-tools/36.0.0/aapt" dump badging "$APK" | grep -m1 '^package:'
-          "$ANDROID_HOME/build-tools/36.0.0/aapt" dump badging "$APK" | grep -q "name='com.vivahsutra.invites'"
-          "$ANDROID_HOME/build-tools/36.0.0/aapt" dump badging "$APK" | grep -q "versionCode='2'"
+          BADGING="$("$ANDROID_HOME/build-tools/36.0.0/aapt" dump badging "$APK")"
+          grep -m1 '^package:' <<< "$BADGING"
+          grep -q "name='com.vivahsutra.invites'" <<< "$BADGING"
+          grep -q "versionCode='2'" <<< "$BADGING"
           echo "Signature certificate fingerprint (public metadata):"
           "$ANDROID_HOME/build-tools/36.0.0/apksigner" verify --verbose --print-certs "$APK"
           echo "APK SHA-256:"
