@@ -13,7 +13,8 @@ import {ACCENTS, DESIGNS, InvitationCard, NEW_INVITE, OCCASIONS} from './src/des
 const C={bg:'#171310',panel:'#24201C',panel2:'#30271F',gold:'#D6B174',soft:'#F9EDDB',muted:'#AEA194',line:'#4D4033',rose:'#C9928B'};
 const KEY='vivahsutra-native-drafts-v1';
 const nowId=()=>String(Date.now())+'-'+Math.random().toString(36).slice(2,7);
-const makeNew=(designId='rajwada')=>({...NEW_INVITE,id:null,designId});
+// Keep template-gallery sample names, but never prefill a real new invitation with demo wedding details.
+const makeNew=(designId='rajwada')=>({...NEW_INVITE,id:null,designId,bride:'',groom:'',date:'',time:'',venue:'',host:'',message:'',relatives:'',rsvp:''});
 const Small=({children,style})=><Text style={[{color:C.muted,fontSize:11,lineHeight:17},style]}>{children}</Text>;
 const Label=({children})=><Text style={{color:C.gold,fontSize:10,fontWeight:'700',letterSpacing:2,marginBottom:10}}>{children}</Text>;
 const GoldButton=({title,onPress,outline=false,disabled=false,style})=><Pressable disabled={disabled} onPress={onPress} accessibilityRole="button" style={[{paddingVertical:15,paddingHorizontal:18,borderRadius:13,backgroundColor:outline?'transparent':C.gold,borderWidth:1,borderColor:C.gold,alignItems:'center',justifyContent:'center',opacity:disabled?.5:1},style]}><Text style={{fontSize:12,fontWeight:'800',color:outline?C.gold:C.bg,letterSpacing:.5}}>{title}</Text></Pressable>;
@@ -151,7 +152,15 @@ function AppContent(){
     }catch(e){Alert.alert('Export failed','Could not create the PNG. Please try again.');}
     finally{setBusy(false);}
   };
-  const nav=(to)=>{setTab(to);if(to==='editor')setSide('front');if(to==='designs')setDesignFilter('All');};
+  const nav=(to)=>{
+    if(to==='editor'){
+      // "Create" opens a fresh invitation, while existing edits are protected by confirmDiscard.
+      if(tab!=='editor')newInvite();
+      return;
+    }
+    setTab(to);
+    if(to==='designs')setDesignFilter('All');
+  };
   const tr=(en,hi)=>invite.language==='hi'?hi:en;
   const categories=['All','Royal','Floral','Traditional','Modern'];
   const filtered=designFilter==='All'?DESIGNS:DESIGNS.filter(d=>d.category===designFilter);
