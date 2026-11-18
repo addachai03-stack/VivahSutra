@@ -36,7 +36,7 @@ for (const category of categories) {
 }
 
 assert.equal(packageInfo.version, config.expo.version, 'App and package versions must agree');
-assert.equal(config.expo.android.versionCode, 7, 'Android v1.1.5 source versionCode must be 7 before CI assigns the beta build code');
+assert.equal(config.expo.android.versionCode, 8, 'Android v1.1.6 source versionCode must be 8 before CI assigns the beta build code');
 assert.ok(appSource.includes("const BETA_VERSION='"+packageInfo.version+"'"), 'Visible beta version must match package version');
 assert.equal(config.expo.extra.appMode, 'free-beta', 'Beta mode must not be silently removed');
 assert.equal(config.expo.extra.distribution, 'APPLIQ-candidate', 'Do not mark as published');
@@ -57,10 +57,18 @@ for (const [name, source, needle] of [
   ['full-width gallery cards', appSource, "grid&&{flex:0,flexBasis:'auto',width:'100%',minHeight:245"],
   ['nonwrapping gallery layout', appSource, "grid:{width:'100%',flexDirection:'column',gap:12}"],
   ['filter reset', appSource, "setDesignFilter('All')"],
-  ['local draft loading', appSource, 'AsyncStorage.getItem(KEY)'],
-  ['local draft saving', appSource, 'AsyncStorage.setItem(KEY,JSON.stringify(next))'],
+  ['local draft loading and recovery', appSource, 'readLocalDrafts(AsyncStorage)'],
+  ['safe local mirror', appSource, 'draftsRef.current=result.drafts'],
+  ['export invitations backup', appSource, 'makeBackupFile(draftsRef.current'],
+  ['import invitations backup', appSource, 'readBackupFile(content)'],
+  ['non-destructive restore', appSource, 'mergeBackup(current,imported)'],
+  ['document backup picker', appSource, 'DocumentPicker.getDocumentAsync'],
+  ['single active draft writer', appSource, 'draftWriteInFlight.current'],
+  ['backup controls visible', appSource, 'EXPORT BACKUP FILE'],
+  ['restore controls visible', appSource, 'RESTORE BACKUP FILE'],
+  ['local draft saving', appSource, 'writeLocalDrafts(AsyncStorage,previous,next)'],
   ['local storage failure guard', appSource, 'if(storageError)'],
-  ['no duplicate saves', appSource, 'if(savingInFlight.current)return'],
+  ['no duplicate saves', appSource, 'if(savingInFlight.current||draftWriteInFlight.current)return'],
   ['unsaved edit warning', appSource, 'confirmDiscard'],
   ['blank details for real new invitations', appSource, "bride:'',groom:'',date:'',time:'',venue:''"],
   ['fresh invitation action in Create tab', appSource, "if(tab!=='editor')newInvite()"],
@@ -77,4 +85,4 @@ for (const [name, source, needle] of [
 ]) {
   assert.ok(source.includes(needle), 'Missing ' + name);
 }
-console.log('PASS: 6 valid designs, 4 filters, version alignment, offline drafts, safety guards, Hindi editor and PNG export integration');
+console.log('PASS: 6 designs, 4 filters, version alignment, guarded drafts, backup/restore integration, Hindi editor and PNG export');
