@@ -3,6 +3,9 @@
 Status: **PARTIALLY TESTED ON A PHYSICAL ANDROID DEVICE**. User-supplied Android phone footage shows the app running and navigating among screens, but does not establish that all functions pass. GitHub Actions checks and an APK build are not substitutes for on-device tests.
 
 ## APK build
+- [ ] V1.1.4 to V1.1.5 in-place beta upgrade tested on Android, with no loss of drafts
+- [ ] In-app Check for Updates offers verified newer GitHub beta and download works; prompts require Android user approval
+- [ ] Invalid beta release package/build/checksum metadata rejected by automated unit tests
 - [ ] GitHub Actions `Android APK — VivahSutra` succeeds on the latest PR commit
 - [ ] Artifact `VivahSutra-Android-Test-APK` exists and is nonempty
 - [x] Install an earlier test APK on an Android phone (recorded footage provided; latest build needs reinstall)
