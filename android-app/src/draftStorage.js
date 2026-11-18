@@ -35,12 +35,11 @@ function parseDrafts(raw) {
 }
 
 async function readLocalDrafts(storage) {
-  let primaryRaw;
-  try {
-    primaryRaw = await storage.getItem(PRIMARY_KEY);
-    if (primaryRaw !== null) return { drafts: parseDrafts(primaryRaw), recovered: false };
-  } catch (error) {
-    // A damaged primary may still have a complete local mirror.
+  // A read I/O failure is NOT evidence of missing data: do not overwrite it.
+  const primaryRaw = await storage.getItem(PRIMARY_KEY);
+  if (primaryRaw !== null) {
+    try { return { drafts: parseDrafts(primaryRaw), recovered: false }; }
+    catch (error) { /* Malformed primary; try the recovery mirror without discarding it. */ }
   }
   const mirrorRaw = await storage.getItem(MIRROR_KEY);
   if (mirrorRaw !== null) {
@@ -58,8 +57,7 @@ async function readLocalDrafts(storage) {
 async function writeLocalDrafts(storage, previous, next) {
   validateDrafts(previous);
   validateDrafts(next);
-  const currentRaw = await storage.getItem(PRIMARY_KEY);
-  const current = parseDrafts(currentRaw) || [];
+  const { drafts: current } = await readLocalDrafts(storage);
   if (JSON.stringify(current) !== JSON.stringify(previous)) {
     throw new Error('Saved invitations changed; reload before editing');
   }
