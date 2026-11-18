@@ -28,6 +28,10 @@ const store=(initial={})=>{
   const broken=store({[PRIMARY_KEY]:'broken json',[MIRROR_KEY]:JSON.stringify([one])});
   assert.equal((await readLocalDrafts(broken)).recovered,true);
   await assert.rejects(readLocalDrafts(store({[PRIMARY_KEY]:'broken json'})));
+  const readError=store({[MIRROR_KEY]:JSON.stringify([one])});
+  readError.getItem=async(key)=>{if(key===PRIMARY_KEY)throw new Error('I/O read failed');return readError.values.get(key)||null;};
+  await assert.rejects(readLocalDrafts(readError),/I\/O read failed/);
+  assert.equal(readError.values.has(PRIMARY_KEY),false);
 
   // A legitimate empty list stays empty even when a stale mirror still contains a draft.
   const empty=store({[PRIMARY_KEY]:'[]',[MIRROR_KEY]:JSON.stringify([one])});
