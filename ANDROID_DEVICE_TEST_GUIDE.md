@@ -1,4 +1,4 @@
-# VivahSutra v1.1.3 — Android phone test guide (Hinglish)
+# VivahSutra v1.1.4 — Android phone test guide (Hinglish)
 
 **Only test after the latest feature-branch APK build is successful.** This guide is for real-device checks, not proof they already passed.
 
@@ -8,7 +8,12 @@
 3. **Old VivahSutra ko uninstall mat karna** if you have saved invitations. First try installing the newer APK over the existing app. Clearing app storage/uninstalling may permanently remove local invitations. If Android reports a signature conflict, stop and report it instead of deleting data.
 
 ## Real-device pass checklist
-- [ ] **Installed build:** app header must show `BETA V1.1.3`; if not, you are still testing an older APK.
+- [ ] **Beta update bootstrap:** install the first updater-enabled V1.1.4 APK *over* the old app, and verify saved invitations still exist. Note installed Android build number shown in Home.
+- [ ] **Check for Updates:** Home has the button; it reports latest beta or a clear offline error without app crash.
+- [ ] **New update released:** after a subsequent successful beta GitHub prerelease with a larger build code, a banner appears and its Download action opens Android browser download. Android must request permission to install.
+- [ ] **No silent update:** Android requires user action; existing saved drafts remain after successful in-place upgrade.
+- [ ] **Offline:** update check gracefully fails; invitation creation, local save, and export continue to work.
+- [ ] **Installed build:** app header must show `BETA V1.1.4`; if not, you are still testing an older APK.
 - [ ] **Royal intro:** app launch, doors open, Skip works; repeat after reopening.
 - [ ] **Tabs:** Home / Designs / Create / Saved all tap/open; Android Back works.
 - [ ] **Design collection (gallery visible in V1.1.2 phone footage):** All = 6; Royal = 2; Floral = 2; Traditional = 1; Modern = 1. SIX actual cards must be visibly rendered below the filter row; scroll downward and tap at least one from each category. A displayed count alone is NOT a pass.
