@@ -14,7 +14,7 @@ const {checkForBetaUpdate} = require('./src/betaUpdateFeed');
 
 const C={bg:'#171310',panel:'#24201C',panel2:'#30271F',gold:'#D6B174',soft:'#F9EDDB',muted:'#AEA194',line:'#4D4033',rose:'#C9928B'};
 const KEY='vivahsutra-native-drafts-v1';
-const BETA_VERSION='1.1.4';
+const BETA_VERSION='1.1.5';
 const nowId=()=>String(Date.now())+'-'+Math.random().toString(36).slice(2,7);
 // Keep template-gallery sample names, but never prefill a real new invitation with demo wedding details.
 const makeNew=(designId='rajwada')=>({...NEW_INVITE,id:null,designId,bride:'',groom:'',date:'',time:'',venue:'',host:'',message:'',relatives:'',rsvp:''});
@@ -91,23 +91,31 @@ function AppContent(){
       if(manual){
         const title=result.status==='available'?'Update available':result.status==='current'?'App is up to date':result.status==='unavailable'?'Beta not published yet':'Cannot compare builds';
         const message=result.status==='available'?'VivahSutra '+result.versionName+' (build '+result.versionCode+') is available. Tap the Update button to download it.':result.status==='current'?'You already have the latest available beta APK.':result.status==='unavailable'?'No public beta release is available yet. Please check later.':'This installed APK has no readable Android build number.';
-        Alert.alert(title,message);
+        if(result.status==='available'){
+          Alert.alert(title,message,[
+            {text:'Later',style:'cancel'},
+            {text:'Download update',onPress:()=>confirmBetaDownload(result.apkUrl)}
+          ]);
+        }else{
+          Alert.alert(title,message);
+        }
       }
     }catch(e){
       setUpdateStatus('error');
       if(manual)Alert.alert('Update check failed','Could not reach GitHub beta updates. Check internet access and try again.');
     }finally{updateInFlight.current=false;}
   };
-  const openBetaUpdate=()=>{
-    if(!betaUpdate?.apkUrl)return;
+  const confirmBetaDownload=(apkUrl)=>{
+    if(!apkUrl)return;
     Alert.alert('Install beta update?','The APK will download using your browser. Android will ask permission before installing. Do not uninstall the current app or clear its data.',[
       {text:'Cancel',style:'cancel'},
       {text:'Download update',onPress:async()=>{
-        try{await Linking.openURL(betaUpdate.apkUrl);}
+        try{await Linking.openURL(apkUrl);}
         catch(e){Alert.alert('Download unavailable','Could not open the update link. Check your internet connection.');}
       }}
     ]);
   };
+  const openBetaUpdate=()=>confirmBetaDownload(betaUpdate?.apkUrl);
   useEffect(()=>{
     checkUpdates(false);
     const sub=AppState.addEventListener('change',state=>{
