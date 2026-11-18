@@ -16,7 +16,7 @@ Status: **PARTIALLY TESTED ON A PHYSICAL ANDROID DEVICE**. User-supplied Android
 
 ## Core screens
 - [x] Home, Designs, Create and Saved screens shown during earlier phone test (current build still needs retest)
-- [ ] All six templates appear and are selectable
+- [ ] All six templates appear as **visible full-width cards** and are selectable (v1.1.1 recording showed 6/6 count but cards not visible; v1.1.2 layout patch is pending device retest)
 - [ ] Filter Royal / Floral / Traditional / Modern works
 - [ ] No clipped cards on a narrow Android phone
 - [ ] Android keyboard does not prevent editing text fields
@@ -54,6 +54,7 @@ Status: **PARTIALLY TESTED ON A PHYSICAL ANDROID DEVICE**. User-supplied Android
 - iOS is out of scope for this Android-first PR.
 
 ## Latest source-level QA improvements (not yet device-verified)
+- In 18 November 2026 phone footage, BETA V1.1.1 Home, Designs, Create and Saved loaded, but Designs showed a 6/6 count with no visible cards. The gallery's flex-basis zero / wrapping layout was changed to explicit full-width vertical cards in V1.1.2. Actual card rendering remains UNVERIFIED until the new APK is installed and recorded.
 - Preview can scroll horizontally if the 300px invitation does not fit in a narrow editor panel.
 - Save/Share UI states explicitly that only the selected front or back side is exported.
 - Saving is blocked until the existing local drafts have finished loading, preventing an early write from overwriting data.
