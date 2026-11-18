@@ -36,13 +36,15 @@ for (const category of categories) {
 }
 
 assert.equal(packageInfo.version, config.expo.version, 'App and package versions must agree');
-assert.equal(config.expo.android.versionCode, 3, 'Android v1.1.1 versionCode must be 3');
+assert.equal(config.expo.android.versionCode, 4, 'Android v1.1.2 versionCode must be 4');
 assert.ok(appSource.includes("const BETA_VERSION='"+packageInfo.version+"'"), 'Visible beta version must match package version');
 assert.equal(config.expo.extra.appMode, 'free-beta', 'Beta mode must not be silently removed');
 assert.equal(config.expo.extra.distribution, 'APPLIQ-candidate', 'Do not mark as published');
 
 for (const [name, source, needle] of [
   ['six-card gallery', appSource, 'filtered.map(d=>'],
+  ['full-width gallery cards', appSource, "grid&&{flex:0,flexBasis:'auto',width:'100%',minHeight:245"],
+  ['nonwrapping gallery layout', appSource, "grid:{width:'100%',flexDirection:'column',gap:12}"],
   ['filter reset', appSource, "setDesignFilter('All')"],
   ['local draft loading', appSource, 'AsyncStorage.getItem(KEY)'],
   ['local draft saving', appSource, 'AsyncStorage.setItem(KEY,JSON.stringify(next))'],
