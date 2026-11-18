@@ -75,6 +75,7 @@ function AppContent(){
   const draftWriteInFlight=useRef(false);
   const draftsRef=useRef([]);
   const backupActionInFlight=useRef(false);
+  const [backupBusy,setBackupBusy]=useState(false);
   const [betaUpdate,setBetaUpdate]=useState(null);
   const [updateStatus,setUpdateStatus]=useState('idle');
   const updateInFlight=useRef(false);
@@ -203,6 +204,59 @@ function AppContent(){
     }}
     ]);
   };
+  const exportBackup=async()=>{
+    if(!loaded||storageError||draftWriteInFlight.current||backupActionInFlight.current){
+      Alert.alert('Backup unavailable','Reload your invitations and try again.');return;
+    }
+    if(!draftsRef.current.length){Alert.alert('No saved invitations','No local invitations are available to export on this phone.');return;}
+    backupActionInFlight.current=true;
+    setBackupBusy(true);
+    try{
+      if(!await Sharing.isAvailableAsync())throw new Error('Sharing unavailable');
+      const base=FileSystem.cacheDirectory||FileSystem.documentDirectory;
+      if(!base)throw new Error('File storage unavailable');
+      const target=base+'VivahSutra-Invitations-Backup-'+Date.now()+'.json';
+      await FileSystem.writeAsStringAsync(target,makeBackupFile(draftsRef.current,new Date().toISOString()));
+      await Sharing.shareAsync(target,{mimeType:'application/json',dialogTitle:'Save your VivahSutra backup to Files or Drive'});
+    }catch(e){Alert.alert('Backup not shared','Could not share a backup file. Your local invitations are unchanged.');}
+    finally{backupActionInFlight.current=false;setBackupBusy(false);}
+  };
+  const importBackup=async()=>{
+    if(!loaded||storageError||draftWriteInFlight.current||backupActionInFlight.current){
+      Alert.alert('Restore unavailable','Reload saved invitations before restoring a file.');return;
+    }
+    backupActionInFlight.current=true;
+    setBackupBusy(true);
+    try{
+      const picked=await DocumentPicker.getDocumentAsync({type:'application/json',copyToCacheDirectory:true});
+      if(picked.canceled||!picked.assets?.[0]?.uri)return;
+      const asset=picked.assets[0];
+      if(asset.size!=null&&asset.size>2100000)throw new Error('Backup file too large');
+      const content=await FileSystem.readAsStringAsync(asset.uri);
+      const imported=readBackupFile(content);
+      const preview=mergeBackup(draftsRef.current,imported);
+      Alert.alert('Restore invitations?',preview.added+' new invitation(s) can be added. '+preview.skipped+' existing ID(s) will stay unchanged. Photos are not embedded in JSON backups and may need to be selected again.',[
+        {text:'Cancel',style:'cancel'},
+        {text:'ADD INVITATIONS',onPress:async()=>{
+          if(draftWriteInFlight.current)return;
+          draftWriteInFlight.current=true;
+          try{
+            const current=draftsRef.current;
+            const result=mergeBackup(current,imported);
+            if(result.added===0){Alert.alert('No new invitations','All invitations from this file already exist locally.');return;}
+            const saved=await writeLocalDrafts(AsyncStorage,current,result.drafts);
+            draftsRef.current=result.drafts;
+            setDrafts(result.drafts);
+            Alert.alert('Invitations restored',result.added+' invitation(s) added. '+(!saved.backupSynced?'Local recovery mirror could not be refreshed; export another backup.':'Existing invitations were kept unchanged.'));
+          }catch(e){
+            setStorageError(true);
+            Alert.alert('Restore paused','The local list changed or storage is unavailable. No existing invitations were intentionally replaced. Retry loading drafts.');
+          }finally{draftWriteInFlight.current=false;}
+        }}
+      ]);
+    }catch(e){Alert.alert('Invalid backup file','Choose a VivahSutra invitation backup JSON file. No local invitations were changed.');}
+    finally{backupActionInFlight.current=false;setBackupBusy(false);}
+  };
   const choosePhoto=async(field)=>{
     try{
       const result=await ImagePicker.launchImageLibraryAsync({mediaTypes:['images'],allowsEditing:true,quality:.82,aspect:[1,1]});
@@ -288,7 +342,13 @@ function AppContent(){
   const Saved=()=> <View><FancyTitle top="YOUR CREATIONS" title="My invitations" subtitle="Saved on this device. Open any draft to edit or export."/>
     {storageError?<Section><Text style={{color:C.rose,fontSize:14,marginBottom:12}}>Cannot read saved invitations. Saving is paused to protect existing data.</Text><GoldButton title="RETRY LOADING DRAFTS" onPress={loadDrafts}/></Section>:null}
     {storageError?null:!loaded?<ActivityIndicator color={C.gold}/>:drafts.length===0?<Section style={{alignItems:'center',paddingVertical:37}}><Text style={{fontSize:45,color:C.gold,marginBottom:12}}>✦</Text><Text style={[s.heading,{fontSize:23,textAlign:'center'}]}>Your story starts here</Text><Small style={{textAlign:'center',marginVertical:14}}>Create your first invitation to see it here.</Small><GoldButton title="CREATE INVITATION" onPress={()=>newInvite()}/></Section>:drafts.map(d=><Section key={d.id} style={{flexDirection:'row',gap:13,alignItems:'center'}}><View style={{width:42,height:64,borderRadius:7,backgroundColor:DESIGNS.find(x=>x.id===d.designId)?.background[0]||C.panel2,borderColor:C.gold,borderWidth:1,alignItems:'center',justifyContent:'center'}}><Text style={{color:C.gold,fontSize:23}}>❦</Text></View><View style={{flex:1}}><Text style={{fontSize:15,color:C.soft,fontFamily:'serif'}} numberOfLines={1}>{d.bride} & {d.groom}</Text><Small>{DESIGNS.find(x=>x.id===d.designId)?.name||'Invitation'} · {d.occasion}</Small><View style={{flexDirection:'row',gap:18,marginTop:12}}><Pressable onPress={()=>editSaved(d)}><Text style={{color:C.gold,fontSize:12,fontWeight:'800'}}>OPEN / EDIT</Text></Pressable><Pressable onPress={()=>remove(d.id)}><Text style={{color:C.rose,fontSize:12,fontWeight:'800'}}>DELETE</Text></Pressable></View></View></Section>)}
-    <Small style={{marginTop:15}}>These drafts are not synced to the website or to another device.</Small>
+    <Section style={{marginTop:15}}><Label>BACKUP & RESTORE · बैकअप</Label>
+      <Small>Export a private JSON backup to Files or Drive before updating or changing phones. It contains names and invitation details; save it somewhere secure. Photos are not embedded.</Small>
+      <GoldButton title={backupBusy?'WORKING…':'EXPORT BACKUP FILE'} disabled={backupBusy||!loaded||storageError||drafts.length===0} onPress={exportBackup} style={{marginTop:12}}/>
+      <GoldButton title={backupBusy?'WORKING…':'RESTORE BACKUP FILE'} disabled={backupBusy||!loaded||storageError} outline onPress={importBackup} style={{marginTop:9}}/>
+      {drafts.length===0?<Small style={{marginTop:11,color:C.rose}}>No invitations found in this app's local storage. Existing file backups can be restored here; the app cannot recover cleared or uninstalled device data automatically.</Small>:null}
+    </Section>
+    <Small style={{marginTop:10}}>These drafts are not synced to the website or to another device unless you export a backup yourself.</Small>
   </View>;
   const navItems=[['home','⌂','Home'],['designs','✧','Designs'],['editor','＋','Create'],['saved','▣','Saved']];
   return <View style={{flex:1,backgroundColor:C.bg}}><StatusBar barStyle="light-content"/>
