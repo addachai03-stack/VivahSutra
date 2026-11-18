@@ -15,16 +15,31 @@ on:
 # Retain only the latest APK build per development branch, including PR-triggered runs.
 # Prevents wasting free GitHub Actions minutes on superseded commits.
 concurrency:
-  group: vivahsutra-android-${{ github.head_ref || github.ref_name }}
+  group: vivahsutra-android-${{ github.ref }}
   cancel-in-progress: true
 
 permissions:
   contents: read
 
 jobs:
-  android-apk:
-    name: Build Android test APK
+  pr-smoke:
+    name: Verify invitation logic and beta feed (PR only)
+    if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Run source checks and update feed unit tests
+        run: cd android-app && node scripts/smoke-check.cjs && node scripts/test-beta-updates.cjs
+
+  android-apk:
+    name: Build and publish Android beta APK
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/feature/native-android-v1'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
     timeout-minutes: 60
     defaults:
       run:
@@ -48,8 +63,10 @@ jobs:
         run: npm install --no-audit --no-fund
       - name: Align Expo dependency versions
         run: npx expo install --fix
-      - name: Verify six designs and core app integrations
-        run: node scripts/smoke-check.cjs
+      - name: Verify designs and beta update feed
+        run: node scripts/smoke-check.cjs && node scripts/test-beta-updates.cjs
+      - name: Generate increasing beta build number
+        run: node scripts/prepare-beta-build.cjs
       - name: Generate native Android project
         run: npx expo prebuild --platform android --non-interactive --no-install
       - name: Build standalone APK for device testing
@@ -62,8 +79,9 @@ jobs:
           BADGING="$("$ANDROID_HOME/build-tools/36.0.0/aapt" dump badging "$APK")"
           grep -m1 '^package:' <<< "$BADGING"
           grep -q "name='com.vivahsutra.invites'" <<< "$BADGING"
-          grep -q "versionCode='5'" <<< "$BADGING"
-          grep -q "versionName='1.1.3'" <<< "$BADGING"
+          EXPECTED_CODE="$(node -p "require('./app.json').expo.android.versionCode")"
+          grep -q "versionCode='$EXPECTED_CODE'" <<< "$BADGING"
+          grep -q "versionName='1.1.4'" <<< "$BADGING"
           echo "Signature certificate fingerprint (public metadata):"
           SIGNATURE_REPORT="$("$ANDROID_HOME/build-tools/36.0.0/apksigner" verify --verbose --print-certs "$APK")"
           printf '%s\n' "$SIGNATURE_REPORT"
@@ -72,6 +90,41 @@ jobs:
           grep -Fq 'Signer #1 certificate SHA-256 digest: fac61745dc0903786fb9ede62a962b399f7348f0bb6f899b8332667591033b9c' <<< "$SIGNATURE_REPORT"
           echo "APK SHA-256:"
           sha256sum "$APK"
+      - name: Publish installable APK as public GitHub beta prerelease
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          APK="android/app/build/outputs/apk/release/app-release.apk"
+          test -s "$APK"
+          TAG="vivahsutra-android-beta-r${GITHUB_RUN_NUMBER}"
+          CODE="$(node -p "require('./app.json').expo.android.versionCode")"
+          VERSION="$(node -p "require('./app.json').expo.version")"
+          test "$CODE" = "$((100000 + GITHUB_RUN_NUMBER))"
+          cp "$APK" VivahSutra-Android-Beta.apk
+          {
+            echo "VivahSutra Android TEST beta only (not APPLIQ/Play Store production release)."
+            echo
+            echo "Version-Name: $VERSION"
+            echo "Build-Code: $CODE"
+            echo "Package: com.vivahsutra.invites"
+            echo "Channel: android-beta"
+            echo "APK-SHA256: $(sha256sum VivahSutra-Android-Beta.apk | awk '{print $1}')"
+            echo
+            echo "Update from within the app. Android requires approval to install the downloaded APK."
+            echo "Do not uninstall or clear app data: invitation drafts are saved locally."
+          } > beta-release-notes.txt
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            gh release upload "$TAG" VivahSutra-Android-Beta.apk --clobber
+            gh release edit "$TAG" --notes-file beta-release-notes.txt --prerelease
+          else
+            gh release create "$TAG" VivahSutra-Android-Beta.apk \
+              --target "$GITHUB_SHA" --prerelease \
+              --title "VivahSutra Android Beta $VERSION (build $CODE)" \
+              --notes-file beta-release-notes.txt
+          fi
+          echo "Beta update feed release: https://github.com/$GH_REPO/releases/tag/$TAG"
       - name: Upload unsigned-production TEST APK
         uses: actions/upload-artifact@v4
         with:
