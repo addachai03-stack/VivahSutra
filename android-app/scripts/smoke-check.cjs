@@ -36,7 +36,7 @@ for (const category of categories) {
 }
 
 assert.equal(packageInfo.version, config.expo.version, 'App and package versions must agree');
-assert.equal(config.expo.android.versionCode, 5, 'Android v1.1.3 versionCode must be 5');
+assert.equal(config.expo.android.versionCode, 6, 'Android v1.1.4 source versionCode must be 6 before CI assigns the beta build code');
 assert.ok(appSource.includes("const BETA_VERSION='"+packageInfo.version+"'"), 'Visible beta version must match package version');
 assert.equal(config.expo.extra.appMode, 'free-beta', 'Beta mode must not be silently removed');
 assert.equal(config.expo.extra.distribution, 'APPLIQ-candidate', 'Do not mark as published');
@@ -44,6 +44,10 @@ assert.equal(config.expo.extra.distribution, 'APPLIQ-candidate', 'Do not mark as
 for (const [name, source, needle] of [
   ['six-card gallery', appSource, 'filtered.map(d=>'],
   ['gallery selection state', appSource, 'const [selectedDesignId,setSelectedDesignId]=useState(null)'],
+  ['automatic GitHub update check', appSource, 'checkForBetaUpdate(installedBuildCode,fetch)'],
+  ['open verified browser download link', appSource, 'Linking.openURL(betaUpdate.apkUrl)'],
+  ['manual Check for updates button', appSource, 'CHECK FOR UPDATES'],
+  ['native build code comparison', appSource, 'Application.nativeBuildVersion'],
   ['tap to select card', appSource, 'grid?setSelectedDesignId(design.id):newInvite(design.id)'],
   ['selected design confirmation', appSource, 'CONTINUE WITH SELECTED DESIGN'],
   ['selected design goes to editor', appSource, 'newInvite(selectedDesignId)'],
