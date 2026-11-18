@@ -1,7 +1,7 @@
 # VivahSutra — native Android app (Expo / React Native)
 This is a separate Android-first application (Expo SDK 57 / Android API 36). The existing GitHub Pages website in the repository root remains untouched.
 
-## Included in v1.1.4 beta
+## Included in v1.1.6 beta
 - Animated royal double-door entrance with a Skip Intro control (no external media needed)
 - Home / Designs / Create / My Invitations bottom navigation
 - Six new mobile invitation themes and four accent colours
@@ -24,7 +24,7 @@ Use Expo Go for development where compatible. For an actual standalone Android t
 - PNG output includes a **FREE BETA** watermark; no paid feature is represented as active.
 - Photos never leave the device. Android image library and media permission handling should be QA-tested.
 - No production release signing, app-store publication, or APPLIQ upload is performed automatically.
-- An older test APK was installed and recorded on an Android device; latest v1.1.4 patches (Hindi editor, local storage safety, accessibility, export layout) **still require fresh device retesting**. A successful CI build does not verify runtime features.
+- An older test APK was installed and recorded on an Android device; latest v1.1.6 patches (Hindi editor, local storage safety, accessibility, export layout) **still require fresh device retesting**. A successful CI build does not verify runtime features.
 
 ## Upgrading your existing test APK safely
 1. Use the latest successful workflow run from the feature branch; download `VivahSutra-Android-Test-APK` from **Artifacts**.
@@ -36,7 +36,7 @@ Use Expo Go for development where compatible. For an actual standalone Android t
 ## Automated smoke checks
 Run `npm run test:smoke` from `android-app/` (requires Node.js). The same tests run before each GitHub APK build. They check source/config invariants only and cannot simulate actual photo permissions, device persistence, PNG generation or user interactions.
 
-- The app header displays `BETA V1.1.4` to help identify the newly installed test build.
+- The app header displays `BETA V1.1.6` to help identify the newly installed test build.
 
 ## Android beta updates — no more iPhone-to-Android APK forwarding
 - The APK built from `feature/native-android-v1` checks public GitHub beta releases at app startup, and when returning to the foreground after 30 minutes.
@@ -48,3 +48,12 @@ Run `npm run test:smoke` from `android-app/` (requires Node.js). The same tests 
 - These beta assets and version metadata are **publicly accessible**. The update check contacts GitHub, but does not upload invitation content or photos.
 - The APKs use the development/debug test signing certificate, not a permanent production key. Release signing, APPLIQ app-store integration and OTA JavaScript updates are **separate future work** requiring explicit approval.
 - Never uninstall or clear app storage to fix update failures. Existing locally saved drafts could be lost.
+
+## Invitation backup and recovery (v1.1.6)
+- Original AsyncStorage key `vivahsutra-native-drafts-v1` remains unchanged to read older beta drafts.
+- Saving maintains an additional on-device recovery copy. A missing or malformed primary list can be recovered from a valid mirror. A readable empty list is not automatically overwritten.
+- Save/delete writes are guarded against concurrent and stale storage changes.
+- Saved → **EXPORT BACKUP FILE** lets the user share a JSON backup to Files or Drive. It includes personal invitation details, so keep it private; no automatic cloud upload.
+- Saved → **RESTORE BACKUP FILE** imports a previously exported JSON and adds missing invitation IDs without overwriting existing drafts. Photos are local paths, not embedded, and may need reselection.
+- Local mirrors do not survive uninstall or clearing app data. Data already missing before recovery existed cannot be restored without an earlier exported backup.
+- Export, restore, and retained drafts must still be verified on an actual Android phone.
