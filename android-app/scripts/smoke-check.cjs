@@ -45,7 +45,7 @@ for (const [name, source, needle] of [
   ['six-card gallery', appSource, 'filtered.map(d=>'],
   ['gallery selection state', appSource, 'const [selectedDesignId,setSelectedDesignId]=useState(null)'],
   ['automatic GitHub update check', appSource, 'checkForBetaUpdate(installedBuildCode,fetch)'],
-  ['open verified browser download link', appSource, 'Linking.openURL(betaUpdate.apkUrl)'],
+  ['open verified browser download link', appSource, 'Linking.openURL(apkUrl)'],
   ['manual Check for updates button', appSource, 'CHECK FOR UPDATES'],
   ['direct update action from manual check', appSource, "onPress:()=>confirmBetaDownload(result.apkUrl)"],
   ['native build code comparison', appSource, 'Application.nativeBuildVersion'],
