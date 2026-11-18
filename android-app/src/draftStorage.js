@@ -38,8 +38,21 @@ async function readLocalDrafts(storage) {
   // A read I/O failure is NOT evidence of missing data: do not overwrite it.
   const primaryRaw = await storage.getItem(PRIMARY_KEY);
   if (primaryRaw !== null) {
-    try { return { drafts: parseDrafts(primaryRaw), recovered: false }; }
-    catch (error) { /* Malformed primary; try the recovery mirror without discarding it. */ }
+    let parsed;
+    try { parsed = parseDrafts(primaryRaw); }
+    catch (error) { parsed = null; /* Malformed primary: try the mirror. */ }
+    if (parsed !== null) {
+      // First upgrade from older beta: seed a mirror without touching the original key.
+      // Never replace a prior recovery snapshot automatically when [] is read.
+      if (parsed.length > 0) {
+        try {
+          if (await storage.getItem(MIRROR_KEY) === null) {
+            await storage.setItem(MIRROR_KEY, JSON.stringify(parsed));
+          }
+        } catch (error) { /* Reading the valid primary should remain possible. */ }
+      }
+      return { drafts: parsed, recovered: false };
+    }
   }
   const mirrorRaw = await storage.getItem(MIRROR_KEY);
   if (mirrorRaw !== null) {
