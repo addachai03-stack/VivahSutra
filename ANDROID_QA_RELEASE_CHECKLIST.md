@@ -3,13 +3,16 @@
 Status: **PARTIALLY TESTED ON A PHYSICAL ANDROID DEVICE**. User-supplied Android phone footage shows the app running and navigating among screens, but does not establish that all functions pass. GitHub Actions checks and an APK build are not substitutes for on-device tests.
 
 ## APK build
-- [ ] V1.1.4 to V1.1.5 in-place beta upgrade tested on Android, with no loss of drafts
-- [ ] In-app Check for Updates offers verified newer GitHub beta and download works; prompts require Android user approval
-- [ ] Invalid beta release package/build/checksum metadata rejected by automated unit tests
+Evidence: 19 November 2026 user-supplied 71-second Android phone video. Recording shows built-in V1.1.4 update prompt, GitHub browser APK download, Android installer and Play Protect, V1.1.5 reopening, Home update check and Designs/Saved navigation. PASS here means **visible in recording**, not automated device-instrumentation tests.
+- [x] V1.1.4 (100127) → V1.1.5 (100143) APK downloaded and installed via Android phone, app reopened on V1.1.5 (71s user footage)
+- [ ] Existing saved drafts survive in-place update (NOT verified: post-update Saved screen was empty; recording did not establish a pre-update saved draft)
+- [x] V1.1.4 offered V1.1.5 build 100143 in-app; Download opened browser and APK downloaded; Android prompts and Google Play Protect scan shown; App Installed appeared
+- [x] Post-update V1.1.5 Home → Check for Updates reported 'App is up to date'
+- [x] Invalid beta release package/build/checksum metadata rejected by source-level unit tests (GitHub Actions PASS; not a full Android security audit)
 - [ ] GitHub Actions `Android APK — VivahSutra` succeeds on the latest PR commit
 - [ ] Artifact `VivahSutra-Android-Test-APK` exists and is nonempty
 - [x] Install an earlier test APK on an Android phone (recorded footage provided; latest build needs reinstall)
-- [ ] Cold launch and reopen without crashes
+- [x] New V1.1.5 app launches after update and Home/Designs/Saved/Create navigation appears without visible crash in provided recording
 
 ## Royal entrance
 - [ ] Both ornate door panels visibly open outward without flicker
@@ -20,7 +23,7 @@ Status: **PARTIALLY TESTED ON A PHYSICAL ANDROID DEVICE**. User-supplied Android
 ## Core screens
 - [x] Home, Designs, Create and Saved screens shown during earlier phone test (current build still needs retest)
 - [x] Gallery design cards render and scroll on V1.1.2 Android phone footage (individual selection of all six is not verified)
-- [ ] Tap-to-select, selected gold border/checkmark and persistent Continue button work on V1.1.3 Android phone (new source code pending device test)
+- [ ] Tap-to-select, gold checkmark and Continue navigation fully verified: V1.1.5 video shows Select Design First button and a design card, but no successful selection/Continue action
 - [ ] All six templates individually selectable, and selected design opens correctly in editor
 - [ ] Filter Royal / Floral / Traditional / Modern works
 - [ ] No clipped cards on a narrow Android phone
