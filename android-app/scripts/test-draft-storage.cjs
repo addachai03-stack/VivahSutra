@@ -15,6 +15,7 @@ const store=(initial={})=>{
   let result=await readLocalDrafts(historical);
   assert.equal(result.recovered,false);
   assert.equal(result.drafts.length,1);
+  assert.equal(historical.values.get(MIRROR_KEY),JSON.stringify([one]),'First old-version load seeds a non-destructive mirror');
   assert.equal((await writeLocalDrafts(historical,[one],[one,two])).backupSynced,true);
   assert.equal((await readLocalDrafts(historical)).drafts.length,2);
   assert.equal(JSON.parse(historical.values.get(MIRROR_KEY)).length,2);
