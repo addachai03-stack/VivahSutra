@@ -13,16 +13,24 @@ function parseBetaRelease(release) {
   const runNumber = Number(match[1]);
   const versionCode = 100000 + runNumber;
   if (!Number.isSafeInteger(versionCode) || versionCode > 2147483647) return null;
+  const body = String(release.body || '');
+  const codeMatch = body.match(/^Build-Code:\s*([0-9]+)\s*$/mi);
+  if (!codeMatch || Number(codeMatch[1]) !== versionCode) return null;
+  if (!/^Package:\s*com\.vivahsutra\.invites\s*$/mi.test(body)) return null;
+  const hashMatch = body.match(/^APK-SHA256:\s*([0-9a-f]{64})\s*$/mi);
+  if (!hashMatch) return null;
+  const expectedDigest = 'sha256:' + hashMatch[1].toLowerCase();
   const asset = (Array.isArray(release.assets) ? release.assets : []).find(a =>
     a.name === APK_NAME &&
     a.state === 'uploaded' &&
     Number(a.size) > 1000000 &&
-    a.browser_download_url === DOWNLOAD_PREFIX + release.tag_name + '/' + APK_NAME
+    a.browser_download_url === DOWNLOAD_PREFIX + release.tag_name + '/' + APK_NAME &&
+    (!a.digest || String(a.digest).toLowerCase() === expectedDigest)
   );
   if (!asset) return null;
-  const nameMatch = String(release.body || '').match(/^Version-Name:\s*([0-9]+\.[0-9]+\.[0-9]+)\s*$/mi);
-  const versionName = nameMatch ? nameMatch[1] : 'new beta';
-  return { versionCode, versionName, apkUrl: asset.browser_download_url, releaseUrl: release.html_url || null };
+  const nameMatch = body.match(/^Version-Name:\s*([0-9]+\.[0-9]+\.[0-9]+)\s*$/mi);
+  if (!nameMatch) return null;
+  return { versionCode, versionName: nameMatch[1], apkUrl: asset.browser_download_url, releaseUrl: release.html_url || null };
 }
 
 async function checkForBetaUpdate(installedBuild, fetcher) {
