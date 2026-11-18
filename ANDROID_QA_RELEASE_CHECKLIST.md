@@ -68,3 +68,10 @@ Evidence: 19 November 2026 user-supplied 71-second Android phone video. Recordin
 - Saving is blocked until the existing local drafts have finished loading, preventing an early write from overwriting data.
 - Six-template smoke checks run as part of the Android APK workflow.
 - Green display lines are also visible on the Android launcher's home screen in the user-provided footage, so the footage does not support treating those lines as an app-only rendering defect.
+
+## V1.1.6 draft retention and backup QA (NOT YET DEVICE-VERIFIED)
+- [ ] In-place V1.1.5 → V1.1.6 install preserves an existing saved test draft.
+- [ ] Export invitation JSON from Saved to Files/Drive and inspect that it exists.
+- [ ] Restore exported JSON; duplicate IDs stay unchanged and invalid JSON is rejected.
+- [ ] Save → force close → reopen persists; corrupted/missing primary recovers from on-device mirror (only if mirror already exists).
+- [ ] Existing older missing invitation: root cause still unknown; pre-v1.1.6 versions stored no mirror and cannot be recovered solely from the repo.
