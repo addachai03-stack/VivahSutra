@@ -2,13 +2,13 @@
 
 ## Proposed store listing (editable)
 - **App title:** VivahSutra
-- **Version in development:** 1.1.2 (Android versionCode 4)
+- **Version in development:** 1.1.3 (Android versionCode 5)
 - **Category:** Lifestyle / Wedding invitations (confirm available APPLIQ category before listing)
 - **Short description:** Create beautiful Indian wedding invitations on your phone.
 - **Full description:** Choose from six wedding invitation designs, personalise the couple's names, celebration details and optional photos, and preview the front and back of your card. Save drafts privately on your Android device. Export your invitation as a PNG or share it through Android's share menu. Includes Hindi and English invitation editing options. No account or payment is required for this free beta.
 - **Pricing:** Free beta — no in-app purchases.
 - **Audience:** People creating their own wedding or celebration invitations.
-- **Features:** Six designs, four accent colours, seven occasions, Hindi/English text entry, optional couple photos, front/back card, local drafts, watermarked PNG share/save.
+- **Features:** Explicit select-and-continue gallery with highlighted choice, six designs, four accent colours, seven occasions, Hindi/English text entry, optional couple photos, front/back card, local drafts, watermarked PNG share/save.
 - **Known limitations:** FREE BETA watermark on exported cards, no device-to-device draft sync, no automatic recovery if app data is cleared or uninstalled. Only the currently selected side is exported as PNG at a time.
 - **Privacy summary:** The current app code uses local device storage for invitation drafts and copies selected photos to app-local storage. Users choose whether to send PNGs to other apps. No app account, backend upload or payment integration is implemented for the invitation flow. Recheck APK permissions and third-party SDK behavior before final privacy claims.
 - **Support/contact:** NOT PROVIDED — owner must supply verified support contact prior to public listing.
