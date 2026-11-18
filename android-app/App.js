@@ -4,6 +4,7 @@ import {SafeAreaProvider, SafeAreaView} from 'react-native-safe-area-context';
 import {LinearGradient} from 'expo-linear-gradient';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as ImagePicker from 'expo-image-picker';
+import * as DocumentPicker from 'expo-document-picker';
 import * as Sharing from 'expo-sharing';
 import * as Application from 'expo-application';
 import * as MediaLibrary from 'expo-media-library/legacy';
@@ -11,10 +12,10 @@ import * as FileSystem from 'expo-file-system/legacy';
 import ViewShot from 'react-native-view-shot';
 import {ACCENTS, DESIGNS, InvitationCard, NEW_INVITE, OCCASIONS} from './src/designs';
 const {checkForBetaUpdate} = require('./src/betaUpdateFeed');
+const {readLocalDrafts,writeLocalDrafts,makeBackupFile,readBackupFile,mergeBackup} = require('./src/draftStorage');
 
 const C={bg:'#171310',panel:'#24201C',panel2:'#30271F',gold:'#D6B174',soft:'#F9EDDB',muted:'#AEA194',line:'#4D4033',rose:'#C9928B'};
-const KEY='vivahsutra-native-drafts-v1';
-const BETA_VERSION='1.1.5';
+const BETA_VERSION='1.1.6';
 const nowId=()=>String(Date.now())+'-'+Math.random().toString(36).slice(2,7);
 // Keep template-gallery sample names, but never prefill a real new invitation with demo wedding details.
 const makeNew=(designId='rajwada')=>({...NEW_INVITE,id:null,designId,bride:'',groom:'',date:'',time:'',venue:'',host:'',message:'',relatives:'',rsvp:''});
@@ -71,6 +72,9 @@ function AppContent(){
   const [hasUnsavedEdits,setHasUnsavedEdits]=useState(false);
   const [saving,setSaving]=useState(false);
   const savingInFlight=useRef(false);
+  const draftWriteInFlight=useRef(false);
+  const draftsRef=useRef([]);
+  const backupActionInFlight=useRef(false);
   const [betaUpdate,setBetaUpdate]=useState(null);
   const [updateStatus,setUpdateStatus]=useState('idle');
   const updateInFlight=useRef(false);
@@ -124,15 +128,16 @@ function AppContent(){
     return()=>sub.remove();
   },[]);
   const loadDrafts=async()=>{
+    if(draftWriteInFlight.current)return;
     try{
-      const value=await AsyncStorage.getItem(KEY);
-      const parsed=value?JSON.parse(value):[];
-      if(!Array.isArray(parsed))throw new Error('Invalid draft storage format');
-      setDrafts(parsed);
+      const result=await readLocalDrafts(AsyncStorage);
+      draftsRef.current=result.drafts;
+      setDrafts(result.drafts);
       setStorageError(false);
+      if(result.recovered)Alert.alert('Invitations recovered','A damaged or missing local list was restored from this app’s recovery copy.');
     }catch(e){
       setStorageError(true);
-      Alert.alert('Drafts unavailable','Could not read existing invitations. Saving is paused to protect your drafts. Please retry.');
+      Alert.alert('Drafts unavailable','Could not safely read local invitations. Saving and deleting are paused. Do not uninstall; retry or restore an exported backup.');
     }finally{setLoaded(true);}
   };
   useEffect(()=>{loadDrafts();},[]);
@@ -159,24 +164,42 @@ function AppContent(){
     if(!loaded){Alert.alert('Loading drafts','Your saved invitations are still loading. Please try again.');return;}
     if(storageError){Alert.alert('Drafts unavailable','Please retry loading saved invitations before saving, so existing drafts are not overwritten.');return;}
     if(!invite.bride?.trim()||!invite.groom?.trim()){Alert.alert('Names required','Add both names before saving your invitation.');return;}
-    if(savingInFlight.current)return;
+    if(savingInFlight.current||draftWriteInFlight.current)return;
     savingInFlight.current=true;
+    draftWriteInFlight.current=true;
     setSaving(true);
     const id=invite.id||nowId();
     const entry={...invite,id,createdAt:invite.createdAt||new Date().toISOString(),updatedAt:new Date().toISOString()};
-    const next=[entry,...drafts.filter(d=>d.id!==id)];
-    try{await AsyncStorage.setItem(KEY,JSON.stringify(next));setDrafts(next);setInvite(entry);setHasUnsavedEdits(false);Alert.alert('Invitation saved','Your draft is saved privately on this device.');}
-    catch(e){Alert.alert('Could not save','Please check your device storage and try again.');}
-    finally{savingInFlight.current=false;setSaving(false);}
+    const previous=draftsRef.current;
+    const next=[entry,...previous.filter(d=>d.id!==id)];
+    try{
+      const result=await writeLocalDrafts(AsyncStorage,previous,next);
+      draftsRef.current=next;
+      setDrafts(next);
+      setInvite(entry);
+      setHasUnsavedEdits(false);
+      Alert.alert('Invitation saved',result.backupSynced?'Your invitation and its local recovery copy are saved.':'Invitation saved, but the recovery copy could not be refreshed. Export a backup file from Saved.');
+    }catch(e){
+      setStorageError(true);
+      Alert.alert('Save paused','Local storage changed or is unavailable. Existing invitations were not intentionally overwritten. Use Saved → Retry Loading before saving again.');
+    }finally{savingInFlight.current=false;draftWriteInFlight.current=false;setSaving(false);}
   };
   const remove=(id)=>{
-    if(storageError){Alert.alert('Drafts unavailable','Retry loading your invitations before deleting anything.');return;}
-    Alert.alert('Delete invitation?','This deletes this local draft and cannot be undone.',[
+    if(!loaded||storageError||draftWriteInFlight.current){Alert.alert('Drafts unavailable','Retry loading your invitations before deleting anything.');return;}
+    Alert.alert('Delete invitation?','This deletes this local draft. Export a backup first if you want a separate copy.',[
     {text:'Cancel',style:'cancel'},
     {text:'Delete',style:'destructive',onPress:async()=>{
-      const next=drafts.filter(x=>x.id!==id);
-      try{await AsyncStorage.setItem(KEY,JSON.stringify(next));setDrafts(next);}
-      catch(e){Alert.alert('Delete failed','The saved invitation was not changed.');}
+      if(draftWriteInFlight.current)return;
+      draftWriteInFlight.current=true;
+      const previous=draftsRef.current;
+      const next=previous.filter(x=>x.id!==id);
+      try{
+        const result=await writeLocalDrafts(AsyncStorage,previous,next);
+        draftsRef.current=next;
+        setDrafts(next);
+        if(!result.backupSynced)Alert.alert('Backup warning','Deletion succeeded, but the local recovery copy could not be refreshed.');
+      }catch(e){setStorageError(true);Alert.alert('Delete paused','Storage changed or is unavailable. Reload saved invitations before trying again.');}
+      finally{draftWriteInFlight.current=false;}
     }}
     ]);
   };
