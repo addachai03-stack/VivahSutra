@@ -1,18 +1,20 @@
 import React, {useEffect,useRef,useState} from 'react';
-import {ActivityIndicator, Alert, Animated, BackHandler, Easing, Dimensions, Image, KeyboardAvoidingView, Platform, Pressable, ScrollView, StatusBar, StyleSheet, Text, TextInput, View} from 'react-native';
+import {ActivityIndicator, Alert, Animated, BackHandler, Easing, Dimensions, Image, KeyboardAvoidingView, Linking, AppState, Platform, Pressable, ScrollView, StatusBar, StyleSheet, Text, TextInput, View} from 'react-native';
 import {SafeAreaProvider, SafeAreaView} from 'react-native-safe-area-context';
 import {LinearGradient} from 'expo-linear-gradient';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as ImagePicker from 'expo-image-picker';
 import * as Sharing from 'expo-sharing';
+import * as Application from 'expo-application';
 import * as MediaLibrary from 'expo-media-library/legacy';
 import * as FileSystem from 'expo-file-system/legacy';
 import ViewShot from 'react-native-view-shot';
 import {ACCENTS, DESIGNS, InvitationCard, NEW_INVITE, OCCASIONS} from './src/designs';
+const {checkForBetaUpdate} = require('./src/betaUpdateFeed');
 
 const C={bg:'#171310',panel:'#24201C',panel2:'#30271F',gold:'#D6B174',soft:'#F9EDDB',muted:'#AEA194',line:'#4D4033',rose:'#C9928B'};
 const KEY='vivahsutra-native-drafts-v1';
-const BETA_VERSION='1.1.3';
+const BETA_VERSION='1.1.4';
 const nowId=()=>String(Date.now())+'-'+Math.random().toString(36).slice(2,7);
 // Keep template-gallery sample names, but never prefill a real new invitation with demo wedding details.
 const makeNew=(designId='rajwada')=>({...NEW_INVITE,id:null,designId,bride:'',groom:'',date:'',time:'',venue:'',host:'',message:'',relatives:'',rsvp:''});
@@ -69,9 +71,50 @@ function AppContent(){
   const [hasUnsavedEdits,setHasUnsavedEdits]=useState(false);
   const [saving,setSaving]=useState(false);
   const savingInFlight=useRef(false);
+  const [betaUpdate,setBetaUpdate]=useState(null);
+  const [updateStatus,setUpdateStatus]=useState('idle');
+  const updateInFlight=useRef(false);
+  const updateLastCheckedAt=useRef(0);
   
   const shot=useRef(null);
   const listRef=useRef(null);
+  const installedBuildCode=Number(Application.nativeBuildVersion || 0);
+  const checkUpdates=async(manual=false)=>{
+    if(updateInFlight.current)return;
+    updateInFlight.current=true;
+    updateLastCheckedAt.current=Date.now();
+    setUpdateStatus('checking');
+    try{
+      const result=await checkForBetaUpdate(installedBuildCode,fetch);
+      setBetaUpdate(result.status==='available'?result:null);
+      setUpdateStatus(result.status);
+      if(manual){
+        const title=result.status==='available'?'Update available':result.status==='current'?'App is up to date':result.status==='unavailable'?'Beta not published yet':'Cannot compare builds';
+        const message=result.status==='available'?'VivahSutra '+result.versionName+' (build '+result.versionCode+') is available. Tap the Update button to download it.':result.status==='current'?'You already have the latest available beta APK.':result.status==='unavailable'?'No public beta release is available yet. Please check later.':'This installed APK has no readable Android build number.';
+        Alert.alert(title,message);
+      }
+    }catch(e){
+      setUpdateStatus('error');
+      if(manual)Alert.alert('Update check failed','Could not reach GitHub beta updates. Check internet access and try again.');
+    }finally{updateInFlight.current=false;}
+  };
+  const openBetaUpdate=()=>{
+    if(!betaUpdate?.apkUrl)return;
+    Alert.alert('Install beta update?','The APK will download using your browser. Android will ask permission before installing. Do not uninstall the current app or clear its data.',[
+      {text:'Cancel',style:'cancel'},
+      {text:'Download update',onPress:async()=>{
+        try{await Linking.openURL(betaUpdate.apkUrl);}
+        catch(e){Alert.alert('Download unavailable','Could not open the update link. Check your internet connection.');}
+      }}
+    ]);
+  };
+  useEffect(()=>{
+    checkUpdates(false);
+    const sub=AppState.addEventListener('change',state=>{
+      if(state==='active'&&Date.now()-updateLastCheckedAt.current>30*60*1000)checkUpdates(false);
+    });
+    return()=>sub.remove();
+  },[]);
   const loadDrafts=async()=>{
     try{
       const value=await AsyncStorage.getItem(KEY);
@@ -183,6 +226,13 @@ function AppContent(){
     <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{marginHorizontal:-18}} contentContainerStyle={{gap:12,paddingHorizontal:18,paddingBottom:12}}>
       {DESIGNS.slice(0,4).map(d=><View key={d.id} style={{width:193}}><DesignTile design={d}/></View>)}
     </ScrollView>
+    <Section style={{marginTop:18}}><Label>APP UPDATES · BETA</Label>
+      <Small>Installed: V{Application.nativeApplicationVersion||BETA_VERSION} · Android build {Application.nativeBuildVersion||'unknown'}</Small>
+      <Small style={{marginTop:8}}>Updates are checked automatically when the app opens. Download and installation require your approval.</Small>
+      {betaUpdate?<GoldButton title={'DOWNLOAD V'+betaUpdate.versionName+' UPDATE  ↗'} onPress={openBetaUpdate} style={{marginTop:13}}/>:null}
+      <GoldButton title={updateStatus==='checking'?'CHECKING…':'CHECK FOR UPDATES'} disabled={updateStatus==='checking'} outline onPress={()=>checkUpdates(true)} style={{marginTop:10}}/>
+      {updateStatus==='error'?<Small style={{color:C.rose,marginTop:8}}>Could not check for updates · Check your internet</Small>:null}
+    </Section>
     <Section style={{marginTop:18}}><Label>HOW IT WORKS</Label>{[['01','Choose your design'],['02','Make the details yours'],['03','Save or share your invitation']].map(([n,t])=><View key={n} style={{flexDirection:'row',paddingVertical:10,alignItems:'center',gap:17}}><Text style={{color:C.gold,fontFamily:'serif',fontSize:19}}>{n}</Text><Text style={{color:C.soft,fontSize:13}}>{t}</Text></View>)}</Section>
   </View>;
   const DesignsScreen=()=> <View><FancyTitle top="THE COLLECTION" title="Six ways to say forever." subtitle="Tap a design to select it. Then choose Continue to customise your card."/>
@@ -213,6 +263,10 @@ function AppContent(){
   return <View style={{flex:1,backgroundColor:C.bg}}><StatusBar barStyle="light-content"/>
     <SafeAreaView style={{flex:1}} edges={['top','left','right']}>
       <Header/>
+      {betaUpdate?<Pressable accessibilityRole="button" accessibilityLabel="Download VivahSutra beta update" onPress={openBetaUpdate} style={{backgroundColor:C.panel2,borderBottomWidth:1,borderColor:C.gold,paddingVertical:12,paddingHorizontal:17}}>
+        <Text style={{fontSize:12,fontWeight:'800',color:C.gold}}>NEW BETA AVAILABLE · V{betaUpdate.versionName} (build {betaUpdate.versionCode})  ↗</Text>
+        <Small>Tap to download. Android will ask before installing.</Small>
+      </Pressable>:null}
       <KeyboardAvoidingView style={{flex:1}} behavior={Platform.OS==='ios'?'padding':undefined}>
         <ScrollView key={tab} ref={listRef} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false} contentContainerStyle={{paddingHorizontal:18,paddingTop:26,paddingBottom:120}}>
           {tab==='home'?Home():tab==='designs'?DesignsScreen():tab==='editor'?Editor():Saved()}
