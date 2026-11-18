@@ -1,4 +1,4 @@
-# VivahSutra v1.1.5 — Android phone test guide (Hinglish)
+ # VivahSutra v1.1.6 — Android phone test guide (Hinglish)
 
 **Only test after the latest feature-branch APK build is successful.** This guide is for real-device checks, not proof they already passed.
 
@@ -14,7 +14,7 @@
 - [ ] **Untrusted release metadata:** update checker must reject releases whose package, build number or APK checksum do not match the GitHub beta asset (verified in CI unit tests; not a device UI test).
 - [ ] **No silent update:** Android requires user action; existing saved drafts remain after successful in-place upgrade.
 - [ ] **Offline:** update check gracefully fails; invitation creation, local save, and export continue to work.
-- [ ] **Installed build:** app header must show `BETA V1.1.5` on the newest build; `BETA V1.1.4` contains the first update checker.
+- [ ] **Installed build:** app header must show `BETA V1.1.6` on the newest build; `BETA V1.1.4` contains the first update checker.
 - [ ] **Royal intro:** app launch, doors open, Skip works; repeat after reopening.
 - [ ] **Tabs:** Home / Designs / Create / Saved all tap/open; Android Back works.
 - [ ] **Design collection (gallery visible in V1.1.2 phone footage):** All = 6; Royal = 2; Floral = 2; Traditional = 1; Modern = 1. SIX actual cards must be visibly rendered below the filter row; scroll downward and tap at least one from each category. A displayed count alone is NOT a pass.
@@ -36,3 +36,12 @@ Send a screen recording/photo of the relevant step plus the Android version and 
 
 ## Release warning
 This is a **FREE BETA TEST APK with debug signing**, not an APPLIQ production release. Store publishing and PR merge need separate approvals.
+
+## Backup & recovery acceptance test for V1.1.6
+- Install V1.1.6 *over* V1.1.5; do not uninstall or clear app storage.
+- Before creating new drafts, inspect Saved for any old drafts. Empty Saved does not prove recovery; V1.1.5 did not create a recovery mirror.
+- Save a sample invitation → close app → reopen Saved. The draft should remain.
+- Saved → EXPORT BACKUP FILE → choose Android Files or Drive; verify a .json file exists and keep it private.
+- Saved → RESTORE BACKUP FILE → select the exported JSON; existing invitations must not be overwritten and duplicate IDs should be skipped.
+- Photos are not embedded in JSON backups and might require reselection after reinstall.
+- Corrupt/unreadable local storage must block Save/Delete, not silently replace existing data.
