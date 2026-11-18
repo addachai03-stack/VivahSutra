@@ -32,7 +32,7 @@ jobs:
         with:
           node-version: '22'
       - name: Run source checks and update feed unit tests
-        run: cd android-app && node scripts/smoke-check.cjs && node scripts/test-beta-updates.cjs
+        run: cd android-app && npm run test:smoke
 
   android-apk:
     name: Build and publish Android beta APK
@@ -64,7 +64,7 @@ jobs:
       - name: Align Expo dependency versions
         run: npx expo install --fix
       - name: Verify designs and beta update feed
-        run: node scripts/smoke-check.cjs && node scripts/test-beta-updates.cjs
+        run: npm run test:smoke
       - name: Generate increasing beta build number
         run: node scripts/prepare-beta-build.cjs
       - name: Generate native Android project
@@ -81,7 +81,7 @@ jobs:
           grep -q "name='com.vivahsutra.invites'" <<< "$BADGING"
           EXPECTED_CODE="$(node -p "require('./app.json').expo.android.versionCode")"
           grep -q "versionCode='$EXPECTED_CODE'" <<< "$BADGING"
-          grep -q "versionName='1.1.5'" <<< "$BADGING"
+          grep -q "versionName='1.1.6'" <<< "$BADGING"
           echo "Signature certificate fingerprint (public metadata):"
           SIGNATURE_REPORT="$("$ANDROID_HOME/build-tools/36.0.0/apksigner" verify --verbose --print-certs "$APK")"
           printf '%s\n' "$SIGNATURE_REPORT"
