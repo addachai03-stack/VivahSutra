@@ -1,4 +1,4 @@
-# VivahSutra v1.1.1 — Android phone test guide (Hinglish)
+# VivahSutra v1.1.2 — Android phone test guide (Hinglish)
 
 **Only test after the latest feature-branch APK build is successful.** This guide is for real-device checks, not proof they already passed.
 
@@ -8,10 +8,10 @@
 3. **Old VivahSutra ko uninstall mat karna** if you have saved invitations. First try installing the newer APK over the existing app. Clearing app storage/uninstalling may permanently remove local invitations. If Android reports a signature conflict, stop and report it instead of deleting data.
 
 ## Real-device pass checklist
-- [ ] **Installed build:** app header must show `BETA V1.1.1`; if not, you are still testing an older APK.
+- [ ] **Installed build:** app header must show `BETA V1.1.2`; if not, you are still testing an older APK.
 - [ ] **Royal intro:** app launch, doors open, Skip works; repeat after reopening.
 - [ ] **Tabs:** Home / Designs / Create / Saved all tap/open; Android Back works.
-- [ ] **Design collection:** All = 6; Royal = 2; Floral = 2; Traditional = 1; Modern = 1. Open and customise at least one from each category.
+- [ ] **Design collection (regression from real phone footage):** All = 6; Royal = 2; Floral = 2; Traditional = 1; Modern = 1. SIX actual cards must be visibly rendered below the filter row; scroll downward and tap at least one from each category. A displayed count alone is NOT a pass.
 - [ ] **Small screen:** no design cards obscured; invitation preview scrolls sideways if phone is narrower than preview; bottom Save/Share buttons are usable.
 - [ ] **Language:** switch English to हिन्दी in editor, confirm Hindi field labels appear; type Hindi names and family line; inspect preview for missing glyphs.
 - [ ] **Fields:** edit couple names, date, time, venue, message and RSVP; preview reflects entered data. Try a long name and multiline message.
