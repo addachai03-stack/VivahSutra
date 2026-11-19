@@ -80,3 +80,10 @@ Run `npm run test:smoke` from `android-app/` (requires Node.js). The same tests 
 - If the unfinished-work record is unreadable, Home offers Retry and a separate explicit Discard option. Never clear app data to address this.
 - Working-copy persistence is best-effort and local only. The latest keystroke might not be saved if Android kills the app before the pending storage write finishes.
 - The working copy does not migrate between phones or survive uninstall/clear data. Export normal Saved drafts to a user-controlled JSON file for long-term backup.
+
+## V1.1.13 Save-safe unfinished working copy
+- A completed Saved invitation and a separate unfinished working copy are different records.
+- When normal Save finishes, the unfinished copy is cleared only if it still matches the invitation content submitted for saving. If later keystrokes were already written, the new working copy is preserved and Home can offer a recovery choice.
+- Corrupt or unreadable unfinished records cannot be silently overwritten; explicit user recovery or discard is required.
+- This does not guarantee the last keystroke if Android kills the process before the device storage write completes.
+- Unit tests exercise write ordering and conditional cleanup; verify real-device behavior before marking Android QA PASS.
