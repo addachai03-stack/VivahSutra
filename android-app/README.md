@@ -1,7 +1,7 @@
 # VivahSutra — native Android app (Expo / React Native)
 This is a separate Android-first application (Expo SDK 57 / Android API 36). The existing GitHub Pages website in the repository root remains untouched.
 
-## Included in v1.1.6 beta
+## Included in v1.1.7 beta
 - Animated royal double-door entrance with a Skip Intro control (no external media needed)
 - Home / Designs / Create / My Invitations bottom navigation
 - Six new mobile invitation themes and four accent colours
@@ -54,6 +54,8 @@ Run `npm run test:smoke` from `android-app/` (requires Node.js). The same tests 
 - Saving maintains an additional on-device recovery copy. A missing or malformed primary list can be recovered from a valid mirror. A readable empty list is not automatically overwritten.
 - Save/delete writes are guarded against concurrent and stale storage changes.
 - Saved → **EXPORT BACKUP FILE** lets the user share a JSON backup to Files or Drive. It includes personal invitation details, so keep it private; no automatic cloud upload.
+- Saved → **RECOVER FROM LOCAL COPY** checks the current on-device snapshot for missing invitation IDs, asks for confirmation, and adds them without replacing existing drafts. A deliberately deleted draft could also be found in an older snapshot; this action is opt-in.
 - Saved → **RESTORE BACKUP FILE** imports a previously exported JSON and adds missing invitation IDs without overwriting existing drafts. Photos are local paths, not embedded, and may need reselection.
+- A valid empty primary list is never automatically replaced by a stale recovery snapshot. The user must approve RECOVER FROM LOCAL COPY.
 - Local mirrors do not survive uninstall or clearing app data. Data already missing before recovery existed cannot be restored without an earlier exported backup.
 - Export, restore, and retained drafts must still be verified on an actual Android phone.
