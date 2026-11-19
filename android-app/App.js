@@ -13,10 +13,11 @@ import ViewShot from 'react-native-view-shot';
 import {ACCENTS, DESIGNS, InvitationCard, NEW_INVITE, OCCASIONS} from './src/designs';
 const {checkForBetaUpdate} = require('./src/betaUpdateFeed');
 const {exportInvitationPng} = require('./src/pngExport');
+const {createWorkingCopyStore} = require('./src/workingCopy');
 const {readLocalDrafts,writeLocalDrafts,inspectRecoverySnapshot,inspectStorageHealth,makeBackupFile,readBackupFile,mergeBackup} = require('./src/draftStorage');
 
 const C={bg:'#171310',panel:'#24201C',panel2:'#30271F',gold:'#D6B174',soft:'#F9EDDB',muted:'#AEA194',line:'#4D4033',rose:'#C9928B'};
-const BETA_VERSION='1.1.10';
+const BETA_VERSION='1.1.11';
 const nowId=()=>String(Date.now())+'-'+Math.random().toString(36).slice(2,7);
 // Keep template-gallery sample names, but never prefill a real new invitation with demo wedding details.
 const makeNew=(designId='rajwada')=>({...NEW_INVITE,id:null,designId,bride:'',groom:'',date:'',time:'',venue:'',host:'',message:'',relatives:'',rsvp:''});
@@ -73,6 +74,11 @@ function AppContent(){
   const [busy,setBusy]=useState(false);
   const exportInFlight=useRef(false);
   const [hasUnsavedEdits,setHasUnsavedEdits]=useState(false);
+  const [workingCandidate,setWorkingCandidate]=useState(null);
+  const [workingLoaded,setWorkingLoaded]=useState(false);
+  const [workingCopyError,setWorkingCopyError]=useState(false);
+  const workingCopyStore=useRef(null);
+  if(!workingCopyStore.current)workingCopyStore.current=createWorkingCopyStore(AsyncStorage);
   const [saving,setSaving]=useState(false);
   const savingInFlight=useRef(false);
   const draftWriteInFlight=useRef(false);
@@ -156,6 +162,18 @@ function AppContent(){
   };
   useEffect(()=>{loadDrafts();},[]);
   useEffect(()=>{
+    let active=true;
+    workingCopyStore.current.read().then(copy=>{
+      if(active&&copy)setWorkingCandidate(copy);
+    }).catch(()=>{if(active)setWorkingCopyError(true);})
+      .finally(()=>{if(active)setWorkingLoaded(true);});
+    return()=>{active=false;};
+  },[]);
+  useEffect(()=>{
+    if(!workingLoaded||!hasUnsavedEdits)return;
+    workingCopyStore.current.save(invite).catch(()=>setWorkingCopyError(true));
+  },[invite,hasUnsavedEdits,workingLoaded]);
+  useEffect(()=>{
     const subscription=BackHandler.addEventListener('hardwareBackPress',()=>{
       if(intro){setIntro(false);return true;}
       if(tab==='editor'&&hasUnsavedEdits){
@@ -179,11 +197,34 @@ function AppContent(){
       message:language==='hi'&&p.message===NEW_INVITE.message?'आपकी उपस्थिति हमारे समारोह को और भी सुंदर बनाएगी।':language==='en'&&p.message==='आपकी उपस्थिति हमारे समारोह को और भी सुंदर बनाएगी।'?NEW_INVITE.message:p.message
     }));
   };
+  const resumeSavedWork=()=>{
+    if(!workingCandidate)return;
+    setInvite({...makeNew(workingCandidate.invite.designId||'rajwada'),...workingCandidate.invite});
+    setSide('front');
+    setWorkingCandidate(null);
+    setHasUnsavedEdits(true);
+    setTab('editor');
+  };
   const confirmDiscard=(proceed)=>{
-    if(!hasUnsavedEdits){proceed();return;}
-    Alert.alert('Unsaved changes','Starting another invitation will discard your unsaved edits.',[
-      {text:'Keep editing',style:'cancel',onPress:()=>setTab('editor')},
-      {text:'Discard changes',style:'destructive',onPress:proceed}
+    if(!workingLoaded){Alert.alert('Loading unfinished work','Checking for an unfinished invitation. Please try again.');return;}
+    if(workingCopyError){
+      Alert.alert('Unfinished work unavailable','The old unfinished-work record could not be read. Nothing will be overwritten until you review storage.');
+      return;
+    }
+    if(!hasUnsavedEdits&&!workingCandidate){proceed();return;}
+    Alert.alert('Discard unfinished invitation?','Starting another invitation will remove its unsaved working copy on this device. Saved invitations will stay unchanged.',[
+      {text:'Keep editing',style:'cancel',onPress:()=>workingCandidate?resumeSavedWork():setTab('editor')},
+      {text:'Discard unfinished',style:'destructive',onPress:async()=>{
+        try{
+          await workingCopyStore.current.clear();
+          setWorkingCandidate(null);
+          setHasUnsavedEdits(false);
+          proceed();
+        }catch(e){
+          setWorkingCopyError(true);
+          Alert.alert('Could not discard','Unfinished local work was not safely cleared. No new invitation was started.');
+        }
+      }}
     ]);
   };
   const newInvite=(designId='rajwada')=>confirmDiscard(()=>{setInvite(makeNew(designId));setHasUnsavedEdits(false);setSide('front');setTab('editor');});
@@ -206,7 +247,15 @@ function AppContent(){
       setDrafts(next);
       setInvite(entry);
       setHasUnsavedEdits(false);
-      Alert.alert('Invitation saved',result.backupSynced?'Your invitation and its local recovery copy are saved.':'Invitation saved, but the recovery copy could not be refreshed. Export a backup file from Saved.');
+      let workingCleared=true;
+      try{
+        await workingCopyStore.current.clear();
+        setWorkingCandidate(null);
+      }catch(e){
+        workingCleared=false;
+        setWorkingCopyError(true);
+      }
+      Alert.alert('Invitation saved',(result.backupSynced?'Your invitation and its local recovery copy are saved.':'Invitation saved, but the recovery copy could not be refreshed. Export a backup file from Saved.')+(workingCleared?'':' Your unsaved working copy could not be cleared.'));
     }catch(e){
       if(e?.code==='RECOVERY_REQUIRED'){
         Alert.alert('Older invitations protected','The recovery copy contains invitations missing from Saved. Go to Saved → RECOVER FROM LOCAL COPY before saving. Nothing was overwritten.');
@@ -365,7 +414,8 @@ function AppContent(){
   };
   const nav=(to)=>{
     if(to==='editor'){
-      // Reopen an unfinished invitation instead of forcing its discard.
+      // Reopen unfinished work instead of forcing its discard.
+      if(workingCandidate){resumeSavedWork();return;}
       if(tab!=='editor'&&hasUnsavedEdits){setTab('editor');return;}
       if(tab!=='editor')newInvite();
       return;
@@ -396,7 +446,13 @@ function AppContent(){
     <View style={{padding:12,flex:1}}><Text style={{color:C.soft,fontFamily:'serif',fontSize:16,flexShrink:1}}>{design.name}</Text><Small style={{marginTop:4}}>{design.subtitle}</Small><Small style={{marginTop:8,color:C.gold}}>{design.category.toUpperCase()} DESIGN</Small><Text style={{color:C.gold,fontSize:11,fontWeight:'800',marginTop:12}}>{grid?(selectedDesignId===design.id?'✓  SELECTED':'○  TAP TO SELECT'):'TAP TO CUSTOMISE  ↗'}</Text></View>
   </Pressable>;
   const Home=()=> <View>
-    {hasUnsavedEdits?<Section><Label>UNSAVED INVITATION · जारी काम</Label>
+    {workingCandidate?<Section><Label>UNFINISHED INVITATION FOUND</Label>
+      <Small>A local working copy from an earlier app session is available. Restore it to continue. Saved invitations will not be replaced.</Small>
+      <GoldButton title="RESTORE UNFINISHED INVITATION" onPress={resumeSavedWork} style={{marginTop:12}}/>
+      <Small style={{marginTop:8}}>To discard it, use Create New and approve the discard prompt.</Small>
+    </Section>:null}
+    {workingCopyError?<Section><Small style={{color:C.rose}}>Unfinished work storage needs review. Avoid clearing app data. Your saved invitation list is stored separately.</Small></Section>:null}
+    {!workingCandidate&&hasUnsavedEdits?<Section><Label>UNSAVED INVITATION · जारी काम</Label>
       <Small>You have invitation changes that are not saved yet. Resume editing before starting a new card.</Small>
       <GoldButton title="RESUME EDITING   →" onPress={()=>setTab('editor')} style={{marginTop:12}}/>
     </Section>:null}
