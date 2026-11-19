@@ -1,4 +1,4 @@
- # VivahSutra v1.1.6 — Android phone test guide (Hinglish)
+# VivahSutra v1.1.8 — Android phone test guide (Hinglish)
 
 **Only test after the latest feature-branch APK build is successful.** This guide is for real-device checks, not proof they already passed.
 
@@ -14,7 +14,7 @@
 - [ ] **Untrusted release metadata:** update checker must reject releases whose package, build number or APK checksum do not match the GitHub beta asset (verified in CI unit tests; not a device UI test).
 - [ ] **No silent update:** Android requires user action; existing saved drafts remain after successful in-place upgrade.
 - [ ] **Offline:** update check gracefully fails; invitation creation, local save, and export continue to work.
-- [ ] **Installed build:** app header must show `BETA V1.1.6` on the newest build; `BETA V1.1.4` contains the first update checker.
+- [ ] **Installed build:** app header must show `BETA V1.1.8` on the newest build; `BETA V1.1.4` contains the first update checker.
 - [ ] **Royal intro:** app launch, doors open, Skip works; repeat after reopening.
 - [ ] **Tabs:** Home / Designs / Create / Saved all tap/open; Android Back works.
 - [ ] **Design collection (gallery visible in V1.1.2 phone footage):** All = 6; Royal = 2; Floral = 2; Traditional = 1; Modern = 1. SIX actual cards must be visibly rendered below the filter row; scroll downward and tap at least one from each category. A displayed count alone is NOT a pass.
@@ -46,3 +46,17 @@ This is a **FREE BETA TEST APK with debug signing**, not an APPLIQ production re
 - Saved → RESTORE BACKUP FILE → select the exported JSON; existing invitations must not be overwritten and duplicate IDs should be skipped.
 - Photos are not embedded in JSON backups and might require reselection after reinstall.
 - Corrupt/unreadable local storage must block Save/Delete, not silently replace existing data.
+
+## V1.1.8 priority regression session (use fake names)
+1. Update **in place** using Home → CHECK FOR UPDATES. Never uninstall or clear app data.
+2. Before typing or saving anything, open **Saved → CHECK LOCAL STORAGE**. Record only the status and counts, not private invitation details. If missing IDs in recovery copy is greater than zero, use **RECOVER FROM LOCAL COPY**, read its confirmation, and verify missing entries were added.
+3. Test that an empty or unavailable recovery copy shows a harmless message and does not overwrite the Saved list.
+4. Open Designs. All=6, Royal=2, Floral=2, Traditional=1, Modern=1. Select a real card, confirm the gold border/checkmark, and CONTINUE WITH SELECTED DESIGN. Verify the same design opens in Create.
+5. With non-sensitive sample names, edit English and Hindi, occasion, date, venue, RSVP and message. Check preview Front and Back and long text. Type while Android keyboard is visible and verify the input remains usable.
+6. Save the sample. Force close the app; reopen Saved → OPEN / EDIT; verify text and chosen design are retained.
+7. Saved → EXPORT BACKUP FILE → save JSON to Android Files. Reimport that **same** JSON without deleting anything: existing IDs must remain unchanged; no duplicates.
+8. In Create, Save Front PNG and Back PNG separately; inspect both files in Gallery for layout and FREE BETA watermark. Share PNG through Android share sheet.
+9. Deny photo/gallery permission once, then retry. Turn off network and verify local editing, saving and PNG export still work.
+10. Test Android Back / Skip Intro, small-screen clipping and long fields. Report any visible crash with the version shown in the header.
+
+**Remaining release limits:** These are manual device tests, not CI PASS claims. GitHub beta APKs are debug-key signed. APPLIQ/Play Store production signing and publishing require separate approval and are not part of this test.
