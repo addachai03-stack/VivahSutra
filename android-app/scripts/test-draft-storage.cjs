@@ -1,5 +1,5 @@
 const assert = require('node:assert/strict');
-const {PRIMARY_KEY,MIRROR_KEY,readLocalDrafts,writeLocalDrafts,inspectRecoverySnapshot,makeBackupFile,readBackupFile,mergeBackup}=require('../src/draftStorage');
+const {PRIMARY_KEY,MIRROR_KEY,readLocalDrafts,writeLocalDrafts,inspectRecoverySnapshot,inspectStorageHealth,makeBackupFile,readBackupFile,mergeBackup}=require('../src/draftStorage');
 const one = {id:'a1',bride:'Asha',groom:'Ravi',designId:'rajwada',message:'सादर आमंत्रित'};
 const two = {id:'b2',bride:'Meera',groom:'Dev',designId:'pastel'};
 const store=(initial={})=>{
@@ -37,6 +37,18 @@ const store=(initial={})=>{
   // A legitimate empty list stays empty even when a stale mirror still contains a draft.
   const empty=store({[PRIMARY_KEY]:'[]',[MIRROR_KEY]:JSON.stringify([one])});
   assert.deepEqual((await readLocalDrafts(empty)).drafts,[]);
+  // A stale recovery snapshot must survive any regular save/deletion attempt.
+  await assert.rejects(
+    writeLocalDrafts(empty,[],[two]),
+    error=>error.code==='RECOVERY_REQUIRED'
+  );
+  assert.equal(empty.values.get(PRIMARY_KEY),'[]');
+  assert.equal(empty.values.get(MIRROR_KEY),JSON.stringify([one]));
+  assert.deepEqual(await inspectStorageHealth(empty),{
+    primary:{status:'empty',count:0},
+    recovery:{status:'valid',count:1},
+    missingFromPrimary:1
+  });
   // Only explicit consent restores from a valid, but empty primary storage.
   const optionalRecovery=await inspectRecoverySnapshot(empty,[]);
   assert.equal(optionalRecovery.added,1);
@@ -53,6 +65,18 @@ const store=(initial={})=>{
   const invalidSnapshot=store({[PRIMARY_KEY]:'[]',[MIRROR_KEY]:'not json'});
   await assert.rejects(inspectRecoverySnapshot(invalidSnapshot,[]));
   assert.equal(invalidSnapshot.values.get(PRIMARY_KEY),'[]');
+  assert.deepEqual(await inspectStorageHealth(invalidSnapshot),{
+    primary:{status:'empty',count:0},
+    recovery:{status:'invalid',count:null},
+    missingFromPrimary:null
+  });
+  const readFailHealth=store({[PRIMARY_KEY]:'[]'});
+  readFailHealth.getItem=async()=>{throw new Error('I/O not available');};
+  assert.deepEqual(await inspectStorageHealth(readFailHealth),{
+    primary:{status:'unreadable',count:null},
+    recovery:{status:'unreadable',count:null},
+    missingFromPrimary:null
+  });
   const failRecovered=store({[PRIMARY_KEY]:'[]',[MIRROR_KEY]:JSON.stringify([one])});
   failRecovered.setItem=async(key,value)=>{if(key===PRIMARY_KEY)throw new Error('not writable');failRecovered.values.set(key,value);};
   await assert.rejects(writeLocalDrafts(failRecovered,[],[one],{preserveRecoveredDrafts:true}),/not writable/);
