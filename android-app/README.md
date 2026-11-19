@@ -72,3 +72,11 @@ Run `npm run test:smoke` from `android-app/` (requires Node.js). The same tests 
 - Leaving the editor temporarily does not delete its in-memory state; Home shows **RESUME EDITING**, and bottom Create reopens the unfinished invitation.
 - Use **SAVE MY INVITATION** to persist data to private local storage. Unsaved changes are NOT automatically saved when the app is force-closed.
 - These interactions are source-checked by CI but still require Android device testing.
+
+## V1.1.11 local unfinished-work recovery
+- While a user edits an invitation, a separate local working copy is written through a serialized queue; it does not overwrite normal Saved drafts or their recovery mirror.
+- If the app is reopened with an unfinished working copy, Home offers **RESTORE UNFINISHED INVITATION**. Recovery needs a user tap; otherwise the saved list is untouched.
+- Creating another invitation while work remains asks for discard confirmation; a completed **SAVE MY INVITATION** removes the working copy only after the normal saved draft write succeeded.
+- If the unfinished-work record is unreadable, Home offers Retry and a separate explicit Discard option. Never clear app data to address this.
+- Working-copy persistence is best-effort and local only. The latest keystroke might not be saved if Android kills the app before the pending storage write finishes.
+- The working copy does not migrate between phones or survive uninstall/clear data. Export normal Saved drafts to a user-controlled JSON file for long-term backup.
