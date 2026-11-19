@@ -19,10 +19,15 @@ async function exportInvitationPng({ action, capture, sharing, mediaLibrary }) {
       return {status:'permission-denied'};
     }
   }
-  const uri = await capture();
-  if (typeof uri !== 'string' || !uri.startsWith('file://') || !/\.png(?:$|\?)/i.test(uri)) {
+  const captured = await capture();
+  // Android ViewShot usually returns file:// but some implementations use an
+  // absolute filesystem path. Expo Sharing expects a file URI.
+  if (typeof captured !== 'string' ||
+      !(captured.startsWith('file://') || captured.startsWith('/')) ||
+      !/\.png(?:$|\?)/i.test(captured)) {
     throw new Error('PNG capture did not produce a local .png file');
   }
+  const uri = captured.startsWith('file://') ? captured : 'file://' + captured;
   if (action === 'share') {
     await sharing.shareAsync(uri, {
       mimeType:'image/png',
