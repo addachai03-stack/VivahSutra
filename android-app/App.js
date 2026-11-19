@@ -205,10 +205,31 @@ function AppContent(){
     setHasUnsavedEdits(true);
     setTab('editor');
   };
+  const discardUnreadableWorkingCopy=()=>{
+    Alert.alert('Discard unreadable unfinished work?','The unfinished-work record cannot be read. Discarding it cannot be undone. Your separately saved invitations will not be deleted.',[
+      {text:'Cancel',style:'cancel'},
+      {text:'Discard unreadable copy',style:'destructive',onPress:async()=>{
+        try{
+          await workingCopyStore.current.clear();
+          setWorkingCandidate(null);
+          setWorkingCopyError(false);
+          setWorkingLoaded(true);
+          Alert.alert('Unfinished copy cleared','You can now start a new invitation. Existing saved invitations were not changed.');
+        }catch(e){Alert.alert('Could not clear','Local storage is unavailable. Do not uninstall or clear Android app data.');}
+      }}
+    ]);
+  };
+  const retryWorkingCopy=async()=>{
+    try{
+      const result=await workingCopyStore.current.read();
+      setWorkingCandidate(result);
+      setWorkingCopyError(false);
+    }catch(e){Alert.alert('Still unreadable','Local unfinished-work data cannot be read. Your saved invitations are stored separately.');}
+  };
   const confirmDiscard=(proceed)=>{
     if(!workingLoaded){Alert.alert('Loading unfinished work','Checking for an unfinished invitation. Please try again.');return;}
     if(workingCopyError){
-      Alert.alert('Unfinished work unavailable','The old unfinished-work record could not be read. Nothing will be overwritten until you review storage.');
+      Alert.alert('Unfinished work unavailable','The unfinished-work record cannot be read. Retry or explicitly discard this separate copy from Home before creating another invitation.');
       return;
     }
     if(!hasUnsavedEdits&&!workingCandidate){proceed();return;}
@@ -451,7 +472,10 @@ function AppContent(){
       <GoldButton title="RESTORE UNFINISHED INVITATION" onPress={resumeSavedWork} style={{marginTop:12}}/>
       <Small style={{marginTop:8}}>To discard it, use Create New and approve the discard prompt.</Small>
     </Section>:null}
-    {workingCopyError?<Section><Small style={{color:C.rose}}>Unfinished work storage needs review. Avoid clearing app data. Your saved invitation list is stored separately.</Small></Section>:null}
+    {workingCopyError?<Section><Small style={{color:C.rose}}>Unfinished work storage needs review. Avoid clearing app data. Your saved invitation list is stored separately.</Small>
+      <GoldButton title="RETRY WORKING COPY" onPress={retryWorkingCopy} outline style={{marginTop:12}}/>
+      <GoldButton title="DISCARD UNREADABLE COPY" onPress={discardUnreadableWorkingCopy} outline style={{marginTop:8}}/>
+    </Section>:null}
     {!workingCandidate&&hasUnsavedEdits?<Section><Label>UNSAVED INVITATION · जारी काम</Label>
       <Small>You have invitation changes that are not saved yet. Resume editing before starting a new card.</Small>
       <GoldButton title="RESUME EDITING   →" onPress={()=>setTab('editor')} style={{marginTop:12}}/>
