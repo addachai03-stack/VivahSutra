@@ -12,10 +12,11 @@ import * as FileSystem from 'expo-file-system/legacy';
 import ViewShot from 'react-native-view-shot';
 import {ACCENTS, DESIGNS, InvitationCard, NEW_INVITE, OCCASIONS} from './src/designs';
 const {checkForBetaUpdate} = require('./src/betaUpdateFeed');
+const {exportInvitationPng} = require('./src/pngExport');
 const {readLocalDrafts,writeLocalDrafts,inspectRecoverySnapshot,inspectStorageHealth,makeBackupFile,readBackupFile,mergeBackup} = require('./src/draftStorage');
 
 const C={bg:'#171310',panel:'#24201C',panel2:'#30271F',gold:'#D6B174',soft:'#F9EDDB',muted:'#AEA194',line:'#4D4033',rose:'#C9928B'};
-const BETA_VERSION='1.1.8';
+const BETA_VERSION='1.1.9';
 const nowId=()=>String(Date.now())+'-'+Math.random().toString(36).slice(2,7);
 // Keep template-gallery sample names, but never prefill a real new invitation with demo wedding details.
 const makeNew=(designId='rajwada')=>({...NEW_INVITE,id:null,designId,bride:'',groom:'',date:'',time:'',venue:'',host:'',message:'',relatives:'',rsvp:''});
@@ -328,18 +329,25 @@ function AppContent(){
     exportInFlight.current=true;
     setBusy(true);
     try{
-      const uri=await shot.current.capture();
-      if(action==='share'){
-        if(!await Sharing.isAvailableAsync()){Alert.alert('Sharing unavailable','This device cannot share files from the app.');return;}
-        await Sharing.shareAsync(uri,{mimeType:'image/png',dialogTitle:'Share your VivahSutra invitation'});
-      }else{
-        const permission=await MediaLibrary.requestPermissionsAsync(true,['photo']);
-        if(!permission.granted){Alert.alert('Permission needed','Allow saving photos to download the invitation PNG.');return;}
-        await MediaLibrary.createAssetAsync(uri);
-        Alert.alert('Saved to photos','Your watermarked invitation PNG is in your gallery.');
+      const result=await exportInvitationPng({
+        action,
+        capture:()=>shot.current.capture(),
+        sharing:Sharing,
+        mediaLibrary:MediaLibrary
+      });
+      if(result.status==='saved'){
+        Alert.alert('Saved to photos','Your watermarked '+side+' invitation PNG is in your gallery.');
+      }else if(result.status==='permission-denied'){
+        Alert.alert('Gallery permission needed','Allow photo saving in Android settings, or use SHARE PNG to save via Files or another app.');
+      }else if(result.status==='share-unavailable'){
+        Alert.alert('Sharing unavailable','This device cannot open the Android share sheet.');
       }
-    }catch(e){Alert.alert('Export failed','Could not create the PNG. Please try again.');}
-    finally{exportInFlight.current=false;setBusy(false);}
+    }catch(e){
+      Alert.alert('PNG export failed','Could not capture, save or share the invitation PNG. Please check permissions and device storage.');
+    }finally{
+      exportInFlight.current=false;
+      setBusy(false);
+    }
   };
   const nav=(to)=>{
     if(to==='editor'){
