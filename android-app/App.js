@@ -17,7 +17,7 @@ const {createWorkingCopyStore} = require('./src/workingCopy');
 const {readLocalDrafts,writeLocalDrafts,inspectRecoverySnapshot,inspectStorageHealth,makeBackupFile,readBackupFile,mergeBackup} = require('./src/draftStorage');
 
 const C={bg:'#171310',panel:'#24201C',panel2:'#30271F',gold:'#D6B174',soft:'#F9EDDB',muted:'#AEA194',line:'#4D4033',rose:'#C9928B'};
-const BETA_VERSION='1.1.11';
+const BETA_VERSION='1.1.12';
 const nowId=()=>String(Date.now())+'-'+Math.random().toString(36).slice(2,7);
 // Keep template-gallery sample names, but never prefill a real new invitation with demo wedding details.
 const makeNew=(designId='rajwada')=>({...NEW_INVITE,id:null,designId,bride:'',groom:'',date:'',time:'',venue:'',host:'',message:'',relatives:'',rsvp:''});
@@ -77,6 +77,8 @@ function AppContent(){
   const [workingCandidate,setWorkingCandidate]=useState(null);
   const [workingLoaded,setWorkingLoaded]=useState(false);
   const [workingCopyError,setWorkingCopyError]=useState(false);
+  const [workingCopyStatus,setWorkingCopyStatus]=useState('idle');
+  const workingSaveSeq=useRef(0);
   const workingCopyStore=useRef(null);
   if(!workingCopyStore.current)workingCopyStore.current=createWorkingCopyStore(AsyncStorage);
   const [saving,setSaving]=useState(false);
@@ -170,9 +172,19 @@ function AppContent(){
     return()=>{active=false;};
   },[]);
   useEffect(()=>{
-    if(!workingLoaded||!hasUnsavedEdits)return;
-    workingCopyStore.current.save(invite).catch(()=>setWorkingCopyError(true));
-  },[invite,hasUnsavedEdits,workingLoaded]);
+    // Never overwrite an unreadable old record or a recoverable candidate.
+    if(!workingLoaded||!hasUnsavedEdits||workingCopyError||workingCandidate)return;
+    const seq=++workingSaveSeq.current;
+    setWorkingCopyStatus('saving');
+    workingCopyStore.current.save(invite).then(()=>{
+      if(seq===workingSaveSeq.current)setWorkingCopyStatus('saved');
+    }).catch(()=>{
+      if(seq===workingSaveSeq.current){
+        setWorkingCopyError(true);
+        setWorkingCopyStatus('error');
+      }
+    });
+  },[invite,hasUnsavedEdits,workingLoaded,workingCopyError,workingCandidate]);
   useEffect(()=>{
     const subscription=BackHandler.addEventListener('hardwareBackPress',()=>{
       if(intro){setIntro(false);return true;}
@@ -213,6 +225,7 @@ function AppContent(){
           await workingCopyStore.current.clear();
           setWorkingCandidate(null);
           setWorkingCopyError(false);
+          setWorkingCopyStatus('idle');
           setWorkingLoaded(true);
           Alert.alert('Unfinished copy cleared','You can now start a new invitation. Existing saved invitations were not changed.');
         }catch(e){Alert.alert('Could not clear','Local storage is unavailable. Do not uninstall or clear Android app data.');}
@@ -224,6 +237,7 @@ function AppContent(){
       const result=await workingCopyStore.current.read();
       setWorkingCandidate(result);
       setWorkingCopyError(false);
+      setWorkingCopyStatus('idle');
     }catch(e){Alert.alert('Still unreadable','Local unfinished-work data cannot be read. Your saved invitations are stored separately.');}
   };
   const confirmDiscard=(proceed)=>{
@@ -240,6 +254,7 @@ function AppContent(){
           await workingCopyStore.current.clear();
           setWorkingCandidate(null);
           setHasUnsavedEdits(false);
+          setWorkingCopyStatus('idle');
           proceed();
         }catch(e){
           setWorkingCopyError(true);
@@ -272,6 +287,8 @@ function AppContent(){
       try{
         await workingCopyStore.current.clear();
         setWorkingCandidate(null);
+        setWorkingCopyError(false);
+        setWorkingCopyStatus('idle');
       }catch(e){
         workingCleared=false;
         setWorkingCopyError(true);
@@ -512,7 +529,7 @@ function AppContent(){
       </ScrollView>
       <Small style={{marginTop:12,textAlign:'center'}}>Export saves the selected {side} side only · FREE BETA watermark included</Small>
       <View style={{flexDirection:'row',gap:9,marginTop:15,width:'100%'}}><GoldButton title={busy?'EXPORTING…':side==='front'?'SAVE FRONT PNG':'SAVE BACK PNG'} disabled={busy} onPress={()=>capture('save')} style={{flex:1}}/><GoldButton title="SHARE PNG" disabled={busy} onPress={()=>capture('share')} outline style={{flex:1}}/></View>
-    </Section><GoldButton title={storageError?'STORAGE UNAVAILABLE':!loaded?tr('LOADING SAVED DRAFTS…','निमंत्रण लोड हो रहे हैं…'):saving?tr('SAVING…','सेव हो रहा है…'):invite.id?tr('UPDATE SAVED INVITATION','सेव किया निमंत्रण अपडेट करें'):tr('SAVE MY INVITATION','निमंत्रण सेव करें')} disabled={!loaded||saving||storageError} onPress={save} style={{marginBottom:18}}/><Small style={{textAlign:'center',marginBottom:20}}>Private local drafts · No payment or account required</Small>
+    </Section>{hasUnsavedEdits?<Small style={{marginBottom:10,color:workingCopyError?C.rose:C.muted}}>{workingCopyError?'Unfinished work could not be saved locally. Review storage before closing the app.':workingCopyStatus==='saved'?'Unfinished changes saved locally on this device.':workingCopyStatus==='saving'?'Saving unfinished changes locally…':'Preparing unfinished-work recovery…'}</Small>:null}<GoldButton title={storageError?'STORAGE UNAVAILABLE':!loaded?tr('LOADING SAVED DRAFTS…','निमंत्रण लोड हो रहे हैं…'):saving?tr('SAVING…','सेव हो रहा है…'):invite.id?tr('UPDATE SAVED INVITATION','सेव किया निमंत्रण अपडेट करें'):tr('SAVE MY INVITATION','निमंत्रण सेव करें')} disabled={!loaded||saving||storageError} onPress={save} style={{marginBottom:18}}/><Small style={{textAlign:'center',marginBottom:20}}>Private local drafts · No payment or account required</Small>
   </View>;
   const Saved=()=> <View><FancyTitle top="YOUR CREATIONS" title="My invitations" subtitle="Saved on this device. Open any draft to edit or export."/>
     {storageError?<Section><Text style={{color:C.rose,fontSize:14,marginBottom:12}}>Cannot read saved invitations. Saving is paused to protect existing data.</Text><GoldButton title="RETRY LOADING DRAFTS" onPress={loadDrafts}/></Section>:null}
