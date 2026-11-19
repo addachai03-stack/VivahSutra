@@ -12,10 +12,10 @@ import * as FileSystem from 'expo-file-system/legacy';
 import ViewShot from 'react-native-view-shot';
 import {ACCENTS, DESIGNS, InvitationCard, NEW_INVITE, OCCASIONS} from './src/designs';
 const {checkForBetaUpdate} = require('./src/betaUpdateFeed');
-const {readLocalDrafts,writeLocalDrafts,makeBackupFile,readBackupFile,mergeBackup} = require('./src/draftStorage');
+const {readLocalDrafts,writeLocalDrafts,inspectRecoverySnapshot,makeBackupFile,readBackupFile,mergeBackup} = require('./src/draftStorage');
 
 const C={bg:'#171310',panel:'#24201C',panel2:'#30271F',gold:'#D6B174',soft:'#F9EDDB',muted:'#AEA194',line:'#4D4033',rose:'#C9928B'};
-const BETA_VERSION='1.1.6';
+const BETA_VERSION='1.1.7';
 const nowId=()=>String(Date.now())+'-'+Math.random().toString(36).slice(2,7);
 // Keep template-gallery sample names, but never prefill a real new invitation with demo wedding details.
 const makeNew=(designId='rajwada')=>({...NEW_INVITE,id:null,designId,bride:'',groom:'',date:'',time:'',venue:'',host:'',message:'',relatives:'',rsvp:''});
@@ -257,6 +257,40 @@ function AppContent(){
     }catch(e){Alert.alert('Invalid backup file','Choose a VivahSutra invitation backup JSON file. No local invitations were changed.');}
     finally{backupActionInFlight.current=false;setBackupBusy(false);}
   };
+  const recoverLocalCopy=async()=>{
+    if(!loaded||storageError||draftWriteInFlight.current||backupActionInFlight.current){
+      Alert.alert('Recovery unavailable','Reload saved invitations and try again.');return;
+    }
+    backupActionInFlight.current=true;
+    setBackupBusy(true);
+    try{
+      const snapshot=await inspectRecoverySnapshot(AsyncStorage,draftsRef.current);
+      if(snapshot.added===0){
+        Alert.alert('No missing invitations found',snapshot.snapshotCount===0?'This phone has no local recovery copy. Older versions did not create one.':'The local recovery copy contains no additional invitations.');
+        return;
+      }
+      Alert.alert('Restore from local copy?',snapshot.added+' missing invitation(s) found. Restoring adds them without replacing your current drafts. Deleted drafts may also be included in this copy.',[
+        {text:'Cancel',style:'cancel'},
+        {text:'RESTORE MISSING',onPress:async()=>{
+          if(draftWriteInFlight.current||backupActionInFlight.current)return;
+          draftWriteInFlight.current=true;
+          try{
+            const previous=draftsRef.current;
+            const fresh=await inspectRecoverySnapshot(AsyncStorage,previous);
+            if(fresh.added===0){Alert.alert('No missing invitations','The recovery copy has no additional invitations now.');return;}
+            const saved=await writeLocalDrafts(AsyncStorage,previous,fresh.drafts,{preserveRecoveredDrafts:true});
+            draftsRef.current=fresh.drafts;
+            setDrafts(fresh.drafts);
+            Alert.alert('Recovery complete',fresh.added+' invitation(s) recovered. '+(saved.backupSynced?'Your current drafts were kept unchanged.':'Export a backup file; the local recovery copy was not refreshed.'));
+          }catch(e){
+            setStorageError(true);
+            Alert.alert('Recovery paused','Could not safely write recovered invitations. Existing drafts were not intentionally replaced. Retry loading before further edits.');
+          }finally{draftWriteInFlight.current=false;}
+        }}
+      ]);
+    }catch(e){Alert.alert('Recovery copy unavailable','Could not read a usable local recovery copy. Current invitations were not changed.');}
+    finally{backupActionInFlight.current=false;setBackupBusy(false);}
+  };
   const choosePhoto=async(field)=>{
     try{
       const result=await ImagePicker.launchImageLibraryAsync({mediaTypes:['images'],allowsEditing:true,quality:.82,aspect:[1,1]});
@@ -346,7 +380,8 @@ function AppContent(){
       <Small>Export a private JSON backup to Files or Drive before updating or changing phones. It contains names and invitation details; save it somewhere secure. Photos are not embedded.</Small>
       <GoldButton title={backupBusy?'WORKING…':'EXPORT BACKUP FILE'} disabled={backupBusy||!loaded||storageError||drafts.length===0} onPress={exportBackup} style={{marginTop:12}}/>
       <GoldButton title={backupBusy?'WORKING…':'RESTORE BACKUP FILE'} disabled={backupBusy||!loaded||storageError} outline onPress={importBackup} style={{marginTop:9}}/>
-      {drafts.length===0?<Small style={{marginTop:11,color:C.rose}}>No invitations found in this app's local storage. Existing file backups can be restored here; the app cannot recover cleared or uninstalled device data automatically.</Small>:null}
+      <GoldButton title={backupBusy?'WORKING…':'RECOVER FROM LOCAL COPY'} disabled={backupBusy||!loaded||storageError} outline onPress={recoverLocalCopy} style={{marginTop:9}}/>
+      {drafts.length===0?<Small style={{marginTop:11,color:C.rose}}>No saved invitations found. You can check for an on-device recovery copy or import an exported JSON backup. Older builds may have no recovery copy; cleared or uninstalled data cannot be recreated automatically.</Small>:null}
     </Section>
     <Small style={{marginTop:10}}>These drafts are not synced to the website or to another device unless you export a backup yourself.</Small>
   </View>;
