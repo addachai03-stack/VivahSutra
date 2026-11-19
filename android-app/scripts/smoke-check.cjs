@@ -36,7 +36,7 @@ for (const category of categories) {
 }
 
 assert.equal(packageInfo.version, config.expo.version, 'App and package versions must agree');
-assert.equal(config.expo.android.versionCode, 10, 'Android v1.1.8 source versionCode must be 10 before CI assigns the beta build code');
+assert.equal(config.expo.android.versionCode, 11, 'Android v1.1.9 source versionCode must be 11 before CI assigns the beta build code');
 assert.ok(appSource.includes("const BETA_VERSION='"+packageInfo.version+"'"), 'Visible beta version must match package version');
 assert.equal(config.expo.extra.appMode, 'free-beta', 'Beta mode must not be silently removed');
 assert.equal(config.expo.extra.distribution, 'APPLIQ-candidate', 'Do not mark as published');
@@ -82,10 +82,11 @@ for (const [name, source, needle] of [
   ['local copy of photos', appSource, 'FileSystem.copyAsync'],
   ['front/back selection', appSource, "setSide('back')"],
   ['PNG capture', appSource, 'shot.current.capture()'],
+  ['save/gallery permission fallback', appSource, "result.status==='permission-denied'"],
   ['prevent duplicate PNG exports', appSource, 'if(!shot.current||exportInFlight.current)return'],
   ['Hindi occasion selection', appSource, 'hindiOccasions[o]||o'],
-  ['image saving', appSource, 'MediaLibrary.createAssetAsync'],
-  ['native PNG sharing', appSource, 'Sharing.shareAsync'],
+  ['image saving', appSource, 'mediaLibrary:MediaLibrary'],
+  ['native PNG sharing', appSource, 'exportInvitationPng({'],
   ['Hindi editor labels', appSource, "दुल्हन का नाम"],
   ['watermark', designsSource, 'FREE BETA'],
 ]) {
