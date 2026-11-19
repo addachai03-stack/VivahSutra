@@ -33,6 +33,30 @@ function memory(){
   await store.save({...invite,message:'Latest'});
   assert.equal((await store.read()).invite.message,'Latest');
 
+  // Never overwrite an unreadable working copy, including when a newer edit is queued.
+  const damaged=memory();
+  damaged.values.set(KEY,'{invalid json');
+  const guarded=createWorkingCopyStore(damaged,()=>fixed);
+  await assert.rejects(guarded.read(),/JSON|position|Unexpected/);
+  await assert.rejects(guarded.save({...invite,message:'Must not overwrite'}),e=>e.code==='WORKING_COPY_RECOVERY_REQUIRED');
+  assert.equal(damaged.values.get(KEY),'{invalid json');
+  await guarded.clear(); // Explicit user consent is required by App UI.
+  await guarded.save({...invite,message:'New after discard'});
+  assert.equal((await guarded.read()).invite.message,'New after discard');
+
+  // An intermittent read failure can be retried without discarding existing bytes.
+  const retryDb=memory();
+  retryDb.values.set(KEY,encodeWorkingCopy(invite,fixed));
+  const originalGet=retryDb.getItem.bind(retryDb);
+  let failRead=true;
+  retryDb.getItem=async key=>{if(failRead){failRead=false;throw new Error('temporary read failure');}return originalGet(key);};
+  const retryStore=createWorkingCopyStore(retryDb,()=>fixed);
+  await assert.rejects(retryStore.read(),/temporary read failure/);
+  await assert.rejects(retryStore.save(invite),e=>e.code==='WORKING_COPY_RECOVERY_REQUIRED');
+  assert.equal((await retryStore.read()).invite.bride,invite.bride);
+  await retryStore.save({...invite,message:'Retry succeeded'});
+  assert.equal((await retryStore.read()).invite.message,'Retry succeeded');
+
   let once=true;
   const failed=memory();
   failed.setItem=async(key,val)=>{if(once){once=false;throw new Error('disk not writable');}failed.values.set(key,val);};
@@ -40,5 +64,5 @@ function memory(){
   await assert.rejects(failures.save(invite),/disk not writable/);
   await failures.save({...invite,message:'Recovered'});
   assert.equal((await failures.read()).invite.message,'Recovered','A write failure does not permanently break the queue');
-  console.log('PASS: unsaved work validates, persists locally, survives reopening, clears in order and handles write failure');
+  console.log('PASS: unfinished-work recovery, serialized writes, no overwrite after corrupt read, retry and consent-based clear');
 })().catch(e=>{console.error(e);process.exitCode=1;});
