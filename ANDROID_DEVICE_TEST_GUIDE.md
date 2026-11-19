@@ -86,3 +86,10 @@ This is a **FREE BETA TEST APK with debug signing**, not an APPLIQ production re
 - Start another sample then choose to discard it after the warning; reopen and verify that no stale unfinished work is offered.
 - If local storage is unreadable, Home must offer RETRY WORKING COPY and an explicit consent-based discard; never clear app data to troubleshoot.
 - This unfinished-work record is separate from saved invitations and their recovery mirror. Full device verification is still required.
+
+## V1.1.12 working-copy confirmation (test with sample names only)
+- Start an invitation with two fake names and a message. Observe the local working-copy status under the preview.
+- After the status reads "Unfinished changes saved locally on this device", force close/reopen the app; choose RESTORE UNFINISHED INVITATION and confirm the same values.
+- Save the invitation normally. Reopen and verify the saved draft exists and no obsolete unfinished-copy recovery banner appears.
+- For unavailable or corrupt local storage, app should display a warning and avoid overwriting the old record. Only explicitly discard after reviewing risk. Never clear Android app storage or uninstall to test recovery.
+- Do not treat these source tests as proof of persistence on a physical device: an app terminated before its last async storage write finishes may lose very recent changes.
