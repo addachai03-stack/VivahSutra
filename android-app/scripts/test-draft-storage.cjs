@@ -1,5 +1,5 @@
 const assert = require('node:assert/strict');
-const {PRIMARY_KEY,MIRROR_KEY,readLocalDrafts,writeLocalDrafts,makeBackupFile,readBackupFile,mergeBackup}=require('../src/draftStorage');
+const {PRIMARY_KEY,MIRROR_KEY,readLocalDrafts,writeLocalDrafts,inspectRecoverySnapshot,makeBackupFile,readBackupFile,mergeBackup}=require('../src/draftStorage');
 const one = {id:'a1',bride:'Asha',groom:'Ravi',designId:'rajwada',message:'सादर आमंत्रित'};
 const two = {id:'b2',bride:'Meera',groom:'Dev',designId:'pastel'};
 const store=(initial={})=>{
@@ -37,6 +37,28 @@ const store=(initial={})=>{
   // A legitimate empty list stays empty even when a stale mirror still contains a draft.
   const empty=store({[PRIMARY_KEY]:'[]',[MIRROR_KEY]:JSON.stringify([one])});
   assert.deepEqual((await readLocalDrafts(empty)).drafts,[]);
+  // Only explicit consent restores from a valid, but empty primary storage.
+  const optionalRecovery=await inspectRecoverySnapshot(empty,[]);
+  assert.equal(optionalRecovery.added,1);
+  assert.equal(optionalRecovery.snapshotCount,1);
+  assert.deepEqual(optionalRecovery.drafts,[one]);
+  assert.equal(empty.values.get(PRIMARY_KEY),'[]','Read-only snapshot inspection must never overwrite');
+  const recovered=await writeLocalDrafts(empty,[],optionalRecovery.drafts,{preserveRecoveredDrafts:true});
+  assert.equal(recovered.backupSynced,true);
+  assert.equal((await readLocalDrafts(empty)).drafts.length,1);
+  assert.equal((await inspectRecoverySnapshot(empty,[one])).added,0);
+
+  const noSnapshot=store({[PRIMARY_KEY]:'[]'});
+  assert.equal((await inspectRecoverySnapshot(noSnapshot,[])).added,0);
+  const invalidSnapshot=store({[PRIMARY_KEY]:'[]',[MIRROR_KEY]:'not json'});
+  await assert.rejects(inspectRecoverySnapshot(invalidSnapshot,[]));
+  assert.equal(invalidSnapshot.values.get(PRIMARY_KEY),'[]');
+  const failRecovered=store({[PRIMARY_KEY]:'[]',[MIRROR_KEY]:JSON.stringify([one])});
+  failRecovered.setItem=async(key,value)=>{if(key===PRIMARY_KEY)throw new Error('not writable');failRecovered.values.set(key,value);};
+  await assert.rejects(writeLocalDrafts(failRecovered,[],[one],{preserveRecoveredDrafts:true}),/not writable/);
+  assert.equal(failRecovered.values.get(PRIMARY_KEY),'[]');
+  assert.equal(failRecovered.values.get(MIRROR_KEY),JSON.stringify([one]),'Recovery candidate must survive failed primary write');
+
   const fail=store({[PRIMARY_KEY]:JSON.stringify([one])});
   fail.setItem=async(key,value)=>{if(key===MIRROR_KEY)throw new Error('storage full');fail.values.set(key,value);};
   await assert.rejects(writeLocalDrafts(fail,[one],[]),/storage full/);
@@ -50,5 +72,5 @@ const store=(initial={})=>{
   assert.throws(()=>readBackupFile(JSON.stringify({format:'vivahsutra-invitations-backup',version:1,drafts:[{id:'bad',bride:4,groom:'ok'}]})));
   assert.throws(()=>readBackupFile(JSON.stringify({format:'vivahsutra-invitations-backup',version:1,drafts:[one,one]})));
   assert.throws(()=>readBackupFile('x'.repeat(2200000)));
-  console.log('PASS: previous beta drafts remain readable, mirrored recovery, no stale writes, portable backup validation and non-destructive restore');
+  console.log('PASS: historical drafts, recovery inspection, voluntary mirror restore, failure safety, JSON backups and non-destructive merges');
 })().catch(error=>{console.error(error);process.exitCode=1;});
