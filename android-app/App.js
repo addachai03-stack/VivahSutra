@@ -17,7 +17,7 @@ const {createWorkingCopyStore} = require('./src/workingCopy');
 const {readLocalDrafts,writeLocalDrafts,inspectRecoverySnapshot,inspectStorageHealth,makeBackupFile,readBackupFile,mergeBackup} = require('./src/draftStorage');
 
 const C={bg:'#171310',panel:'#24201C',panel2:'#30271F',gold:'#D6B174',soft:'#F9EDDB',muted:'#AEA194',line:'#4D4033',rose:'#C9928B'};
-const BETA_VERSION='1.1.12';
+const BETA_VERSION='1.1.13';
 const nowId=()=>String(Date.now())+'-'+Math.random().toString(36).slice(2,7);
 // Keep template-gallery sample names, but never prefill a real new invitation with demo wedding details.
 const makeNew=(designId='rajwada')=>({...NEW_INVITE,id:null,designId,bride:'',groom:'',date:'',time:'',venue:'',host:'',message:'',relatives:'',rsvp:''});
@@ -283,17 +283,21 @@ function AppContent(){
       setDrafts(next);
       setInvite(entry);
       setHasUnsavedEdits(false);
-      let workingCleared=true;
+      let workNotice='';
       try{
-        await workingCopyStore.current.clear();
-        setWorkingCandidate(null);
-        setWorkingCopyError(false);
-        setWorkingCopyStatus('idle');
+        const cleanup=await workingCopyStore.current.clearIfUnchanged(invite);
+        setWorkingCandidate(cleanup.newerCopy);
+        if(cleanup.cleared){
+          setWorkingCopyError(false);
+          setWorkingCopyStatus('idle');
+        }else{
+          workNotice=' Newer unfinished changes were kept separately; reopen Home to restore them.';
+        }
       }catch(e){
-        workingCleared=false;
+        workNotice=' The separate unfinished working copy could not be safely cleared.';
         setWorkingCopyError(true);
       }
-      Alert.alert('Invitation saved',(result.backupSynced?'Your invitation and its local recovery copy are saved.':'Invitation saved, but the recovery copy could not be refreshed. Export a backup file from Saved.')+(workingCleared?'':' Your unsaved working copy could not be cleared.'));
+      Alert.alert('Invitation saved',(result.backupSynced?'Your invitation and its local recovery copy are saved.':'Invitation saved, but the recovery copy could not be refreshed. Export a backup file from Saved.')+workNotice);
     }catch(e){
       if(e?.code==='RECOVERY_REQUIRED'){
         Alert.alert('Older invitations protected','The recovery copy contains invitations missing from Saved. Go to Saved → RECOVER FROM LOCAL COPY before saving. Nothing was overwritten.');
