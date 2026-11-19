@@ -1,0 +1,55 @@
+// Separate from the user's saved invitation list and its recovery mirror.
+// Contains ONLY the local, unfinished invitation. No network or auto-publishing.
+const KEY = 'vivahsutra-unsaved-working-copy-v1';
+const FORMAT = 'vivahsutra-unsaved-invitation';
+const VERSION = 1;
+const MAX_LENGTH = 120000;
+const FIELDS = ['id','designId','accent','language','occasion','bride','groom','date','time','venue','host','message','relatives','rsvp','bridePhoto','groomPhoto','createdAt','updatedAt'];
+
+function cleanInvite(invite) {
+  if (!invite || typeof invite !== 'object' || Array.isArray(invite)) throw new Error('Invalid unfinished invitation');
+  const result = {};
+  for (const key of FIELDS) {
+    const value = invite[key];
+    if (value == null) { result[key] = null; continue; }
+    if (typeof value !== 'string' || value.length > 4000) throw new Error('Invalid unfinished invitation field');
+    result[key] = value;
+  }
+  if (!result.designId || !result.occasion) throw new Error('Incomplete unfinished invitation');
+  return result;
+}
+function encodeWorkingCopy(invite, savedAt) {
+  const record = { format:FORMAT, version:VERSION, savedAt, invite:cleanInvite(invite) };
+  const raw = JSON.stringify(record);
+  if (raw.length > MAX_LENGTH) throw new Error('Unfinished invitation too large');
+  return raw;
+}
+function decodeWorkingCopy(raw) {
+  if (raw == null) return null;
+  if (typeof raw !== 'string' || raw.length > MAX_LENGTH) throw new Error('Unfinished invitation storage invalid');
+  const record = JSON.parse(raw);
+  if (!record || record.format !== FORMAT || record.version !== VERSION ||
+      typeof record.savedAt !== 'string' || Number.isNaN(Date.parse(record.savedAt))) {
+    throw new Error('Unknown unfinished invitation backup');
+  }
+  return { invite:cleanInvite(record.invite), savedAt:record.savedAt };
+}
+// Serialise async writes, so a late keystroke cannot overtake a newer one.
+// clear() is also queued: old saves cannot reappear after successful Save/Discard.
+function createWorkingCopyStore(storage, clock = () => new Date().toISOString()) {
+  let last = Promise.resolve();
+  const enqueue = task => {
+    const action = last.then(task);
+    last = action.catch(() => undefined);
+    return action;
+  };
+  return {
+    save: invite => {
+      const raw = encodeWorkingCopy(invite, clock());
+      return enqueue(() => storage.setItem(KEY,raw));
+    },
+    clear: () => enqueue(() => storage.removeItem(KEY)),
+    read: () => enqueue(async () => decodeWorkingCopy(await storage.getItem(KEY))),
+  };
+}
+module.exports = {KEY,encodeWorkingCopy,decodeWorkingCopy,createWorkingCopyStore};
