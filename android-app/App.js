@@ -16,7 +16,7 @@ const {exportInvitationPng} = require('./src/pngExport');
 const {readLocalDrafts,writeLocalDrafts,inspectRecoverySnapshot,inspectStorageHealth,makeBackupFile,readBackupFile,mergeBackup} = require('./src/draftStorage');
 
 const C={bg:'#171310',panel:'#24201C',panel2:'#30271F',gold:'#D6B174',soft:'#F9EDDB',muted:'#AEA194',line:'#4D4033',rose:'#C9928B'};
-const BETA_VERSION='1.1.9';
+const BETA_VERSION='1.1.10';
 const nowId=()=>String(Date.now())+'-'+Math.random().toString(36).slice(2,7);
 // Keep template-gallery sample names, but never prefill a real new invitation with demo wedding details.
 const makeNew=(designId='rajwada')=>({...NEW_INVITE,id:null,designId,bride:'',groom:'',date:'',time:'',venue:'',host:'',message:'',relatives:'',rsvp:''});
@@ -155,7 +155,21 @@ function AppContent(){
     }finally{setLoaded(true);}
   };
   useEffect(()=>{loadDrafts();},[]);
-  useEffect(()=>{const subscription=BackHandler.addEventListener('hardwareBackPress',()=>{if(intro){setIntro(false);return true;}if(tab!=='home'){setTab('home');return true;}return false;});return()=>subscription.remove();},[tab,intro]);
+  useEffect(()=>{
+    const subscription=BackHandler.addEventListener('hardwareBackPress',()=>{
+      if(intro){setIntro(false);return true;}
+      if(tab==='editor'&&hasUnsavedEdits){
+        Alert.alert('Unsaved invitation','Your changes are not saved. You can resume them from Home or Create while this app stays open.',[
+          {text:'Keep editing',style:'cancel'},
+          {text:'Leave editor',onPress:()=>setTab('home')}
+        ]);
+        return true;
+      }
+      if(tab!=='home'){setTab('home');return true;}
+      return false;
+    });
+    return()=>subscription.remove();
+  },[tab,intro,hasUnsavedEdits]);
   const editField=(field,value)=>{setHasUnsavedEdits(true);setInvite(p=>({...p,[field]:value}));};
   const switchLanguage=(language)=>{
     setHasUnsavedEdits(true);
@@ -351,12 +365,24 @@ function AppContent(){
   };
   const nav=(to)=>{
     if(to==='editor'){
-      // "Create" opens a fresh invitation, while existing edits are protected by confirmDiscard.
+      // Reopen an unfinished invitation instead of forcing its discard.
+      if(tab!=='editor'&&hasUnsavedEdits){setTab('editor');return;}
       if(tab!=='editor')newInvite();
       return;
     }
-    setTab(to);
-    if(to==='designs'){setDesignFilter('All');setSelectedDesignId(null);}
+    if(to===tab)return;
+    const proceed=()=>{
+      setTab(to);
+      if(to==='designs'){setDesignFilter('All');setSelectedDesignId(null);}
+    };
+    if(tab==='editor'&&hasUnsavedEdits){
+      Alert.alert('Unsaved invitation','Save your invitation before leaving. You can resume editing from Home or Create while the app remains open.',[
+        {text:'Keep editing',style:'cancel'},
+        {text:'Leave for now',onPress:proceed}
+      ]);
+      return;
+    }
+    proceed();
   };
   const tr=(en,hi)=>invite.language==='hi'?hi:en;
   const hindiOccasions={Wedding:'विवाह',Engagement:'सगाई',Haldi:'हल्दी',Mehendi:'मेहंदी',Sangeet:'संगीत',Reception:'स्वागत समारोह','Save the Date':'शुभ तिथि'};
@@ -370,6 +396,10 @@ function AppContent(){
     <View style={{padding:12,flex:1}}><Text style={{color:C.soft,fontFamily:'serif',fontSize:16,flexShrink:1}}>{design.name}</Text><Small style={{marginTop:4}}>{design.subtitle}</Small><Small style={{marginTop:8,color:C.gold}}>{design.category.toUpperCase()} DESIGN</Small><Text style={{color:C.gold,fontSize:11,fontWeight:'800',marginTop:12}}>{grid?(selectedDesignId===design.id?'✓  SELECTED':'○  TAP TO SELECT'):'TAP TO CUSTOMISE  ↗'}</Text></View>
   </Pressable>;
   const Home=()=> <View>
+    {hasUnsavedEdits?<Section><Label>UNSAVED INVITATION · जारी काम</Label>
+      <Small>You have invitation changes that are not saved yet. Resume editing before starting a new card.</Small>
+      <GoldButton title="RESUME EDITING   →" onPress={()=>setTab('editor')} style={{marginTop:12}}/>
+    </Section>:null}
     <View style={s.homeWelcome}><Label>A CELEBRATION STARTS HERE</Label><Text style={s.bigTitle}>Your forever,{'\n'}<Text style={{color:C.gold,fontStyle:'italic'}}>beautifully invited.</Text></Text><Small style={{fontSize:13,lineHeight:21,marginTop:16}}>Create beautiful Indian wedding invitations with your story, your style and your loved ones.</Small><GoldButton title="CREATE MY INVITATION    ↗" onPress={()=>newInvite()} style={{marginTop:23,alignSelf:'flex-start'}}/></View>
     <View style={s.heroCard}><LinearGradient colors={['#493027','#291F1A']} style={{padding:21,borderRadius:20,overflow:'hidden'}}><Text style={{color:C.gold,fontSize:25}}>✦  ❦  ✦</Text><Text style={{fontFamily:'serif',fontSize:26,color:C.soft,marginTop:13}}>A royal beginning.</Text><Small style={{marginTop:7}}>Six signature collections. Endless beautiful moments.</Small><Pressable onPress={()=>nav('designs')} style={{marginTop:16}}><Text style={{color:C.gold,fontSize:12,fontWeight:'700'}}>EXPLORE DESIGNS  →</Text></Pressable></LinearGradient></View>
     <View style={s.rowHeading}><View><Label>THE SIGNATURE COLLECTION</Label><Text style={s.heading}>Find your style</Text></View><Pressable onPress={()=>nav('designs')}><Small style={{color:C.gold}}>View all  →</Small></Pressable></View>
