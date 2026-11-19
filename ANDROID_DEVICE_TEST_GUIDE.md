@@ -1,4 +1,4 @@
-# VivahSutra v1.1.9 — Android phone test guide (Hinglish)
+# VivahSutra v1.1.10 — Android phone test guide (Hinglish)
 
 **Only test after the latest feature-branch APK build is successful.** This guide is for real-device checks, not proof they already passed.
 
@@ -68,3 +68,11 @@ This is a **FREE BETA TEST APK with debug signing**, not an APPLIQ production re
 - In Android app settings deny photo/library access, then try Save PNG again; it should show a clear warning and suggest SHARE PNG, not crash.
 - Test Hindi text, long names and the FREE BETA watermark on the *exported* PNG. Report any blank/white capture or clipped text.
 - These checks are NOT performed by CI; the export workflow has mock-unit PASS only until the device video is reviewed.
+
+## V1.1.10 unsaved invitation navigation test
+1. Create a sample invitation, fill both names and one message, **do not Save**.
+2. Tap Android Back. Confirm the unsaved warning. Choose **Keep editing** and make sure text remains.
+3. Tap Home. Confirm warning → **Leave for now**, then use **RESUME EDITING**. Confirm the same values return.
+4. Tap Saved, confirm warning → Leave for now, then tap the bottom Create tab. It must reopen the unfinished invitation, not silently replace it.
+5. Save the sample, return Home and confirm the unsaved invitation banner is gone.
+6. An unfinished invitation exists only in memory until you Save. Force closing the app may still discard it. Always Save before closing.
