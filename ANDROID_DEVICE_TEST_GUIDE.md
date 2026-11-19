@@ -37,11 +37,12 @@ Send a screen recording/photo of the relevant step plus the Android version and 
 ## Release warning
 This is a **FREE BETA TEST APK with debug signing**, not an APPLIQ production release. Store publishing and PR merge need separate approvals.
 
-## Backup & recovery acceptance test for V1.1.6
-- Install V1.1.6 *over* V1.1.5; do not uninstall or clear app storage.
+## Backup & recovery acceptance test for V1.1.7
+- Install V1.1.7 *over* V1.1.6; do not uninstall or clear app storage.
 - Before creating new drafts, inspect Saved for any old drafts. Empty Saved does not prove recovery; V1.1.5 did not create a recovery mirror.
 - Save a sample invitation → close app → reopen Saved. The draft should remain.
 - Saved → EXPORT BACKUP FILE → choose Android Files or Drive; verify a .json file exists and keep it private.
+- Saved → RECOVER FROM LOCAL COPY → verify missing saved IDs are displayed and no restore occurs without user approval; if nothing is found, a clear message must appear.
 - Saved → RESTORE BACKUP FILE → select the exported JSON; existing invitations must not be overwritten and duplicate IDs should be skipped.
 - Photos are not embedded in JSON backups and might require reselection after reinstall.
 - Corrupt/unreadable local storage must block Save/Delete, not silently replace existing data.
