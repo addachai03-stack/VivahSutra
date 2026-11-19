@@ -75,3 +75,11 @@ Evidence: 19 November 2026 user-supplied 71-second Android phone video. Recordin
 - [ ] Restore exported JSON; duplicate IDs stay unchanged and invalid JSON is rejected.
 - [ ] Save → force close → reopen persists; corrupted/missing primary recovers from on-device mirror (only if mirror already exists).
 - [ ] Existing older missing invitation: root cause still unknown; pre-v1.1.6 versions stored no mirror and cannot be recovered solely from the repo.
+
+## V1.1.7 opt-in on-device recovery (NOT YET DEVICE-VERIFIED)
+- [ ] Saved → RECOVER FROM LOCAL COPY inspects the mirror without modifying a valid empty primary list
+- [ ] Recovery dialogue shows the count of missing invitation IDs and explicitly requires owner confirmation
+- [ ] Recovery appends only missing IDs, does not replace current saved drafts
+- [ ] Empty/missing/corrupted recovery copy shows a useful error and does not overwrite data
+- [ ] If writing recovered drafts fails, recovery snapshot remains available for another attempt
+- [ ] Existing V1.1.5 data absent before the first mirror backup remains unrecoverable without another prior backup
