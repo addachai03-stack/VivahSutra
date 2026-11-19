@@ -96,3 +96,16 @@ Evidence: 19 November 2026 user-supplied 71-second Android phone video. Recordin
 - [ ] Verify Play Protect behavior and accessibility on an actual supported Android device
 
 **Cannot close without external/user action:** actual Android tests, signing with an owner-controlled production certificate, approved icon/splash, support contact and privacy policy, store delivery tests, merge authorization and APPLIQ publishing authorization. None of these is marked as complete from source checks alone.
+
+## V1.1.9 PNG Save/Share validation
+- [x] Source unit tests: simulated Gallery permission denial prevents file capture/save and returns a clear result
+- [x] Source unit tests: simulated Android share unavailable prevents capture; invalid/remote PNG URI is rejected
+- [x] Source unit tests: local file:// and absolute Android ViewShot temporary paths are accepted, with safe URI normalization
+- [x] Source unit tests: simulated file save error, capture failure and sharing failure propagate to UI error handling
+- [ ] Physical Android: Save FRONT PNG to Photos and open the actual resulting image
+- [ ] Physical Android: Save BACK PNG to Photos and open the actual resulting image
+- [ ] Physical Android: Share FRONT and BACK PNG to a receiving app or Files; ensure real files open and are not blank
+- [ ] Physical Android: revoke Gallery permission and verify explicit Share PNG fallback without crash
+- [ ] Physical Android: verify correct card text, Hindi characters, optional photos and FREE BETA watermark in exported pixels
+
+**Caution:** Mock tests confirm control flow, not actual device Gallery permissions, Android share-sheet compatibility or pixel/render correctness. Avoid claiming PNG device PASS without a recording or physical test.
