@@ -1,4 +1,4 @@
-# VivahSutra v1.1.10 — Android phone test guide (Hinglish)
+# VivahSutra v1.1.11 — Android phone test guide (Hinglish)
 
 **Only test after the latest feature-branch APK build is successful.** This guide is for real-device checks, not proof they already passed.
 
@@ -76,3 +76,13 @@ This is a **FREE BETA TEST APK with debug signing**, not an APPLIQ production re
 4. Tap Saved, confirm warning → Leave for now, then tap the bottom Create tab. It must reopen the unfinished invitation, not silently replace it.
 5. Save the sample, return Home and confirm the unsaved invitation banner is gone.
 6. An unfinished invitation exists only in memory until you Save. Force closing the app may still discard it. Always Save before closing.
+
+## V1.1.11 unfinished-work recovery test
+- Start V1.1.11 **over the old APK**, never uninstall or clear app data. Do not use real wedding details in recordings.
+- In Create, type sample bride/groom names and message but do not press SAVE MY INVITATION. Leave the app with Android Home, force-close it, reopen and view Home.
+- Home should offer **RESTORE UNFINISHED INVITATION**. Tap Restore and verify the same sample names/message and chosen design return. This is best-effort local working-copy persistence, not cloud backup.
+- Leave Create temporarily, then tap Create to confirm the same unsaved work is resumed. Use Home → CREATE MY INVITATION to prompt before discarding; choose Keep Editing first.
+- Save the sample, force close and relaunch. It should be in **Saved**; Home should no longer prompt to restore the old unsaved working copy.
+- Start another sample then choose to discard it after the warning; reopen and verify that no stale unfinished work is offered.
+- If local storage is unreadable, Home must offer RETRY WORKING COPY and an explicit consent-based discard; never clear app data to troubleshoot.
+- This unfinished-work record is separate from saved invitations and their recovery mirror. Full device verification is still required.
