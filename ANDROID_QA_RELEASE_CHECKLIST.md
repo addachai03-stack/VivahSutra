@@ -83,3 +83,16 @@ Evidence: 19 November 2026 user-supplied 71-second Android phone video. Recordin
 - [ ] Empty/missing/corrupted recovery copy shows a useful error and does not overwrite data
 - [ ] If writing recovered drafts fails, recovery snapshot remains available for another attempt
 - [ ] Existing V1.1.5 data absent before the first mirror backup remains unrecoverable without another prior backup
+
+## V1.1.8 protected local storage diagnostics — release candidate QA
+- [x] Source tests block normal Save/Delete when recovery snapshot contains missing invitation IDs (CI unit tests)
+- [x] Read-only primary/recovery status and counts omit names and invitation data (source and CI tests)
+- [ ] Android screen shows CHECK LOCAL STORAGE, and its counts match a known saved sample
+- [ ] Android refuses a regular Save while missing invitation IDs exist in local recovery copy, without overwriting that copy
+- [ ] User-approved recovery adds only missing IDs, then normal saving can continue
+- [ ] User device confirms all six selectable designs and four category filters
+- [ ] User device confirms Hindi/English editor, optional photos, long names and Android keyboard
+- [ ] User device confirms Save/Edit/Reopen, export/import JSON, front/back PNG and sharing
+- [ ] Verify Play Protect behavior and accessibility on an actual supported Android device
+
+**Cannot close without external/user action:** actual Android tests, signing with an owner-controlled production certificate, approved icon/splash, support contact and privacy policy, store delivery tests, merge authorization and APPLIQ publishing authorization. None of these is marked as complete from source checks alone.
