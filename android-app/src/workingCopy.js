@@ -38,6 +38,7 @@ function decodeWorkingCopy(raw) {
 // clear() is also queued: old saves cannot reappear after successful Save/Discard.
 function createWorkingCopyStore(storage, clock = () => new Date().toISOString()) {
   let last = Promise.resolve();
+  let recoveryBlocked = false;
   const enqueue = task => {
     const action = last.then(task);
     last = action.catch(() => undefined);
@@ -46,10 +47,29 @@ function createWorkingCopyStore(storage, clock = () => new Date().toISOString())
   return {
     save: invite => {
       const raw = encodeWorkingCopy(invite, clock());
-      return enqueue(() => storage.setItem(KEY,raw));
+      return enqueue(async () => {
+        if (recoveryBlocked) {
+          const error = new Error('Unreadable unfinished invitation must be recovered or explicitly discarded');
+          error.code = 'WORKING_COPY_RECOVERY_REQUIRED';
+          throw error;
+        }
+        await storage.setItem(KEY,raw);
+      });
     },
-    clear: () => enqueue(() => storage.removeItem(KEY)),
-    read: () => enqueue(async () => decodeWorkingCopy(await storage.getItem(KEY))),
+    clear: () => enqueue(async () => {
+      await storage.removeItem(KEY);
+      recoveryBlocked = false;
+    }),
+    read: () => enqueue(async () => {
+      try {
+        const copy = decodeWorkingCopy(await storage.getItem(KEY));
+        recoveryBlocked = false;
+        return copy;
+      } catch (error) {
+        recoveryBlocked = true;
+        throw error;
+      }
+    }),
   };
 }
 module.exports = {KEY,encodeWorkingCopy,decodeWorkingCopy,createWorkingCopyStore};
