@@ -25,6 +25,19 @@ function memory(){
   assert.throws(()=>encodeWorkingCopy({...invite,bride:'x'.repeat(4001)},fixed));
   assert.throws(()=>encodeWorkingCopy({...invite,designId:''},fixed));
 
+  // Real Save should not delete a newer queued keystroke.
+  const initial=store.save({...invite,message:'First'});
+  const later=store.save({...invite,message:'Newer text'});
+  const compare=store.clearIfUnchanged({...invite,message:'First'});
+  await Promise.all([initial,later]);
+  const preserved=await compare;
+  assert.equal(preserved.cleared,false);
+  assert.equal(preserved.newerCopy.invite.message,'Newer text');
+  assert.equal((await store.read()).invite.message,'Newer text');
+  assert.deepEqual(await store.clearIfUnchanged({...invite,message:'Newer text'}),{cleared:true,newerCopy:null});
+  assert.equal(await store.read(),null);
+  assert.deepEqual(await store.clearIfUnchanged(invite),{cleared:true,newerCopy:null});
+
   const first=store.save({...invite,message:'A'});
   const second=store.save({...invite,message:'B'});
   const clear=store.clear();
@@ -39,6 +52,7 @@ function memory(){
   const guarded=createWorkingCopyStore(damaged,()=>fixed);
   await assert.rejects(guarded.read(),/JSON|position|Unexpected/);
   await assert.rejects(guarded.save({...invite,message:'Must not overwrite'}),e=>e.code==='WORKING_COPY_RECOVERY_REQUIRED');
+  await assert.rejects(guarded.clearIfUnchanged(invite),e=>e.code==='WORKING_COPY_RECOVERY_REQUIRED');
   assert.equal(damaged.values.get(KEY),'{invalid json');
   await guarded.clear(); // Explicit user consent is required by App UI.
   await guarded.save({...invite,message:'New after discard'});
