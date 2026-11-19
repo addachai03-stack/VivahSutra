@@ -93,3 +93,10 @@ This is a **FREE BETA TEST APK with debug signing**, not an APPLIQ production re
 - Save the invitation normally. Reopen and verify the saved draft exists and no obsolete unfinished-copy recovery banner appears.
 - For unavailable or corrupt local storage, app should display a warning and avoid overwriting the old record. Only explicitly discard after reviewing risk. Never clear Android app storage or uninstall to test recovery.
 - Do not treat these source tests as proof of persistence on a physical device: an app terminated before its last async storage write finishes may lose very recent changes.
+
+## V1.1.13 Save-during-edit race test (Android device — pending)
+- Enter sample invitation data, **do not** use private wedding details in the recording.
+- When Save is in progress, try adding a different message. Confirm the actual Saved invitation contains the submitted content and any newer unfinished edits are either preserved for recovery or explicitly blocked while saving.
+- After saving, reopen Home. If newer unfinished changes were retained, use RESTORE UNFINISHED INVITATION and inspect them before discarding.
+- Test app force close and reopen after the "saved locally" status appears. Check Saved and unfinished recovery separately.
+- Do not uninstall or clear app data: both types of copies live on-device.
