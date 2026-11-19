@@ -36,7 +36,7 @@ for (const category of categories) {
 }
 
 assert.equal(packageInfo.version, config.expo.version, 'App and package versions must agree');
-assert.equal(config.expo.android.versionCode, 12, 'Android v1.1.10 source versionCode must be 12 before CI assigns the beta build code');
+assert.equal(config.expo.android.versionCode, 13, 'Android v1.1.11 source versionCode must be 13 before CI assigns the beta build code');
 assert.ok(appSource.includes("const BETA_VERSION='"+packageInfo.version+"'"), 'Visible beta version must match package version');
 assert.equal(config.expo.extra.appMode, 'free-beta', 'Beta mode must not be silently removed');
 assert.equal(config.expo.extra.distribution, 'APPLIQ-candidate', 'Do not mark as published');
@@ -79,6 +79,13 @@ for (const [name, source, needle] of [
   ['android Back warns about unsaved edits', appSource, "if(tab==='editor'&&hasUnsavedEdits)"],
   ['tab transition warns about unsaved edits', appSource, "if(tab==='editor'&&hasUnsavedEdits){"],
   ['resume editing from Home', appSource, 'RESUME EDITING'],
+  ['unsaved session storage', appSource, 'createWorkingCopyStore(AsyncStorage)'],
+  ['autosave working copy', appSource, 'workingCopyStore.current.save(invite)'],
+  ['working copy recovery after relaunch', appSource, 'RESTORE UNFINISHED INVITATION'],
+  ['explicit consent before discarding', appSource, 'Discard unfinished invitation?'],
+  ['clear unfinished work after real Save', appSource, 'await workingCopyStore.current.clear()'],
+  ['invalid working-copy record recovery', appSource, 'RETRY WORKING COPY'],
+  ['unreadable copy discard requires confirmation', appSource, 'Discard unreadable unfinished work?'],
   ['Create tab returns to unsaved edit', appSource, "if(tab!=='editor'&&hasUnsavedEdits){setTab('editor');return;}"],
   ['blank details for real new invitations', appSource, "bride:'',groom:'',date:'',time:'',venue:''"],
   ['fresh invitation action in Create tab', appSource, "if(tab!=='editor')newInvite()"],
