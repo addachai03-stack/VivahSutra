@@ -1,7 +1,7 @@
 # VivahSutra — native Android app (Expo / React Native)
 This is a separate Android-first application (Expo SDK 57 / Android API 36). The existing GitHub Pages website in the repository root remains untouched.
 
-## Included in v1.1.7 beta
+## Included in v1.1.8 beta
 - Animated royal double-door entrance with a Skip Intro control (no external media needed)
 - Home / Designs / Create / My Invitations bottom navigation
 - Six new mobile invitation themes and four accent colours
@@ -36,7 +36,7 @@ Use Expo Go for development where compatible. For an actual standalone Android t
 ## Automated smoke checks
 Run `npm run test:smoke` from `android-app/` (requires Node.js). The same tests run before each GitHub APK build. They check source/config invariants only and cannot simulate actual photo permissions, device persistence, PNG generation or user interactions.
 
-- The app header displays `BETA V1.1.6` to help identify the newly installed test build.
+- The app header displays `BETA V1.1.8` to help identify the newly installed test build.
 
 ## Android beta updates — no more iPhone-to-Android APK forwarding
 - The APK built from `feature/native-android-v1` checks public GitHub beta releases at app startup, and when returning to the foreground after 30 minutes.
@@ -59,3 +59,10 @@ Run `npm run test:smoke` from `android-app/` (requires Node.js). The same tests 
 - A valid empty primary list is never automatically replaced by a stale recovery snapshot. The user must approve RECOVER FROM LOCAL COPY.
 - Local mirrors do not survive uninstall or clearing app data. Data already missing before recovery existed cannot be restored without an earlier exported backup.
 - Export, restore, and retained drafts must still be verified on an actual Android phone.
+
+## V1.1.8 troubleshooting — device-only storage check
+- Saved → **CHECK LOCAL STORAGE** shows only local storage key status, number of drafts, recovery copy status and missing ID count. It does **not** display names or send anything to a server.
+- If a snapshot has missing IDs, regular save/delete and JSON import are stopped with a recovery warning rather than silently overwriting that snapshot.
+- Use **RECOVER FROM LOCAL COPY** only after reviewing the confirmation. A truly deleted draft may also be present in an older snapshot.
+- These checks cannot restore drafts missing from both the primary storage and the recovery mirror; an earlier exported backup file is needed in that case.
+- Status/counts and all export/restore flows still need on-device QA.
