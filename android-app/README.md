@@ -66,3 +66,9 @@ Run `npm run test:smoke` from `android-app/` (requires Node.js). The same tests 
 - Use **RECOVER FROM LOCAL COPY** only after reviewing the confirmation. A truly deleted draft may also be present in an older snapshot.
 - These checks cannot restore drafts missing from both the primary storage and the recovery mirror; an earlier exported backup file is needed in that case.
 - Status/counts and all export/restore flows still need on-device QA.
+
+## V1.1.10 navigation improvements
+- Unsaved edits in Create trigger a prompt when leaving with Android Back or another bottom tab.
+- Leaving the editor temporarily does not delete its in-memory state; Home shows **RESUME EDITING**, and bottom Create reopens the unfinished invitation.
+- Use **SAVE MY INVITATION** to persist data to private local storage. Unsaved changes are NOT automatically saved when the app is force-closed.
+- These interactions are source-checked by CI but still require Android device testing.
