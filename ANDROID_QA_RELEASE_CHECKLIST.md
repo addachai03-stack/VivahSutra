@@ -109,3 +109,12 @@ Evidence: 19 November 2026 user-supplied 71-second Android phone video. Recordin
 - [ ] Physical Android: verify correct card text, Hindi characters, optional photos and FREE BETA watermark in exported pixels
 
 **Caution:** Mock tests confirm control flow, not actual device Gallery permissions, Android share-sheet compatibility or pixel/render correctness. Avoid claiming PNG device PASS without a recording or physical test.
+
+## V1.1.10 unfinished invitation navigation (source tests PASS; device QA pending)
+- [x] Source-level checks verify Android Back and bottom tab transitions prompt when editor has unsaved changes
+- [x] Source-level checks verify Home RESUME EDITING and Create tab resume unfinished invitation
+- [ ] On Android, edit fields without saving → press device Back → Keep Editing and Leave Editor options behave correctly
+- [ ] On Android, edit fields without saving → tap Home/Saved/Designs → warning appears; Home → RESUME EDITING preserves entered text
+- [ ] On Android, edit fields without saving → tap bottom Create from another screen → same unfinished invitation reopens
+- [ ] Save invitation → return Home; Resume Editing warning/banner no longer appears
+- [ ] Force close after unsaved changes: no auto-draft persistence is implemented; do not claim protection across process termination
