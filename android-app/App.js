@@ -12,10 +12,10 @@ import * as FileSystem from 'expo-file-system/legacy';
 import ViewShot from 'react-native-view-shot';
 import {ACCENTS, DESIGNS, InvitationCard, NEW_INVITE, OCCASIONS} from './src/designs';
 const {checkForBetaUpdate} = require('./src/betaUpdateFeed');
-const {readLocalDrafts,writeLocalDrafts,inspectRecoverySnapshot,makeBackupFile,readBackupFile,mergeBackup} = require('./src/draftStorage');
+const {readLocalDrafts,writeLocalDrafts,inspectRecoverySnapshot,inspectStorageHealth,makeBackupFile,readBackupFile,mergeBackup} = require('./src/draftStorage');
 
 const C={bg:'#171310',panel:'#24201C',panel2:'#30271F',gold:'#D6B174',soft:'#F9EDDB',muted:'#AEA194',line:'#4D4033',rose:'#C9928B'};
-const BETA_VERSION='1.1.7';
+const BETA_VERSION='1.1.8';
 const nowId=()=>String(Date.now())+'-'+Math.random().toString(36).slice(2,7);
 // Keep template-gallery sample names, but never prefill a real new invitation with demo wedding details.
 const makeNew=(designId='rajwada')=>({...NEW_INVITE,id:null,designId,bride:'',groom:'',date:'',time:'',venue:'',host:'',message:'',relatives:'',rsvp:''});
@@ -67,6 +67,8 @@ function AppContent(){
   const [drafts,setDrafts]=useState([]);
   const [loaded,setLoaded]=useState(false);
   const [storageError,setStorageError]=useState(false);
+  const [storageHealth,setStorageHealth]=useState(null);
+  const [storageChecking,setStorageChecking]=useState(false);
   const [busy,setBusy]=useState(false);
   const exportInFlight=useRef(false);
   const [hasUnsavedEdits,setHasUnsavedEdits]=useState(false);
@@ -128,6 +130,16 @@ function AppContent(){
     });
     return()=>sub.remove();
   },[]);
+  const checkLocalStorage=async()=>{
+    if(draftWriteInFlight.current||storageChecking)return;
+    setStorageChecking(true);
+    try{
+      const health=await inspectStorageHealth(AsyncStorage);
+      setStorageHealth(health);
+    }catch(e){
+      Alert.alert('Storage check unavailable','Could not inspect local storage. No invitation data was changed.');
+    }finally{setStorageChecking(false);}
+  };
   const loadDrafts=async()=>{
     if(draftWriteInFlight.current)return;
     try{
@@ -181,8 +193,12 @@ function AppContent(){
       setHasUnsavedEdits(false);
       Alert.alert('Invitation saved',result.backupSynced?'Your invitation and its local recovery copy are saved.':'Invitation saved, but the recovery copy could not be refreshed. Export a backup file from Saved.');
     }catch(e){
-      setStorageError(true);
-      Alert.alert('Save paused','Local storage changed or is unavailable. Existing invitations were not intentionally overwritten. Use Saved → Retry Loading before saving again.');
+      if(e?.code==='RECOVERY_REQUIRED'){
+        Alert.alert('Older invitations protected','The recovery copy contains invitations missing from Saved. Go to Saved → RECOVER FROM LOCAL COPY before saving. Nothing was overwritten.');
+      }else{
+        setStorageError(true);
+        Alert.alert('Save paused','Local storage changed or is unavailable. Existing invitations were not intentionally overwritten. Use Saved → Retry Loading before saving again.');
+      }
     }finally{savingInFlight.current=false;draftWriteInFlight.current=false;setSaving(false);}
   };
   const remove=(id)=>{
@@ -199,7 +215,10 @@ function AppContent(){
         draftsRef.current=next;
         setDrafts(next);
         if(!result.backupSynced)Alert.alert('Backup warning','Deletion succeeded, but the local recovery copy could not be refreshed.');
-      }catch(e){setStorageError(true);Alert.alert('Delete paused','Storage changed or is unavailable. Reload saved invitations before trying again.');}
+      }catch(e){
+        if(e?.code==='RECOVERY_REQUIRED')Alert.alert('Recovery needed','Missing invitations exist in the local recovery copy. Review Saved → RECOVER FROM LOCAL COPY before deleting anything.');
+        else{setStorageError(true);Alert.alert('Delete paused','Storage changed or is unavailable. Reload saved invitations before trying again.');}
+      }
       finally{draftWriteInFlight.current=false;}
     }}
     ]);
@@ -249,8 +268,12 @@ function AppContent(){
             setDrafts(result.drafts);
             Alert.alert('Invitations restored',result.added+' invitation(s) added. '+(!saved.backupSynced?'Local recovery mirror could not be refreshed; export another backup.':'Existing invitations were kept unchanged.'));
           }catch(e){
-            setStorageError(true);
-            Alert.alert('Restore paused','The local list changed or storage is unavailable. No existing invitations were intentionally replaced. Retry loading drafts.');
+            if(e?.code==='RECOVERY_REQUIRED'){
+              Alert.alert('Recovery copy protected','First restore missing local invitations using Saved → RECOVER FROM LOCAL COPY. The file import was not written.');
+            }else{
+              setStorageError(true);
+              Alert.alert('Restore paused','The local list changed or storage is unavailable. No existing invitations were intentionally replaced. Retry loading drafts.');
+            }
           }finally{draftWriteInFlight.current=false;}
         }}
       ]);
@@ -381,6 +404,14 @@ function AppContent(){
       <GoldButton title={backupBusy?'WORKING…':'EXPORT BACKUP FILE'} disabled={backupBusy||!loaded||storageError||drafts.length===0} onPress={exportBackup} style={{marginTop:12}}/>
       <GoldButton title={backupBusy?'WORKING…':'RESTORE BACKUP FILE'} disabled={backupBusy||!loaded||storageError} outline onPress={importBackup} style={{marginTop:9}}/>
       <GoldButton title={backupBusy?'WORKING…':'RECOVER FROM LOCAL COPY'} disabled={backupBusy||!loaded||storageError} outline onPress={recoverLocalCopy} style={{marginTop:9}}/>
+      <GoldButton title={storageChecking?'CHECKING…':'CHECK LOCAL STORAGE'} disabled={storageChecking||!loaded} outline onPress={checkLocalStorage} style={{marginTop:9}}/>
+      {storageHealth?<View style={{marginTop:12}}>
+        <Small>Device-only diagnostics · no names or invitation contents shown</Small>
+        <Small>Saved list: {storageHealth.primary.status} · {storageHealth.primary.count==null?'?':storageHealth.primary.count} invitation(s)</Small>
+        <Small>Recovery copy: {storageHealth.recovery.status} · {storageHealth.recovery.count==null?'?':storageHealth.recovery.count} invitation(s)</Small>
+        <Small style={{color:storageHealth.missingFromPrimary>0?C.rose:C.muted}}>Missing IDs in recovery copy: {storageHealth.missingFromPrimary==null?'not available':storageHealth.missingFromPrimary}</Small>
+        {storageHealth.missingFromPrimary>0?<Small style={{color:C.gold}}>Use RECOVER FROM LOCAL COPY and confirm before creating more invitations.</Small>:null}
+      </View>:null}
       {drafts.length===0?<Small style={{marginTop:11,color:C.rose}}>No saved invitations found. You can check for an on-device recovery copy or import an exported JSON backup. Older builds may have no recovery copy; cleared or uninstalled data cannot be recreated automatically.</Small>:null}
     </Section>
     <Small style={{marginTop:10}}>These drafts are not synced to the website or to another device unless you export a backup yourself.</Small>
