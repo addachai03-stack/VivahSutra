@@ -148,3 +148,10 @@ Evidence: 19 November 2026 user-supplied 71-second Android phone video. Recordin
 - [ ] Device: successful Save clears only a matching unfinished copy, without hiding regular Saved drafts
 - [ ] Device: Home offers restore if newer unfinished changes were retained after Save
 - [ ] Device: check behavior with Android Back, force close, and small screen (still not tested)
+
+## V1.1.13 Gradle dependency-resolution failure and retry
+- [x] Root cause from GitHub Actions run 44482370926: native Gradle step failed to resolve public Maven artifacts `kotlin-stdlib:2.2.21`, `kotlin-gradle-plugins-bom:2.1.20` and `java-diff-utils:4.15`; this is separate from JavaScript unit tests, which passed
+- [x] Feature workflow now retries the Gradle APK build at most 3 times **only** for known dependency resolution/network failures, with `--refresh-dependencies` on retries; unrelated compilation failures still stop immediately
+- [ ] Android APK rerun 44482943908 must complete SUCCESS, including APK identity/signature, public prerelease and upload artifact verification
+- [ ] Physical Android installation/update and user-data retention verification remains required; CI cannot substitute for this
+- [ ] Do not report V1.1.13 released until the public GitHub beta release contains an actual APK asset
