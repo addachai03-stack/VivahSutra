@@ -118,3 +118,13 @@ Evidence: 19 November 2026 user-supplied 71-second Android phone video. Recordin
 - [ ] On Android, edit fields without saving → tap bottom Create from another screen → same unfinished invitation reopens
 - [ ] Save invitation → return Home; Resume Editing warning/banner no longer appears
 - [ ] Force close after unsaved changes: no auto-draft persistence is implemented; do not claim protection across process termination
+
+## V1.1.11 unfinished invitation persistence (device test pending)
+- [x] Unit tests validate and serialize local working-copy saves and discard ordering, including failed writes
+- [x] Source smoke checks cover startup restore, safe discard, recovery prompt and clearing after real Save
+- [ ] Device: edit but do not Save → force close/reopen → RESTORE UNFINISHED INVITATION returns same sample details
+- [ ] Device: save recovered invitation → force close/reopen → Saved contains it and no stale working-copy prompt remains
+- [ ] Device: discard confirmation removes only the separate unfinished-work record, not saved invitations
+- [ ] Device: bad/unreadable working-copy record is not silently overwritten; retry/discard action asks for consent
+- [ ] Device: rapid typing then app backgrounding does not produce an obviously stale working copy
+- [ ] Limit: app writes best-effort locally and cannot guarantee capture if Android force-kills it before the last write completes; no cloud backup exists
