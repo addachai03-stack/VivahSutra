@@ -128,3 +128,14 @@ Evidence: 19 November 2026 user-supplied 71-second Android phone video. Recordin
 - [ ] Device: bad/unreadable working-copy record is not silently overwritten; retry/discard action asks for consent
 - [ ] Device: rapid typing then app backgrounding does not produce an obviously stale working copy
 - [ ] Limit: app writes best-effort locally and cannot guarantee capture if Android force-kills it before the last write completes; no cloud backup exists
+
+## V1.1.12 unfinished-work safety QA — source tested, Android NOT TESTED
+- [x] Source CI rejects invalid working-copy format/oversized fields and serializes writes and clear operations
+- [x] Source CI: corrupt/unreadable working copy blocks writes until a successful read or explicit clear
+- [x] Source CI: UI checks for unreadable old copy and only autosaves when there is no pending restore candidate
+- [x] Source CI: editor shows Saving locally / Saved locally / Error state, clearing it after successful Save
+- [ ] Android phone: type sample invitation → wait for "saved locally" → force close → reopen → restore the exact same text
+- [ ] Android phone: rapid typing and quick background/foreground does not restore stale text (best-effort)
+- [ ] Android phone: saved invitation is in Saved with no stale unfinished copy offered after relaunch
+- [ ] Android phone: test unreadable storage behavior on a controlled test environment; do NOT clear data or uninstall to simulate it
+- [ ] Android phone: verify the new status text stays readable with keyboard open and a small screen
