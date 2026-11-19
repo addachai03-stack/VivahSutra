@@ -67,14 +67,17 @@ async function readLocalDrafts(storage) {
 
 // The mirror is written before the primary, then refreshed. A write failure
 // before primary commit leaves the old drafts intact; no empty default writes.
-async function writeLocalDrafts(storage, previous, next) {
+async function writeLocalDrafts(storage, previous, next, options = {}) {
   validateDrafts(previous);
   validateDrafts(next);
   const { drafts: current } = await readLocalDrafts(storage);
   if (JSON.stringify(current) !== JSON.stringify(previous)) {
     throw new Error('Saved invitations changed; reload before editing');
   }
-  await storage.setItem(MIRROR_KEY, JSON.stringify(previous));
+  // During an explicit recovery, keep the recovered candidate in the mirror
+  // even if writing the primary fails. Otherwise preserve the last good state.
+  const preWriteMirror = options.preserveRecoveredDrafts ? next : previous;
+  await storage.setItem(MIRROR_KEY, JSON.stringify(preWriteMirror));
   await storage.setItem(PRIMARY_KEY, JSON.stringify(next));
   try {
     await storage.setItem(MIRROR_KEY, JSON.stringify(next));
@@ -83,6 +86,17 @@ async function writeLocalDrafts(storage, previous, next) {
     // The primary save succeeded. Show a warning rather than claiming it failed.
     return { backupSynced: false };
   }
+}
+
+// Optional inspection only: never auto-revive deleted drafts from a valid [].
+// The user can choose to merge missing IDs from a prior local recovery snapshot.
+async function inspectRecoverySnapshot(storage, existing) {
+  validateDrafts(existing);
+  const raw = await storage.getItem(MIRROR_KEY);
+  if (raw === null) return { drafts: existing, added: 0, skipped: 0, snapshotCount: 0 };
+  const snapshot = parseDrafts(raw);
+  const outcome = mergeBackup(existing, snapshot);
+  return { ...outcome, snapshotCount: snapshot.length };
 }
 
 function makeBackupFile(drafts, createdAt) {
@@ -105,4 +119,4 @@ function mergeBackup(existing, imported) {
   return { drafts: validateDrafts([...existing, ...added]), added: added.length, skipped: imported.length - added.length };
 }
 
-module.exports = { PRIMARY_KEY, MIRROR_KEY, validateDrafts, readLocalDrafts, writeLocalDrafts, makeBackupFile, readBackupFile, mergeBackup };
+module.exports = { PRIMARY_KEY, MIRROR_KEY, validateDrafts, readLocalDrafts, writeLocalDrafts, inspectRecoverySnapshot, makeBackupFile, readBackupFile, mergeBackup };
