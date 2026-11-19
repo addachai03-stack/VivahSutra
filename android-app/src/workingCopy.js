@@ -60,6 +60,31 @@ function createWorkingCopyStore(storage, clock = () => new Date().toISOString())
       await storage.removeItem(KEY);
       recoveryBlocked = false;
     }),
+    // Clear after a successful real invitation Save only if no newer changes
+    // were written while that Save was pending.
+    clearIfUnchanged: invite => {
+      const expected = JSON.stringify(cleanInvite(invite));
+      return enqueue(async () => {
+        if (recoveryBlocked) {
+          const error = new Error('Unfinished invitation must be reviewed before cleanup');
+          error.code = 'WORKING_COPY_RECOVERY_REQUIRED';
+          throw error;
+        }
+        const raw = await storage.getItem(KEY);
+        if (raw === null) return {cleared:true, newerCopy:null};
+        let copy;
+        try { copy = decodeWorkingCopy(raw); }
+        catch (error) {
+          recoveryBlocked = true;
+          throw error;
+        }
+        if (JSON.stringify(copy.invite) !== expected) {
+          return {cleared:false, newerCopy:copy};
+        }
+        await storage.removeItem(KEY);
+        return {cleared:true, newerCopy:null};
+      });
+    },
     read: () => enqueue(async () => {
       try {
         const copy = decodeWorkingCopy(await storage.getItem(KEY));
