@@ -70,7 +70,32 @@ jobs:
       - name: Generate native Android project
         run: npx expo prebuild --platform android --non-interactive --no-install
       - name: Build standalone APK for device testing
-        run: cd android && chmod +x gradlew && ./gradlew assembleRelease --no-daemon
+        run: |
+          cd android
+          chmod +x gradlew
+          set -o pipefail
+          # Some public Maven/Gradle repositories intermittently return missing
+          # dependency metadata. Retry only repository/network resolution failures.
+          # Never retry arbitrary compilation failures or mark a failed build as PASS.
+          for attempt in 1 2 3; do
+            echo "Gradle attempt ${attempt}/3"
+            args=(assembleRelease --no-daemon)
+            if [ "$attempt" -gt 1 ]; then args+=(--refresh-dependencies); fi
+            if ./gradlew "${args[@]}" 2>&1 | tee "../gradle-build-attempt-${attempt}.log"; then
+              echo "Gradle build succeeded on attempt ${attempt}"
+              exit 0
+            fi
+            if ! grep -Eq 'Could not resolve all artifacts|Could not find org.jetbrains.kotlin|Could not find io.github.java-diff-utils|Read timed out|Connection reset|503 Service Unavailable|502 Bad Gateway' "../gradle-build-attempt-${attempt}.log"; then
+              echo "::error::Non-dependency Gradle build failure; not retrying"
+              exit 1
+            fi
+            if [ "$attempt" -eq 3 ]; then
+              echo "::error::Gradle dependency resolution failed after 3 attempts"
+              exit 1
+            fi
+            echo "::warning::Transient dependency resolution issue; refreshing dependencies and retrying"
+            sleep $((attempt*15))
+          done
       - name: Verify APK identity, signing and checksum
         run: |
           APK="$(find android/app/build/outputs/apk/release -maxdepth 1 -type f -name '*.apk' | head -n 1)"
