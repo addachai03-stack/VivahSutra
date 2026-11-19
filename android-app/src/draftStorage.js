@@ -74,6 +74,16 @@ async function writeLocalDrafts(storage, previous, next, options = {}) {
   if (JSON.stringify(current) !== JSON.stringify(previous)) {
     throw new Error('Saved invitations changed; reload before editing');
   }
+  if (!options.preserveRecoveredDrafts) {
+    // Do not silently overwrite a local recovery snapshot containing IDs
+    // absent from the current primary list, even if the primary is valid [].
+    const pending = await inspectRecoverySnapshot(storage, current);
+    if (pending.added > 0) {
+      const error = new Error('Missing invitations exist in the recovery copy; review before saving');
+      error.code = 'RECOVERY_REQUIRED';
+      throw error;
+    }
+  }
   // During an explicit recovery, keep the recovered candidate in the mirror
   // even if writing the primary fails. Otherwise preserve the last good state.
   const preWriteMirror = options.preserveRecoveredDrafts ? next : previous;
@@ -99,6 +109,35 @@ async function inspectRecoverySnapshot(storage, existing) {
   return { ...outcome, snapshotCount: snapshot.length };
 }
 
+// Read-only metadata for troubleshooting on the phone. Never print names,
+// invitation fields or raw backup content, and never write to AsyncStorage.
+async function inspectStorageHealth(storage) {
+  const inspectOne = async (key) => {
+    try {
+      const raw = await storage.getItem(key);
+      if (raw === null) return { status:'missing', count:0 };
+      try {
+        const drafts = parseDrafts(raw);
+        return { status:drafts.length===0?'empty':'valid', count:drafts.length };
+      } catch(error) { return { status:'invalid', count:null }; }
+    } catch(error) { return { status:'unreadable', count:null }; }
+  };
+  const [primary, recovery] = await Promise.all([
+    inspectOne(PRIMARY_KEY),
+    inspectOne(MIRROR_KEY)
+  ]);
+  let missingFromPrimary = null;
+  if ((primary.status==='valid'||primary.status==='empty') &&
+      (recovery.status==='valid'||recovery.status==='empty')) {
+    try {
+      const current = parseDrafts(await storage.getItem(PRIMARY_KEY));
+      const backup = parseDrafts(await storage.getItem(MIRROR_KEY));
+      missingFromPrimary = mergeBackup(current,backup).added;
+    } catch(error) { missingFromPrimary=null; }
+  }
+  return { primary, recovery, missingFromPrimary };
+}
+
 function makeBackupFile(drafts, createdAt) {
   validateDrafts(drafts);
   return JSON.stringify({format: FORMAT,version: BACKUP_VERSION,exportedAt: createdAt,drafts},null,2);
@@ -119,4 +158,4 @@ function mergeBackup(existing, imported) {
   return { drafts: validateDrafts([...existing, ...added]), added: added.length, skipped: imported.length - added.length };
 }
 
-module.exports = { PRIMARY_KEY, MIRROR_KEY, validateDrafts, readLocalDrafts, writeLocalDrafts, inspectRecoverySnapshot, makeBackupFile, readBackupFile, mergeBackup };
+module.exports = { PRIMARY_KEY, MIRROR_KEY, validateDrafts, readLocalDrafts, writeLocalDrafts, inspectRecoverySnapshot, inspectStorageHealth, makeBackupFile, readBackupFile, mergeBackup };
