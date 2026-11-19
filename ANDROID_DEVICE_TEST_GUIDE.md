@@ -1,4 +1,4 @@
-# VivahSutra v1.1.8 — Android phone test guide (Hinglish)
+# VivahSutra v1.1.9 — Android phone test guide (Hinglish)
 
 **Only test after the latest feature-branch APK build is successful.** This guide is for real-device checks, not proof they already passed.
 
@@ -60,3 +60,11 @@ This is a **FREE BETA TEST APK with debug signing**, not an APPLIQ production re
 10. Test Android Back / Skip Intro, small-screen clipping and long fields. Report any visible crash with the version shown in the header.
 
 **Remaining release limits:** These are manual device tests, not CI PASS claims. GitHub beta APKs are debug-key signed. APPLIQ/Play Store production signing and publishing require separate approval and are not part of this test.
+
+## V1.1.9 PNG export acceptance test
+- Open an invitation with harmless test names, set Front, and press SAVE FRONT PNG; check that a real photo appears in Android Gallery and the front text is legible.
+- Switch Back and press SAVE BACK PNG; verify the back side is a different image with correct family/RSVP details.
+- Use SHARE PNG on each side, choose Android Files or another compatible receiving app, and inspect the actual PNG. Opening a share sheet alone does not prove the receiving app got the file.
+- In Android app settings deny photo/library access, then try Save PNG again; it should show a clear warning and suggest SHARE PNG, not crash.
+- Test Hindi text, long names and the FREE BETA watermark on the *exported* PNG. Report any blank/white capture or clipped text.
+- These checks are NOT performed by CI; the export workflow has mock-unit PASS only until the device video is reviewed.
