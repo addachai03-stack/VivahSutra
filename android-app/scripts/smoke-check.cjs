@@ -36,7 +36,7 @@ for (const category of categories) {
 }
 
 assert.equal(packageInfo.version, config.expo.version, 'App and package versions must agree');
-assert.equal(config.expo.android.versionCode, 11, 'Android v1.1.9 source versionCode must be 11 before CI assigns the beta build code');
+assert.equal(config.expo.android.versionCode, 12, 'Android v1.1.10 source versionCode must be 12 before CI assigns the beta build code');
 assert.ok(appSource.includes("const BETA_VERSION='"+packageInfo.version+"'"), 'Visible beta version must match package version');
 assert.equal(config.expo.extra.appMode, 'free-beta', 'Beta mode must not be silently removed');
 assert.equal(config.expo.extra.distribution, 'APPLIQ-candidate', 'Do not mark as published');
@@ -76,6 +76,10 @@ for (const [name, source, needle] of [
   ['local storage failure guard', appSource, 'if(storageError)'],
   ['no duplicate saves', appSource, 'if(savingInFlight.current||draftWriteInFlight.current)return'],
   ['unsaved edit warning', appSource, 'confirmDiscard'],
+  ['android Back warns about unsaved edits', appSource, "if(tab==='editor'&&hasUnsavedEdits)"],
+  ['tab transition warns about unsaved edits', appSource, "if(tab==='editor'&&hasUnsavedEdits){"],
+  ['resume editing from Home', appSource, 'RESUME EDITING'],
+  ['Create tab returns to unsaved edit', appSource, "if(tab!=='editor'&&hasUnsavedEdits){setTab('editor');return;}"],
   ['blank details for real new invitations', appSource, "bride:'',groom:'',date:'',time:'',venue:''"],
   ['fresh invitation action in Create tab', appSource, "if(tab!=='editor')newInvite()"],
   ['optional local photo picker', appSource, 'ImagePicker.launchImageLibraryAsync'],
