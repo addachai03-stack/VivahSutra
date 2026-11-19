@@ -2,7 +2,7 @@
 
 ## Proposed store listing (editable)
 - **App title:** VivahSutra
-- **Version in development:** 1.1.6 (beta CI versionCode = 100000 + workflow run number)
+- **Version in development:** 1.1.7 (beta CI versionCode = 100000 + workflow run number)
 - **Category:** Lifestyle / Wedding invitations (confirm available APPLIQ category before listing)
 - **Short description:** Create beautiful Indian wedding invitations on your phone.
 - **Full description:** Choose from six wedding invitation designs, personalise the couple's names, celebration details and optional photos, and preview the front and back of your card. Save drafts privately on your Android device. Export your invitation as a PNG or share it through Android's share menu. Includes Hindi and English invitation editing options. No account or payment is required for this free beta.
@@ -36,4 +36,4 @@ GitHub beta prerelease uploads on the feature branch are **not** an APPLIQ listi
 No APPLIQ listing or release is created by this document. The existing root website and its data must not be replaced, modified or deleted.
 
 ## Manual backup privacy/release gate
-Users may export unencrypted JSON files containing invitation names, venue, contacts and other entered details. This is an opt-in Android share action, not automatic cloud upload. Warn users to keep exports private; local photo URI references are not portable. Test backup, non-destructive import and local recovery on an Android device before public release.
+Users may export unencrypted JSON files containing invitation names, venue, contacts and other entered details. This is an opt-in Android share action, not automatic cloud upload. Warn users to keep exports private; local photo URI references are not portable. Test backup, non-destructive import, manual recovery from a local snapshot, and local storage failure behavior on an Android device before public release.
