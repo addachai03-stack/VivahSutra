@@ -139,3 +139,12 @@ Evidence: 19 November 2026 user-supplied 71-second Android phone video. Recordin
 - [ ] Android phone: saved invitation is in Saved with no stale unfinished copy offered after relaunch
 - [ ] Android phone: test unreadable storage behavior on a controlled test environment; do NOT clear data or uninstall to simulate it
 - [ ] Android phone: verify the new status text stays readable with keyboard open and a small screen
+
+## V1.1.13 conditional working-copy cleanup
+- [x] Mock unit test: stale Save cannot clear a newer queued unfinished message
+- [x] Mock unit test: cleanup removes a matching working copy; no copy is an idempotent success
+- [x] Mock unit test: cleanup is blocked for an unreadable working-copy record pending user review
+- [ ] Device: rapid Save and subsequent edits cannot silently discard newer unfinished work
+- [ ] Device: successful Save clears only a matching unfinished copy, without hiding regular Saved drafts
+- [ ] Device: Home offers restore if newer unfinished changes were retained after Save
+- [ ] Device: check behavior with Android Back, force close, and small screen (still not tested)
