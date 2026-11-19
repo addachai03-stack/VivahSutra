@@ -36,7 +36,7 @@ for (const category of categories) {
 }
 
 assert.equal(packageInfo.version, config.expo.version, 'App and package versions must agree');
-assert.equal(config.expo.android.versionCode, 8, 'Android v1.1.6 source versionCode must be 8 before CI assigns the beta build code');
+assert.equal(config.expo.android.versionCode, 9, 'Android v1.1.7 source versionCode must be 9 before CI assigns the beta build code');
 assert.ok(appSource.includes("const BETA_VERSION='"+packageInfo.version+"'"), 'Visible beta version must match package version');
 assert.equal(config.expo.extra.appMode, 'free-beta', 'Beta mode must not be silently removed');
 assert.equal(config.expo.extra.distribution, 'APPLIQ-candidate', 'Do not mark as published');
@@ -66,6 +66,9 @@ for (const [name, source, needle] of [
   ['single active draft writer', appSource, 'draftWriteInFlight.current'],
   ['backup controls visible', appSource, 'EXPORT BACKUP FILE'],
   ['restore controls visible', appSource, 'RESTORE BACKUP FILE'],
+  ['voluntary local copy recover action', appSource, 'RECOVER FROM LOCAL COPY'],
+  ['inspect snapshot without automatic restore', appSource, 'inspectRecoverySnapshot(AsyncStorage,draftsRef.current)'],
+  ['recovery writes retain snapshot on failure', appSource, 'preserveRecoveredDrafts:true'],
   ['local draft saving', appSource, 'writeLocalDrafts(AsyncStorage,previous,next)'],
   ['local storage failure guard', appSource, 'if(storageError)'],
   ['no duplicate saves', appSource, 'if(savingInFlight.current||draftWriteInFlight.current)return'],
