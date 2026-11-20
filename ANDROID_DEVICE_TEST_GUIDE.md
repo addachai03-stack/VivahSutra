@@ -124,3 +124,12 @@ This is a **FREE BETA TEST APK with debug signing**, not an APPLIQ production re
 3. Try importing a deliberately malformed or unrelated JSON document. Verify a clear error and no loss of existing Saved invitations.
 4. Backup files do not embed photos. When restored to another device, local photo links may not work; reselect pictures manually.
 5. Do not use sensitive real wedding details in a test recording. Do not uninstall or clear app data.
+
+## V1.1.17 local recovery copy diagnostics (do not damage real data)
+1. Open Saved → CHECK LOCAL STORAGE. This reads status/counts only; do not share personal details in a video.
+2. If the recovery status is **valid**, do not use repair; no repair is needed. Save a JSON backup to Files if you have drafts.
+3. If the recovery status is **invalid** but Saved list is valid, export a JSON backup first, then choose REPAIR LOCAL RECOVERY COPY. Read and approve the confirmation only if you want to repair the damaged local mirror.
+4. The original damaged bytes are retained in a separate local quarantine key; existing Saved invitations should remain untouched.
+5. After repairing, recheck storage and verify Saved draft count/text did not change.
+6. If the status is unreadable, primary Saved storage is invalid, or a previous quarantine conflicts, **do not proceed**; repair deliberately refuses risky operations.
+7. This feature must be real-device tested in a controlled environment. Never intentionally corrupt the user's existing phone data or clear/uninstall the app.
