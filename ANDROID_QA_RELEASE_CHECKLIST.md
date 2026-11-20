@@ -167,3 +167,10 @@ Evidence: 19 November 2026 user-supplied 71-second Android phone video. Recordin
 - [ ] Android device: no regression to Back/Resume, JSON import/export, front/back PNG rendering and permissions
 
 **Release gate:** GitHub CI PASS does not demonstrate Android behavior. Do not claim device QA complete or production signing ready without phone test evidence.
+
+## V1.1.14 Android photo — 20 November 2026 (partial device evidence)
+- [x] User-provided photo visibly shows **VivahSutra BETA V1.1.14** Home screen loaded on an Android phone, with branding, hero content and CREATE MY INVITATION control rendered
+- [ ] Photo alone does not prove that CREATE MY INVITATION responds to a tap, designs can be selected, Saved data persists, recovery works, or PNG and JSON export succeed
+- [ ] In-place update path and retention from the user's previous installed version to V1.1.14 are not demonstrated by this single photo
+- [ ] Bright vertical green lines extend through the OS status bar and app. Similar lines appeared in earlier launcher footage. Likely phone-display issue, but root cause is not established by the photo; no app-only rendering issue proven
+- [x] Independently, GitHub Actions APK build #44683994445 completed successfully and published public prerelease `vivahsutra-android-beta-r297` (build 100297). This is automated CI evidence, not device functional QA
