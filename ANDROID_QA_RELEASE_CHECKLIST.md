@@ -155,3 +155,15 @@ Evidence: 19 November 2026 user-supplied 71-second Android phone video. Recordin
 - [ ] Android APK rerun 44482943908 must complete SUCCESS, including APK identity/signature, public prerelease and upload artifact verification
 - [ ] Physical Android installation/update and user-data retention verification remains required; CI cannot substitute for this
 - [ ] Do not report V1.1.13 released until the public GitHub beta release contains an actual APK asset
+
+## V1.1.14 save-time editor state and race regression
+- [x] Source unit tests: finishing Save with unchanged text commits the saved snapshot and clears unsaved state
+- [x] Source unit tests: new fields typed while Save is pending remain in the editor; a new local invitation keeps the assigned saved ID
+- [x] Source smoke checks: edit revision captured at Save start, later changes remain unsaved, an active edit does not trigger a competing restore candidate
+- [x] Source smoke checks: switching to another invitation while Save is pending is blocked
+- [ ] Android device: type one message, tap Save and immediately change it; newer text must remain in Create and unsaved status must not disappear
+- [ ] Android device: second Save updates the same invitation instead of creating a duplicate
+- [ ] Android device: reopen app and verify latest saved details plus any separate, unfinished changes offered for recovery
+- [ ] Android device: no regression to Back/Resume, JSON import/export, front/back PNG rendering and permissions
+
+**Release gate:** GitHub CI PASS does not demonstrate Android behavior. Do not claim device QA complete or production signing ready without phone test evidence.
