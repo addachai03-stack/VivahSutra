@@ -1,0 +1,145 @@
+const assert = require('node:assert/strict');
+const {PRIMARY_KEY,MIRROR_KEY,QUARANTINE_KEY,repairInvalidRecoveryMirror,readLocalDrafts,writeLocalDrafts,inspectRecoverySnapshot,inspectStorageHealth,makeBackupFile,readBackupFile,mergeBackup}=require('../src/draftStorage');
+const one = {id:'a1',bride:'Asha',groom:'Ravi',designId:'rajwada',message:'सादर आमंत्रित'};
+const two = {id:'b2',bride:'Meera',groom:'Dev',designId:'pastel'};
+const store=(initial={})=>{
+  const values=new Map(Object.entries(initial));
+  return {
+    values,
+    getItem:async(key)=>values.has(key)?values.get(key):null,
+    setItem:async(key,value)=>{values.set(key,value);},
+  };
+};
+(async()=>{
+  const historical=store({[PRIMARY_KEY]:JSON.stringify([one])});
+  let result=await readLocalDrafts(historical);
+  assert.equal(result.recovered,false);
+  assert.equal(result.drafts.length,1);
+  assert.equal(historical.values.get(MIRROR_KEY),JSON.stringify([one]),'First old-version load seeds a non-destructive mirror');
+  assert.equal((await writeLocalDrafts(historical,[one],[one,two])).backupSynced,true);
+  assert.equal((await readLocalDrafts(historical)).drafts.length,2);
+  assert.equal(JSON.parse(historical.values.get(MIRROR_KEY)).length,2);
+  await assert.rejects(writeLocalDrafts(historical,[],[one]),/changed/);
+
+  const missing=store({[MIRROR_KEY]:JSON.stringify([one])});
+  result=await readLocalDrafts(missing);
+  assert.equal(result.recovered,true);
+  assert.equal(result.drafts[0].bride,'Asha');
+  assert.equal(missing.values.get(PRIMARY_KEY),JSON.stringify([one]));
+  const broken=store({[PRIMARY_KEY]:'broken json',[MIRROR_KEY]:JSON.stringify([one])});
+  assert.equal((await readLocalDrafts(broken)).recovered,true);
+  await assert.rejects(readLocalDrafts(store({[PRIMARY_KEY]:'broken json'})));
+  const readError=store({[MIRROR_KEY]:JSON.stringify([one])});
+  readError.getItem=async(key)=>{if(key===PRIMARY_KEY)throw new Error('I/O read failed');return readError.values.get(key)||null;};
+  await assert.rejects(readLocalDrafts(readError),/I\/O read failed/);
+  assert.equal(readError.values.has(PRIMARY_KEY),false);
+
+  // A legitimate empty list stays empty even when a stale mirror still contains a draft.
+  const empty=store({[PRIMARY_KEY]:'[]',[MIRROR_KEY]:JSON.stringify([one])});
+  assert.deepEqual((await readLocalDrafts(empty)).drafts,[]);
+  // A stale recovery snapshot must survive any regular save/deletion attempt.
+  await assert.rejects(
+    writeLocalDrafts(empty,[],[two]),
+    error=>error.code==='RECOVERY_REQUIRED'
+  );
+  assert.equal(empty.values.get(PRIMARY_KEY),'[]');
+  assert.equal(empty.values.get(MIRROR_KEY),JSON.stringify([one]));
+  assert.deepEqual(await inspectStorageHealth(empty),{
+    primary:{status:'empty',count:0},
+    recovery:{status:'valid',count:1},
+    missingFromPrimary:1
+  });
+  // Only explicit consent restores from a valid, but empty primary storage.
+  const optionalRecovery=await inspectRecoverySnapshot(empty,[]);
+  assert.equal(optionalRecovery.added,1);
+  assert.equal(optionalRecovery.snapshotCount,1);
+  assert.deepEqual(optionalRecovery.drafts,[one]);
+  assert.equal(empty.values.get(PRIMARY_KEY),'[]','Read-only snapshot inspection must never overwrite');
+  const recovered=await writeLocalDrafts(empty,[],optionalRecovery.drafts,{preserveRecoveredDrafts:true});
+  assert.equal(recovered.backupSynced,true);
+  assert.equal((await readLocalDrafts(empty)).drafts.length,1);
+  assert.equal((await inspectRecoverySnapshot(empty,[one])).added,0);
+
+  const noSnapshot=store({[PRIMARY_KEY]:'[]'});
+  assert.equal((await inspectRecoverySnapshot(noSnapshot,[])).added,0);
+  const invalidSnapshot=store({[PRIMARY_KEY]:'[]',[MIRROR_KEY]:'not json'});
+  await assert.rejects(inspectRecoverySnapshot(invalidSnapshot,[]));
+  assert.equal(invalidSnapshot.values.get(PRIMARY_KEY),'[]');
+  assert.deepEqual(await inspectStorageHealth(invalidSnapshot),{
+    primary:{status:'empty',count:0},
+    recovery:{status:'invalid',count:null},
+    missingFromPrimary:null
+  });
+  // Repair requires a valid primary and preserves exact damaged mirror bytes.
+  const corrupted=store({[PRIMARY_KEY]:JSON.stringify([one]),[MIRROR_KEY]:'{damaged-backup'});
+  await assert.rejects(writeLocalDrafts(corrupted,[one],[one,two]));
+  assert.deepEqual(await repairInvalidRecoveryMirror(corrupted),{status:'repaired',count:1});
+  assert.equal(corrupted.values.get(PRIMARY_KEY),JSON.stringify([one]));
+  assert.equal(corrupted.values.get(MIRROR_KEY),JSON.stringify([one]));
+  assert.equal(corrupted.values.get(QUARANTINE_KEY),'{damaged-backup');
+  await writeLocalDrafts(corrupted,[one],[one,two]);
+  assert.equal((await readLocalDrafts(corrupted)).drafts.length,2);
+  assert.deepEqual(await repairInvalidRecoveryMirror(corrupted),{status:'already-valid',count:2});
+  assert.equal(corrupted.values.get(QUARANTINE_KEY),'{damaged-backup');
+
+  const collision=store({[PRIMARY_KEY]:'[]',[MIRROR_KEY]:'broken B',[QUARANTINE_KEY]:'broken A'});
+  await assert.rejects(repairInvalidRecoveryMirror(collision),e=>e.code==='QUARANTINE_EXISTS');
+  assert.equal(collision.values.get(MIRROR_KEY),'broken B');
+  assert.equal(collision.values.get(QUARANTINE_KEY),'broken A');
+  await assert.rejects(repairInvalidRecoveryMirror(store({[MIRROR_KEY]:'broken'})),/Saved invitations/);
+  await assert.rejects(repairInvalidRecoveryMirror(store({[PRIMARY_KEY]:'corrupt',[MIRROR_KEY]:'broken'})));
+  await assert.rejects(repairInvalidRecoveryMirror(store({[PRIMARY_KEY]:'[]'})),/No damaged recovery/);
+  const quarantineFailure=store({[PRIMARY_KEY]:'[]',[MIRROR_KEY]:'broken'});
+  quarantineFailure.setItem=async(key,value)=>{
+    if(key===QUARANTINE_KEY)throw new Error('storage out of space');
+    quarantineFailure.values.set(key,value);
+  };
+  await assert.rejects(repairInvalidRecoveryMirror(quarantineFailure),/storage out of space/);
+  assert.equal(quarantineFailure.values.get(MIRROR_KEY),'broken');
+  const verifyFailure=store({[PRIMARY_KEY]:'[]',[MIRROR_KEY]:'broken'});
+  verifyFailure.setItem=async(key,val)=>{if(key!==QUARANTINE_KEY)verifyFailure.values.set(key,val);};
+  await assert.rejects(repairInvalidRecoveryMirror(verifyFailure),/Could not verify damaged recovery data/);
+  assert.equal(verifyFailure.values.get(MIRROR_KEY),'broken');
+
+  const readFailHealth=store({[PRIMARY_KEY]:'[]'});
+  readFailHealth.getItem=async()=>{throw new Error('I/O not available');};
+  assert.deepEqual(await inspectStorageHealth(readFailHealth),{
+    primary:{status:'unreadable',count:null},
+    recovery:{status:'unreadable',count:null},
+    missingFromPrimary:null
+  });
+  const failRecovered=store({[PRIMARY_KEY]:'[]',[MIRROR_KEY]:JSON.stringify([one])});
+  failRecovered.setItem=async(key,value)=>{if(key===PRIMARY_KEY)throw new Error('not writable');failRecovered.values.set(key,value);};
+  await assert.rejects(writeLocalDrafts(failRecovered,[],[one],{preserveRecoveredDrafts:true}),/not writable/);
+  assert.equal(failRecovered.values.get(PRIMARY_KEY),'[]');
+  assert.equal(failRecovered.values.get(MIRROR_KEY),JSON.stringify([one]),'Recovery candidate must survive failed primary write');
+
+  const fail=store({[PRIMARY_KEY]:JSON.stringify([one])});
+  fail.setItem=async(key,value)=>{if(key===MIRROR_KEY)throw new Error('storage full');fail.values.set(key,value);};
+  await assert.rejects(writeLocalDrafts(fail,[one],[]),/storage full/);
+  assert.equal(fail.values.get(PRIMARY_KEY),JSON.stringify([one]));
+
+  const copied=readBackupFile(makeBackupFile([one],'2026-11-19T00:00:00Z'));
+  assert.equal(copied[0].message,one.message);
+  assert.deepEqual(mergeBackup([one],[one,two]).drafts,[one,two]);
+  assert.deepEqual(mergeBackup([one],[one,two]).added,1);
+  assert.throws(()=>readBackupFile(JSON.stringify({format:'other',version:1,drafts:[one]})));
+  assert.throws(()=>readBackupFile(JSON.stringify({format:'vivahsutra-invitations-backup',version:1,drafts:[{id:'bad',bride:4,groom:'ok'}]})));
+  assert.throws(()=>readBackupFile(JSON.stringify({format:'vivahsutra-invitations-backup',version:1,drafts:[one,one]})));
+  assert.throws(()=>readBackupFile('x'.repeat(2200000)));
+  const metadata={format:'vivahsutra-invitations-backup',version:1,exportedAt:'2026-11-20T09:00:00Z'};
+  const strictFile=drafts=>JSON.stringify({...metadata,drafts});
+  assert.deepEqual(readBackupFile(strictFile([{...one,bridePhoto:'file:///private/app/photo.jpg'}]))[0].bridePhoto,'file:///private/app/photo.jpg');
+  assert.throws(()=>readBackupFile(strictFile([{...one,bridePhoto:'https://tracker.invalid/photo.jpg'}])),/local file path/);
+  assert.throws(()=>readBackupFile(strictFile([{...one,groomPhoto:'content://untrusted/photo.png'}])),/local file path/);
+  assert.throws(()=>readBackupFile(strictFile([{...one,extraSettings:{url:'https://example.invalid'}}])),/Unknown backup invitation field/);
+  assert.throws(()=>readBackupFile(strictFile([{...one,['__proto__']:{admin:true}}])),/Unknown backup invitation field/);
+  assert.throws(()=>readBackupFile(JSON.stringify({...metadata,extra:'unexpected',drafts:[one]})),/Invalid backup metadata/);
+  assert.throws(()=>readBackupFile(JSON.stringify({...metadata,exportedAt:'not-a-date',drafts:[one]})),/Invalid backup metadata/);
+  assert.throws(()=>readBackupFile(JSON.stringify({...metadata,drafts:{one}})),/Invalid backup invitations/);
+  // Existing on-device historical drafts are not subjected to the external
+  // import schema; never break users' local data during a beta upgrade.
+  const historicExtra=store({[PRIMARY_KEY]:JSON.stringify([{...one,legacyNote:'older app field'}])});
+  assert.equal((await readLocalDrafts(historicExtra)).drafts[0].legacyNote,'older app field');
+  console.log('PASS: historical drafts, safe recovery, strict external backup schema, remote-photo rejection and non-destructive merges');
+})().catch(error=>{console.error(error);process.exitCode=1;});

@@ -1,0 +1,44 @@
+{
+  "expo": {
+    "name": "VivahSutra",
+    "slug": "vivahsutra-android",
+    "scheme": "vivahsutra",
+    "version": "1.1.17",
+    "orientation": "portrait",
+    "userInterfaceStyle": "dark",
+    "newArchEnabled": true,
+    "splash": {
+      "backgroundColor": "#17110E"
+    },
+    "android": {
+      "package": "com.vivahsutra.invites",
+      "versionCode": 19,
+      "adaptiveIcon": {
+        "backgroundColor": "#17110E"
+      },
+      "permissions": [],
+      "edgeToEdgeEnabled": true
+    },
+    "plugins": [
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Choose photos to personalise your wedding invitation.",
+          "microphonePermission": false
+        }
+      ],
+      [
+        "expo-media-library",
+        {
+          "photosPermission": "Save your invitation PNG to your device.",
+          "savePhotosPermission": "Save your invitation PNG to your device.",
+          "isAccessMediaLocationEnabled": false
+        }
+      ]
+    ],
+    "extra": {
+      "appMode": "free-beta",
+      "distribution": "APPLIQ-candidate"
+    }
+  }
+}

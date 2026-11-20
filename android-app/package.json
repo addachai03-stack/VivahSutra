@@ -1,0 +1,31 @@
+{
+  "name": "vivahsutra-android",
+  "version": "1.1.17",
+  "private": true,
+  "main": "index.js",
+  "scripts": {
+    "start": "expo start --android",
+    "android": "expo run:android",
+    "prebuild": "expo prebuild --platform android",
+    "check": "expo-doctor",
+    "test:smoke": "node scripts/smoke-check.cjs && node scripts/test-beta-updates.cjs && node scripts/test-draft-storage.cjs && node scripts/test-png-export.cjs && node scripts/test-working-copy.cjs && node scripts/test-save-reconciliation.cjs"
+  },
+  "dependencies": {
+    "expo": "~57.0.0",
+    "react": "19.2.3",
+    "react-native": "0.86.0",
+    "expo-linear-gradient": "~57.0.0",
+    "expo-image-picker": "~57.0.17",
+    "expo-file-system": "~57.0.7",
+    "expo-sharing": "~57.0.19",
+    "expo-media-library": "~57.0.5",
+    "@react-native-async-storage/async-storage": "2.2.0",
+    "react-native-view-shot": "4.0.3",
+    "react-native-safe-area-context": "~5.6.2",
+    "expo-application": "~57.0.3",
+    "expo-document-picker": "~57.0.3"
+  },
+  "devDependencies": {
+    "babel-preset-expo": "~57.0.0"
+  }
+}
