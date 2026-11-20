@@ -117,3 +117,10 @@ This is a **FREE BETA TEST APK with debug signing**, not an APPLIQ production re
 4. Save the restored invitation, then open Saved and verify the result **updated the original invitation**, rather than adding a second copy.
 5. Force close/reopen once more; confirm that Saved still contains the expected message. Do not uninstall or clear data.
 6. If the recovered card is duplicated or an error appears, capture a short recording without real personal details. Mark as FAIL until diagnosed.
+
+## V1.1.16 protected backup import (fake names only)
+1. In Saved, export a sample invitation JSON file and save it privately using Android Files.
+2. Restore that JSON file. Existing invitation IDs must remain unchanged, so restoring the same file must not create duplicates.
+3. Try importing a deliberately malformed or unrelated JSON document. Verify a clear error and no loss of existing Saved invitations.
+4. Backup files do not embed photos. When restored to another device, local photo links may not work; reselect pictures manually.
+5. Do not use sensitive real wedding details in a test recording. Do not uninstall or clear app data.
