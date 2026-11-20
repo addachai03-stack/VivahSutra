@@ -87,3 +87,10 @@ Run `npm run test:smoke` from `android-app/` (requires Node.js). The same tests 
 - Corrupt or unreadable unfinished records cannot be silently overwritten; explicit user recovery or discard is required.
 - This does not guarantee the last keystroke if Android kills the process before the device storage write completes.
 - Unit tests exercise write ordering and conditional cleanup; verify real-device behavior before marking Android QA PASS.
+
+## V1.1.14 editor safety
+- Saving captures the current editing revision. The latest text typed while an asynchronous Save is running is kept in the editor instead of being overwritten with the older saved snapshot.
+- A new invitation receives its persisted ID even if the editor has newer unsaved changes, so Save Again edits the same invitation.
+- When editing continues, the active editor remains authoritative; a separate recovery candidate is offered only when there is no newer in-memory edit.
+- Switching to another invitation while Save is in progress is blocked.
+- CI unit/source checks cover this logic; real Android device acceptance is still required.
