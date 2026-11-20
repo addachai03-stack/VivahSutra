@@ -15,10 +15,10 @@ const {checkForBetaUpdate} = require('./src/betaUpdateFeed');
 const {exportInvitationPng} = require('./src/pngExport');
 const {createWorkingCopyStore} = require('./src/workingCopy');
 const {reconcileAfterSave} = require('./src/saveReconciliation');
-const {readLocalDrafts,writeLocalDrafts,inspectRecoverySnapshot,inspectStorageHealth,makeBackupFile,readBackupFile,mergeBackup} = require('./src/draftStorage');
+const {readLocalDrafts,writeLocalDrafts,repairInvalidRecoveryMirror,inspectRecoverySnapshot,inspectStorageHealth,makeBackupFile,readBackupFile,mergeBackup} = require('./src/draftStorage');
 
 const C={bg:'#171310',panel:'#24201C',panel2:'#30271F',gold:'#D6B174',soft:'#F9EDDB',muted:'#AEA194',line:'#4D4033',rose:'#C9928B'};
-const BETA_VERSION='1.1.16';
+const BETA_VERSION='1.1.17';
 const nowId=()=>String(Date.now())+'-'+Math.random().toString(36).slice(2,7);
 // Keep template-gallery sample names, but never prefill a real new invitation with demo wedding details.
 const makeNew=(designId='rajwada')=>({...NEW_INVITE,id:null,designId,bride:'',groom:'',date:'',time:'',venue:'',host:'',message:'',relatives:'',rsvp:''});
@@ -395,6 +395,34 @@ function AppContent(){
     }catch(e){Alert.alert('Invalid backup file','Choose a VivahSutra invitation backup JSON file. No local invitations were changed.');}
     finally{backupActionInFlight.current=false;setBackupBusy(false);}
   };
+  const repairLocalRecovery=()=>{
+    if(!loaded||storageError||draftWriteInFlight.current||backupActionInFlight.current){
+      Alert.alert('Repair unavailable','Reload saved invitations and wait for active saves to finish.');return;
+    }
+    if(storageHealth?.recovery.status!=='invalid'||!['valid','empty'].includes(storageHealth?.primary.status)){
+      Alert.alert('Check storage first','Use CHECK LOCAL STORAGE to confirm saved invitations are valid and only the recovery copy is damaged.');return;
+    }
+    Alert.alert('Repair damaged recovery copy?','This will preserve the damaged copy separately on this phone, then rebuild the recovery copy from your existing Saved invitations. Existing Saved invitations will NOT be deleted. For extra protection, export a JSON backup first.',[
+      {text:'Cancel',style:'cancel'},
+      {text:'REPAIR LOCAL COPY',onPress:async()=>{
+        if(draftWriteInFlight.current||backupActionInFlight.current)return;
+        backupActionInFlight.current=true;
+        draftWriteInFlight.current=true;
+        setBackupBusy(true);
+        try{
+          const result=await repairInvalidRecoveryMirror(AsyncStorage);
+          setStorageHealth(await inspectStorageHealth(AsyncStorage));
+          Alert.alert('Recovery copy repaired',result.status==='repaired'?'Your damaged recovery data was kept in a separate local quarantine copy. Saved invitations are unchanged.':'The recovery copy is already valid. No changes were needed.');
+        }catch(e){
+          Alert.alert('Repair stopped',e?.code==='QUARANTINE_EXISTS'?'An earlier damaged recovery copy is already preserved. Repair will not overwrite it. Existing invitations were not changed.':'Could not safely verify recovery-copy repair. Saved invitations were not intentionally modified.');
+        }finally{
+          draftWriteInFlight.current=false;
+          backupActionInFlight.current=false;
+          setBackupBusy(false);
+        }
+      }}
+    ]);
+  };
   const recoverLocalCopy=async()=>{
     if(!loaded||storageError||draftWriteInFlight.current||backupActionInFlight.current){
       Alert.alert('Recovery unavailable','Reload saved invitations and try again.');return;
@@ -553,6 +581,8 @@ function AppContent(){
       <GoldButton title={backupBusy?'WORKING…':'RESTORE BACKUP FILE'} disabled={backupBusy||!loaded||storageError} outline onPress={importBackup} style={{marginTop:9}}/>
       <GoldButton title={backupBusy?'WORKING…':'RECOVER FROM LOCAL COPY'} disabled={backupBusy||!loaded||storageError} outline onPress={recoverLocalCopy} style={{marginTop:9}}/>
       <GoldButton title={storageChecking?'CHECKING…':'CHECK LOCAL STORAGE'} disabled={storageChecking||!loaded} outline onPress={checkLocalStorage} style={{marginTop:9}}/>
+      {storageHealth?.recovery.status==='invalid'&&(storageHealth?.primary.status==='valid'||storageHealth?.primary.status==='empty')?
+        <GoldButton title={backupBusy?'WORKING…':'REPAIR LOCAL RECOVERY COPY'} disabled={backupBusy||draftWriteInFlight.current||storageError} outline onPress={repairLocalRecovery} style={{marginTop:9}}/>:null}
       {storageHealth?<View style={{marginTop:12}}>
         <Small>Device-only diagnostics · no names or invitation contents shown</Small>
         <Small>Saved list: {storageHealth.primary.status} · {storageHealth.primary.count==null?'?':storageHealth.primary.count} invitation(s)</Small>
