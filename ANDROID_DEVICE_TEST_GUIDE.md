@@ -109,3 +109,11 @@ This is a **FREE BETA TEST APK with debug signing**, not an APPLIQ production re
 5. Close and reopen the app. Verify the Saved entry and any offered unfinished working copy without clearing data.
 6. Test rapid navigation while Save is in progress. The app should prevent switching to a different invitation until Save finishes.
 7. Record the app header version plus only the sample names; this is a manual QA test, NOT automatically confirmed by source CI.
+
+## V1.1.15 no-duplicate recovery test (sample details only)
+1. Open Create, enter two fake names and a short message, then SAVE MY INVITATION.
+2. Change the message again without pressing Save. Wait until "Unfinished changes saved locally on this device" appears.
+3. Force close and reopen. Tap RESTORE UNFINISHED INVITATION if shown.
+4. Save the restored invitation, then open Saved and verify the result **updated the original invitation**, rather than adding a second copy.
+5. Force close/reopen once more; confirm that Saved still contains the expected message. Do not uninstall or clear data.
+6. If the recovered card is duplicated or an error appears, capture a short recording without real personal details. Mark as FAIL until diagnosed.
