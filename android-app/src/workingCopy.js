@@ -85,6 +85,48 @@ function createWorkingCopyStore(storage, clock = () => new Date().toISOString())
         return {cleared:true, newerCopy:null};
       });
     },
+    // Complete an invitation Save without losing a newer unsaved edit. A new
+    // draft gets its permanent ID copied into any newer working copy, so a
+    // recovered edit updates that invitation instead of creating a duplicate.
+    reconcileCompletedSave: (originalInvite, savedEntry) => {
+      const original = cleanInvite(originalInvite);
+      const saved = cleanInvite(savedEntry);
+      if (typeof saved.id !== 'string' || !saved.id.trim()) {
+        throw new Error('Completed invitation must have a saved ID');
+      }
+      return enqueue(async () => {
+        if (recoveryBlocked) {
+          const error = new Error('Unfinished invitation must be reviewed before cleanup');
+          error.code = 'WORKING_COPY_RECOVERY_REQUIRED';
+          throw error;
+        }
+        const raw = await storage.getItem(KEY);
+        if (raw === null) return {cleared:true,newerCopy:null};
+        let copy;
+        try { copy=decodeWorkingCopy(raw); }
+        catch(error) { recoveryBlocked=true;throw error; }
+        if (JSON.stringify(copy.invite) === JSON.stringify(original)) {
+          await storage.removeItem(KEY);
+          return {cleared:true,newerCopy:null};
+        }
+        if (copy.invite.id !== original.id && copy.invite.id !== saved.id) {
+          // Unrelated invitation: preserve it without rewriting metadata.
+          return {cleared:false,newerCopy:copy};
+        }
+        const patched = {
+          ...copy.invite,
+          id:saved.id,
+          createdAt:saved.createdAt || copy.invite.createdAt
+        };
+        // Preserve the timestamp unless this working copy is actually rewritten.
+        if (JSON.stringify(patched) !== JSON.stringify(copy.invite)) {
+          const stamped=clock();
+          await storage.setItem(KEY,encodeWorkingCopy(patched,stamped));
+          return {cleared:false,newerCopy:{invite:cleanInvite(patched),savedAt:stamped}};
+        }
+        return {cleared:false,newerCopy:copy};
+      });
+    },
     read: () => enqueue(async () => {
       try {
         const copy = decodeWorkingCopy(await storage.getItem(KEY));
