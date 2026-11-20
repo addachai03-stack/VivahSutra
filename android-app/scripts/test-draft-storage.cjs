@@ -1,5 +1,5 @@
 const assert = require('node:assert/strict');
-const {PRIMARY_KEY,MIRROR_KEY,readLocalDrafts,writeLocalDrafts,inspectRecoverySnapshot,inspectStorageHealth,makeBackupFile,readBackupFile,mergeBackup}=require('../src/draftStorage');
+const {PRIMARY_KEY,MIRROR_KEY,QUARANTINE_KEY,repairInvalidRecoveryMirror,readLocalDrafts,writeLocalDrafts,inspectRecoverySnapshot,inspectStorageHealth,makeBackupFile,readBackupFile,mergeBackup}=require('../src/draftStorage');
 const one = {id:'a1',bride:'Asha',groom:'Ravi',designId:'rajwada',message:'सादर आमंत्रित'};
 const two = {id:'b2',bride:'Meera',groom:'Dev',designId:'pastel'};
 const store=(initial={})=>{
@@ -70,6 +70,37 @@ const store=(initial={})=>{
     recovery:{status:'invalid',count:null},
     missingFromPrimary:null
   });
+  // Repair requires a valid primary and preserves exact damaged mirror bytes.
+  const corrupted=store({[PRIMARY_KEY]:JSON.stringify([one]),[MIRROR_KEY]:'{damaged-backup'});
+  await assert.rejects(writeLocalDrafts(corrupted,[one],[one,two]));
+  assert.deepEqual(await repairInvalidRecoveryMirror(corrupted),{status:'repaired',count:1});
+  assert.equal(corrupted.values.get(PRIMARY_KEY),JSON.stringify([one]));
+  assert.equal(corrupted.values.get(MIRROR_KEY),JSON.stringify([one]));
+  assert.equal(corrupted.values.get(QUARANTINE_KEY),'{damaged-backup');
+  await writeLocalDrafts(corrupted,[one],[one,two]);
+  assert.equal((await readLocalDrafts(corrupted)).drafts.length,2);
+  assert.deepEqual(await repairInvalidRecoveryMirror(corrupted),{status:'already-valid',count:2});
+  assert.equal(corrupted.values.get(QUARANTINE_KEY),'{damaged-backup');
+
+  const collision=store({[PRIMARY_KEY]:'[]',[MIRROR_KEY]:'broken B',[QUARANTINE_KEY]:'broken A'});
+  await assert.rejects(repairInvalidRecoveryMirror(collision),e=>e.code==='QUARANTINE_EXISTS');
+  assert.equal(collision.values.get(MIRROR_KEY),'broken B');
+  assert.equal(collision.values.get(QUARANTINE_KEY),'broken A');
+  await assert.rejects(repairInvalidRecoveryMirror(store({[MIRROR_KEY]:'broken'})),/Saved invitations/);
+  await assert.rejects(repairInvalidRecoveryMirror(store({[PRIMARY_KEY]:'corrupt',[MIRROR_KEY]:'broken'})));
+  await assert.rejects(repairInvalidRecoveryMirror(store({[PRIMARY_KEY]:'[]'})),/No damaged recovery/);
+  const quarantineFailure=store({[PRIMARY_KEY]:'[]',[MIRROR_KEY]:'broken'});
+  quarantineFailure.setItem=async(key,value)=>{
+    if(key===QUARANTINE_KEY)throw new Error('storage out of space');
+    quarantineFailure.values.set(key,value);
+  };
+  await assert.rejects(repairInvalidRecoveryMirror(quarantineFailure),/storage out of space/);
+  assert.equal(quarantineFailure.values.get(MIRROR_KEY),'broken');
+  const verifyFailure=store({[PRIMARY_KEY]:'[]',[MIRROR_KEY]:'broken'});
+  verifyFailure.setItem=async(key,val)=>{if(key!==QUARANTINE_KEY)verifyFailure.values.set(key,val);};
+  await assert.rejects(repairInvalidRecoveryMirror(verifyFailure),/Could not verify damaged recovery data/);
+  assert.equal(verifyFailure.values.get(MIRROR_KEY),'broken');
+
   const readFailHealth=store({[PRIMARY_KEY]:'[]'});
   readFailHealth.getItem=async()=>{throw new Error('I/O not available');};
   assert.deepEqual(await inspectStorageHealth(readFailHealth),{
