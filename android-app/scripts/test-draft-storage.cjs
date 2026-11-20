@@ -96,5 +96,19 @@ const store=(initial={})=>{
   assert.throws(()=>readBackupFile(JSON.stringify({format:'vivahsutra-invitations-backup',version:1,drafts:[{id:'bad',bride:4,groom:'ok'}]})));
   assert.throws(()=>readBackupFile(JSON.stringify({format:'vivahsutra-invitations-backup',version:1,drafts:[one,one]})));
   assert.throws(()=>readBackupFile('x'.repeat(2200000)));
-  console.log('PASS: historical drafts, recovery inspection, voluntary mirror restore, failure safety, JSON backups and non-destructive merges');
+  const metadata={format:'vivahsutra-invitations-backup',version:1,exportedAt:'2026-11-20T09:00:00Z'};
+  const strictFile=drafts=>JSON.stringify({...metadata,drafts});
+  assert.deepEqual(readBackupFile(strictFile([{...one,bridePhoto:'file:///private/app/photo.jpg'}]))[0].bridePhoto,'file:///private/app/photo.jpg');
+  assert.throws(()=>readBackupFile(strictFile([{...one,bridePhoto:'https://tracker.invalid/photo.jpg'}])),/local file path/);
+  assert.throws(()=>readBackupFile(strictFile([{...one,groomPhoto:'content://untrusted/photo.png'}])),/local file path/);
+  assert.throws(()=>readBackupFile(strictFile([{...one,extraSettings:{url:'https://example.invalid'}}])),/Unknown backup invitation field/);
+  assert.throws(()=>readBackupFile(strictFile([{...one,['__proto__']:{admin:true}}])),/Unknown backup invitation field/);
+  assert.throws(()=>readBackupFile(JSON.stringify({...metadata,extra:'unexpected',drafts:[one]})),/Invalid backup metadata/);
+  assert.throws(()=>readBackupFile(JSON.stringify({...metadata,exportedAt:'not-a-date',drafts:[one]})),/Invalid backup metadata/);
+  assert.throws(()=>readBackupFile(JSON.stringify({...metadata,drafts:{one}})),/Invalid backup invitations/);
+  // Existing on-device historical drafts are not subjected to the external
+  // import schema; never break users' local data during a beta upgrade.
+  const historicExtra=store({[PRIMARY_KEY]:JSON.stringify([{...one,legacyNote:'older app field'}])});
+  assert.equal((await readLocalDrafts(historicExtra)).drafts[0].legacyNote,'older app field');
+  console.log('PASS: historical drafts, safe recovery, strict external backup schema, remote-photo rejection and non-destructive merges');
 })().catch(error=>{console.error(error);process.exitCode=1;});
