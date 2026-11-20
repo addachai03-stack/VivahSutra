@@ -36,7 +36,7 @@ for (const category of categories) {
 }
 
 assert.equal(packageInfo.version, config.expo.version, 'App and package versions must agree');
-assert.equal(config.expo.android.versionCode, 18, 'Android v1.1.16 source versionCode must be 18 before CI assigns the beta build code');
+assert.equal(config.expo.android.versionCode, 19, 'Android v1.1.17 source versionCode must be 19 before CI assigns the beta build code');
 assert.ok(appSource.includes("const BETA_VERSION='"+packageInfo.version+"'"), 'Visible beta version must match package version');
 assert.equal(config.expo.extra.appMode, 'free-beta', 'Beta mode must not be silently removed');
 assert.equal(config.expo.extra.distribution, 'APPLIQ-candidate', 'Do not mark as published');
@@ -70,6 +70,10 @@ for (const [name, source, needle] of [
   ['inspect snapshot without automatic restore', appSource, 'inspectRecoverySnapshot(AsyncStorage,draftsRef.current)'],
   ['recovery writes retain snapshot on failure', appSource, 'preserveRecoveredDrafts:true'],
   ['storage diagnostics visible', appSource, 'CHECK LOCAL STORAGE'],
+  ['recovery mirror repair consent prompt', appSource, 'Repair damaged recovery copy?'],
+  ['repair only invalid local recovery', appSource, 'repairInvalidRecoveryMirror(AsyncStorage)'],
+  ['repair button visible only after invalid diagnostics', appSource, 'REPAIR LOCAL RECOVERY COPY'],
+  ['quarantine collision is not overwritten', appSource, "e?.code==='QUARANTINE_EXISTS'"],
   ['read-only local storage diagnostics', appSource, 'inspectStorageHealth(AsyncStorage)'],
   ['recovery copy overwrites prevented', appSource, "e?.code==='RECOVERY_REQUIRED'"],
   ['local draft saving', appSource, 'writeLocalDrafts(AsyncStorage,previous,next)'],
