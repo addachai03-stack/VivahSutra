@@ -195,3 +195,15 @@ Evidence: 19 November 2026 user-supplied 71-second Android phone video. Recordin
 - [ ] Android phone: import a malformed JSON backup; app must show an error and not mutate Saved invitations
 - [ ] Android phone: test valid backups with optional local photos, and reselect missing photos after a device change as needed
 - [ ] Full APK build/signature, and on-device backup/share tests must complete before this version is marked device PASS
+
+## V1.1.17 invalid local recovery copy repair
+- [x] Source tests: only a valid primary Saved list can be used to rebuild an invalid mirror
+- [x] Source tests: exact invalid mirror bytes are quarantined and read back before any mirror replacement
+- [x] Source tests: an existing different quarantine prevents replacement and protects earlier damaged bytes
+- [x] Source tests: failed quarantine persistence leaves primary and invalid mirror unchanged
+- [x] Source/UI tests: explicit owner confirmation, CHECK LOCAL STORAGE first, and no automatic repair on launch
+- [ ] Android device: with a controlled test storage state only, verify invalid mirror is shown by CHECK LOCAL STORAGE and repair appears with confirmation
+- [ ] Android device: after approved repair, Saved invitations remain unchanged and normal Save resumes
+- [ ] Android device: verify exporting a separate JSON backup before attempting any repair
+- [ ] Do NOT corrupt real user storage, uninstall the app, or clear app data for this test
+- [ ] Verify the resulting beta APK is signed, published and installable on a device
