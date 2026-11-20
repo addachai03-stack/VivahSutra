@@ -101,3 +101,11 @@ Run `npm run test:smoke` from `android-app/` (requires Node.js). The same tests 
 - This stricter validation does not change the historical on-device saved-invitation key or migrate/erase existing data.
 - User-selected backup restore still requires confirmation and merges by ID; photo files are not embedded in JSON backups.
 - Unit tests pass for compatible exports and malformed inputs, while physical Android import/export tests remain pending.
+
+## V1.1.17 damaged recovery-mirror repair
+- Saved → CHECK LOCAL STORAGE reports whether the primary Saved list and second on-device mirror are readable. It does not expose invitation names.
+- When the primary list is valid but the mirror is invalid, Saved offers **REPAIR LOCAL RECOVERY COPY** with an explicit confirmation.
+- Repair preserves the exact unreadable mirror bytes in `vivahsutra-native-drafts-v1-recovery-quarantine`, verifies preservation, and then rebuilds the mirror from the primary Saved list. It never deletes Saved invitations.
+- If a different quarantine already exists, or the primary list is invalid, repair refuses to overwrite unknown data.
+- The quarantine is local-only and does not survive app uninstall/clear data. Export a private JSON backup to Files before intentional repair.
+- Source unit checks pass; physical Android behavior is not yet verified.
