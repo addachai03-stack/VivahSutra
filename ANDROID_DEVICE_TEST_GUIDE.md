@@ -100,3 +100,12 @@ This is a **FREE BETA TEST APK with debug signing**, not an APPLIQ production re
 - After saving, reopen Home. If newer unfinished changes were retained, use RESTORE UNFINISHED INVITATION and inspect them before discarding.
 - Test app force close and reopen after the "saved locally" status appears. Check Saved and unfinished recovery separately.
 - Do not uninstall or clear app data: both types of copies live on-device.
+
+## V1.1.14 testing edits made during Save (fake names only)
+1. Open a new sample invitation and enter both names. Type message "Before Save".
+2. Tap SAVE MY INVITATION and immediately attempt to change the message to "After Save".
+3. If Android accepted a new keystroke during Save, the latest text must remain in the editor and be marked unsaved; it must NOT revert to "Before Save".
+4. Tap Save again, open Saved and verify one invitation (not two) carries the latest accepted message.
+5. Close and reopen the app. Verify the Saved entry and any offered unfinished working copy without clearing data.
+6. Test rapid navigation while Save is in progress. The app should prevent switching to a different invitation until Save finishes.
+7. Record the app header version plus only the sample names; this is a manual QA test, NOT automatically confirmed by source CI.
