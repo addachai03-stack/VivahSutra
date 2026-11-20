@@ -146,8 +146,42 @@ function makeBackupFile(drafts, createdAt) {
 function readBackupFile(text) {
   if (typeof text !== 'string' || text.length > MAX_CHARS + 10240) throw new Error('Backup too large');
   const file = JSON.parse(text);
-  if (!file || file.format !== FORMAT || file.version !== BACKUP_VERSION) throw new Error('This is not a VivahSutra backup');
-  return validateDrafts(file.drafts);
+  if (!file || Array.isArray(file) || file.format !== FORMAT || file.version !== BACKUP_VERSION) {
+    throw new Error('This is not a VivahSutra backup');
+  }
+  // Only import the documented backup shape. Local historical storage remains
+  // backward-compatible; strict checks apply to user-selected external files.
+  const headerKeys = ['format','version','exportedAt','drafts'];
+  if (Object.keys(file).some(key => !headerKeys.includes(key)) ||
+      typeof file.exportedAt !== 'string' || Number.isNaN(Date.parse(file.exportedAt))) {
+    throw new Error('Invalid backup metadata');
+  }
+  if (!Array.isArray(file.drafts) || file.drafts.length > MAX_DRAFTS) {
+    throw new Error('Invalid backup invitations');
+  }
+  const safeDrafts = file.drafts.map(draft => {
+    if (!draft || typeof draft !== 'object' || Array.isArray(draft)) {
+      throw new Error('Invalid backup invitation');
+    }
+    if (Object.keys(draft).some(key => !ALLOWED_FIELDS.includes(key))) {
+      throw new Error('Unknown backup invitation field');
+    }
+    const clean = {};
+    for (const field of ALLOWED_FIELDS) {
+      if (!Object.prototype.hasOwnProperty.call(draft,field)) continue;
+      const value = draft[field];
+      // Restored photos are local app paths only. No network URLs from imported
+      // JSON should ever trigger an automatic image fetch.
+      if ((field === 'bridePhoto' || field === 'groomPhoto') &&
+          value != null && value !== '' &&
+          (typeof value !== 'string' || !value.startsWith('file://'))) {
+        throw new Error('Backup photo must be a local file path');
+      }
+      clean[field]=value;
+    }
+    return clean;
+  });
+  return validateDrafts(safeDrafts);
 }
 
 function mergeBackup(existing, imported) {
