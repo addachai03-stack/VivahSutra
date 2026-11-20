@@ -94,3 +94,10 @@ Run `npm run test:smoke` from `android-app/` (requires Node.js). The same tests 
 - When editing continues, the active editor remains authoritative; a separate recovery candidate is offered only when there is no newer in-memory edit.
 - Switching to another invitation while Save is in progress is blocked.
 - CI unit/source checks cover this logic; real Android device acceptance is still required.
+
+## V1.1.16 strict portable backup validation
+- JSON backups shared by the user are **untrusted input**. Import accepts the documented version 1 backup shape and allowed invitation fields, rejecting extra object keys and malformed metadata.
+- Import rejects remote photo URLs, so restoring JSON cannot make invitation images load a third-party website. Normal locally created photo paths remain supported.
+- This stricter validation does not change the historical on-device saved-invitation key or migrate/erase existing data.
+- User-selected backup restore still requires confirmation and merges by ID; photo files are not embedded in JSON backups.
+- Unit tests pass for compatible exports and malformed inputs, while physical Android import/export tests remain pending.
