@@ -36,7 +36,7 @@ for (const category of categories) {
 }
 
 assert.equal(packageInfo.version, config.expo.version, 'App and package versions must agree');
-assert.equal(config.expo.android.versionCode, 15, 'Android v1.1.13 source versionCode must be 15 before CI assigns the beta build code');
+assert.equal(config.expo.android.versionCode, 16, 'Android v1.1.14 source versionCode must be 16 before CI assigns the beta build code');
 assert.ok(appSource.includes("const BETA_VERSION='"+packageInfo.version+"'"), 'Visible beta version must match package version');
 assert.equal(config.expo.extra.appMode, 'free-beta', 'Beta mode must not be silently removed');
 assert.equal(config.expo.extra.distribution, 'APPLIQ-candidate', 'Do not mark as published');
@@ -88,6 +88,11 @@ for (const [name, source, needle] of [
   ['working copy recovery after relaunch', appSource, 'RESTORE UNFINISHED INVITATION'],
   ['explicit consent before discarding', appSource, 'Discard unfinished invitation?'],
   ['conditional cleanup after real Save', appSource, 'await workingCopyStore.current.clearIfUnchanged(invite)'],
+  ['capture edit revision at Save start', appSource, 'const revisionAtSave=editRevision.current'],
+  ['avoid replacing text typed during Save', appSource, 'reconcileAfterSave(entry,current,changedDuringSave).invite'],
+  ['keep unsaved indicator if edits continued', appSource, 'setHasUnsavedEdits(changedDuringSave)'],
+  ['avoid duplicate working-copy recovery candidate', appSource, 'setWorkingCandidate(editingContinued?null:cleanup.newerCopy)'],
+  ['protect navigation while save runs', appSource, "if(savingInFlight.current){Alert.alert('Saving invitation'"],
   ['keep later saved working copy for restore', appSource, 'setWorkingCandidate(cleanup.newerCopy)'],
   ['unmatched changes retained message', appSource, 'Newer unfinished changes were kept separately'],
   ['clear unfinished work only after user-confirmed discard', appSource, 'await workingCopyStore.current.clear()'],
