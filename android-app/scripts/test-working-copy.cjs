@@ -58,6 +58,51 @@ function memory(){
   await guarded.save({...invite,message:'New after discard'});
   assert.equal((await guarded.read()).invite.message,'New after discard');
 
+  // Saving a brand-new invitation assigns an ID to a newer unfinished edit,
+  // preventing duplicate invitations when a user restores it after force-close.
+  const saveStore=createWorkingCopyStore(memory(),()=>fixed);
+  const submitted={...invite,id:null,message:'At Save'};
+  const committed={...submitted,id:'invite-101',createdAt:'2026-11-20T04:00:00.000Z'};
+  await saveStore.save({...submitted,message:'After Save'});
+  const updated=await saveStore.reconcileCompletedSave(submitted,committed);
+  assert.equal(updated.cleared,false);
+  assert.equal(updated.newerCopy.invite.id,'invite-101');
+  assert.equal(updated.newerCopy.invite.message,'After Save');
+  assert.equal(updated.newerCopy.invite.createdAt,committed.createdAt);
+  assert.equal((await saveStore.read()).invite.id,'invite-101');
+  assert.equal((await saveStore.read()).invite.message,'After Save');
+  // A fresh working copy containing exactly what was saved is safe to clear.
+  const exactStore=createWorkingCopyStore(memory(),()=>fixed);
+  await exactStore.save(submitted);
+  assert.deepEqual(await exactStore.reconcileCompletedSave(submitted,committed),{cleared:true,newerCopy:null});
+  assert.equal(await exactStore.read(),null);
+  // A concurrent keystroke queued before reconciliation must be kept.
+  const raceStore=createWorkingCopyStore(memory(),()=>fixed);
+  const before=raceStore.save(submitted);
+  const after=raceStore.save({...submitted,message:'Quick edit'});
+  const raceDone=raceStore.reconcileCompletedSave(submitted,committed);
+  await Promise.all([before,after]);
+  assert.equal((await raceDone).newerCopy.invite.message,'Quick edit');
+  assert.equal((await raceStore.read()).invite.id,'invite-101');
+  // Another invitation's working copy must never be assigned the current ID.
+  const otherStore=createWorkingCopyStore(memory(),()=>fixed);
+  await otherStore.save({...invite,id:'other-id',message:'Other wedding'});
+  const other=await otherStore.reconcileCompletedSave(submitted,committed);
+  assert.equal(other.cleared,false);
+  assert.equal(other.newerCopy.invite.id,'other-id');
+  assert.equal((await otherStore.read()).invite.id,'other-id');
+  // Recovery metadata write failure cannot erase the newer copy.
+  const failMeta=memory();
+  await createWorkingCopyStore(failMeta,()=>fixed).save({...submitted,message:'Later'});
+  failMeta.setItem=async()=>{throw new Error('disk full during id fix');};
+  await assert.rejects(
+    createWorkingCopyStore(failMeta,()=>fixed).reconcileCompletedSave(submitted,committed),
+    /disk full during id fix/
+  );
+  assert.equal(decodeWorkingCopy(failMeta.values.get(KEY)).invite.message,'Later');
+  await assert.rejects(otherStore.reconcileCompletedSave(submitted,{...committed,id:null}),/saved ID/);
+  await assert.rejects(guarded.reconcileCompletedSave(submitted,committed),e=>e.code==='WORKING_COPY_RECOVERY_REQUIRED');
+
   // An intermittent read failure can be retried without discarding existing bytes.
   const retryDb=memory();
   retryDb.values.set(KEY,encodeWorkingCopy(invite,fixed));
@@ -78,5 +123,5 @@ function memory(){
   await assert.rejects(failures.save(invite),/disk not writable/);
   await failures.save({...invite,message:'Recovered'});
   assert.equal((await failures.read()).invite.message,'Recovered','A write failure does not permanently break the queue');
-  console.log('PASS: unfinished-work recovery, serialized writes, no overwrite after corrupt read, retry and consent-based clear');
+  console.log('PASS: unfinished-work serialization, saved-ID reconciliation, no duplicate recovery, corrupted storage protection');
 })().catch(e=>{console.error(e);process.exitCode=1;});
