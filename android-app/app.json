@@ -3,7 +3,7 @@
     "name": "VivahSutra",
     "slug": "vivahsutra-android",
     "scheme": "vivahsutra",
-    "version": "1.1.16",
+    "version": "1.1.17",
     "orientation": "portrait",
     "userInterfaceStyle": "dark",
     "newArchEnabled": true,
@@ -12,7 +12,7 @@
     },
     "android": {
       "package": "com.vivahsutra.invites",
-      "versionCode": 18,
+      "versionCode": 19,
       "adaptiveIcon": {
         "backgroundColor": "#17110E"
       },
