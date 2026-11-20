@@ -185,3 +185,13 @@ Evidence: 19 November 2026 user-supplied 71-second Android phone video. Recordin
 - [ ] Android phone: reopen → Restore Unfinished Invitation → Save again → Saved must contain one invitation, not a duplicate
 - [ ] Android phone: verify original saved card and recovered latest text after normal Save/Reopen
 - [ ] No claim of actual Android recovery, data retention or Play Store readiness without device evidence
+
+## V1.1.16 imported JSON backup validation (source tests PASS; device QA pending)
+- [x] External JSON import now permits only the documented backup header and invitation fields; extra keys, including prototype-like object keys, are rejected
+- [x] Imported bride/groom photo references must be local file:// URLs, preventing an imported backup from triggering a remote-image fetch
+- [x] Known valid exported backup files round-trip in unit tests; malformed date metadata, invalid lists, unknown fields and remote image URLs are rejected
+- [x] Historical on-device invitation storage remains readable, even if it includes a legacy extra field; the stricter schema applies only to external backup files
+- [ ] Android phone: export a sample JSON, reimport it, and confirm there is no duplicate invitation or missing text
+- [ ] Android phone: import a malformed JSON backup; app must show an error and not mutate Saved invitations
+- [ ] Android phone: test valid backups with optional local photos, and reselect missing photos after a device change as needed
+- [ ] Full APK build/signature, and on-device backup/share tests must complete before this version is marked device PASS
