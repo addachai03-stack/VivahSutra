@@ -2,6 +2,7 @@
 // Existing primary key is preserved for all historical Android beta installs.
 const PRIMARY_KEY = 'vivahsutra-native-drafts-v1';
 const MIRROR_KEY = 'vivahsutra-native-drafts-v1-recovery';
+const QUARANTINE_KEY = 'vivahsutra-native-drafts-v1-recovery-quarantine';
 const FORMAT = 'vivahsutra-invitations-backup';
 const BACKUP_VERSION = 1;
 const MAX_DRAFTS = 200;
@@ -138,6 +139,44 @@ async function inspectStorageHealth(storage) {
   return { primary, recovery, missingFromPrimary };
 }
 
+// Explicit user-confirmed repair ONLY: preserve the exact damaged recovery
+// bytes under a separate quarantine key before replacing the invalid mirror.
+// Never use this when the primary saved-invitation list is missing or invalid.
+async function repairInvalidRecoveryMirror(storage) {
+  const primaryRaw = await storage.getItem(PRIMARY_KEY);
+  if (primaryRaw === null) throw new Error('Saved invitations are unavailable');
+  const current = parseDrafts(primaryRaw);
+  const mirrorRaw = await storage.getItem(MIRROR_KEY);
+  if (mirrorRaw === null) throw new Error('No damaged recovery copy exists');
+  try {
+    parseDrafts(mirrorRaw);
+    return { status:'already-valid', count:current.length };
+  } catch (error) { /* An invalid mirror must first be quarantined. */ }
+  const oldQuarantine = await storage.getItem(QUARANTINE_KEY);
+  if (oldQuarantine !== null && oldQuarantine !== mirrorRaw) {
+    const error = new Error('An earlier damaged recovery copy is already preserved; refuse to overwrite it');
+    error.code = 'QUARANTINE_EXISTS';
+    throw error;
+  }
+  if (oldQuarantine === null) {
+    await storage.setItem(QUARANTINE_KEY, mirrorRaw);
+  }
+  // Check quarantine persistence before touching the only damaged copy.
+  if (await storage.getItem(QUARANTINE_KEY) !== mirrorRaw) {
+    throw new Error('Could not verify damaged recovery data was preserved');
+  }
+  // Recheck both storage keys to avoid overwriting a concurrent recovery.
+  if (await storage.getItem(PRIMARY_KEY) !== primaryRaw ||
+      await storage.getItem(MIRROR_KEY) !== mirrorRaw) {
+    throw new Error('Invitations changed during repair; retry the storage check');
+  }
+  await storage.setItem(MIRROR_KEY, JSON.stringify(current));
+  if (await storage.getItem(MIRROR_KEY) !== JSON.stringify(current)) {
+    throw new Error('Local recovery copy repair could not be verified');
+  }
+  return { status:'repaired', count:current.length };
+}
+
 function makeBackupFile(drafts, createdAt) {
   validateDrafts(drafts);
   return JSON.stringify({format: FORMAT,version: BACKUP_VERSION,exportedAt: createdAt,drafts},null,2);
@@ -192,4 +231,4 @@ function mergeBackup(existing, imported) {
   return { drafts: validateDrafts([...existing, ...added]), added: added.length, skipped: imported.length - added.length };
 }
 
-module.exports = { PRIMARY_KEY, MIRROR_KEY, validateDrafts, readLocalDrafts, writeLocalDrafts, inspectRecoverySnapshot, inspectStorageHealth, makeBackupFile, readBackupFile, mergeBackup };
+module.exports = { PRIMARY_KEY, MIRROR_KEY, QUARANTINE_KEY, repairInvalidRecoveryMirror, validateDrafts, readLocalDrafts, writeLocalDrafts, inspectRecoverySnapshot, inspectStorageHealth, makeBackupFile, readBackupFile, mergeBackup };
