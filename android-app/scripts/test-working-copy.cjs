@@ -100,8 +100,12 @@ function memory(){
     /disk full during id fix/
   );
   assert.equal(decodeWorkingCopy(failMeta.values.get(KEY)).invite.message,'Later');
-  await assert.rejects(otherStore.reconcileCompletedSave(submitted,{...committed,id:null}),/saved ID/);
-  await assert.rejects(guarded.reconcileCompletedSave(submitted,committed),e=>e.code==='WORKING_COPY_RECOVERY_REQUIRED');
+  assert.throws(()=>otherStore.reconcileCompletedSave(submitted,{...committed,id:null}),/saved ID/);
+  const stillDamaged=memory();
+  stillDamaged.values.set(KEY,'{broken json');
+  const stillBlocked=createWorkingCopyStore(stillDamaged,()=>fixed);
+  await assert.rejects(stillBlocked.read());
+  await assert.rejects(stillBlocked.reconcileCompletedSave(submitted,committed),e=>e.code==='WORKING_COPY_RECOVERY_REQUIRED');
 
   // An intermittent read failure can be retried without discarding existing bytes.
   const retryDb=memory();
