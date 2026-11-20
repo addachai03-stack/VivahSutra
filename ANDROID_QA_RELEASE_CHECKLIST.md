@@ -174,3 +174,14 @@ Evidence: 19 November 2026 user-supplied 71-second Android phone video. Recordin
 - [ ] In-place update path and retention from the user's previous installed version to V1.1.14 are not demonstrated by this single photo
 - [ ] Bright vertical green lines extend through the OS status bar and app. Similar lines appeared in earlier launcher footage. Likely phone-display issue, but root cause is not established by the photo; no app-only rendering issue proven
 - [x] Independently, GitHub Actions APK build #44683994445 completed successfully and published public prerelease `vivahsutra-android-beta-r297` (build 100297). This is automated CI evidence, not device functional QA
+
+## V1.1.15 recovered invitation identity (source tests PASS; device QA pending)
+- [x] Mock regression: a newly Saved invitation ID is applied to a newer unfinished working copy; edited message stays unchanged
+- [x] Mock regression: a matching working copy is cleared, including when no copy remains
+- [x] Mock regression: a queued newer keystroke survives the Save reconciliation and receives the same permanent ID
+- [x] Mock regression: another invitation's working copy is not given the saved invitation ID
+- [x] Mock regression: a failed metadata write does not delete the existing working copy; unreadable data still blocks cleanup
+- [ ] Android phone: create invitation with sample names, Save, then immediately edit message without saving and force close after "saved locally"
+- [ ] Android phone: reopen → Restore Unfinished Invitation → Save again → Saved must contain one invitation, not a duplicate
+- [ ] Android phone: verify original saved card and recovered latest text after normal Save/Reopen
+- [ ] No claim of actual Android recovery, data retention or Play Store readiness without device evidence
