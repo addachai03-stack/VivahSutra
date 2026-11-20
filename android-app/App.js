@@ -14,10 +14,11 @@ import {ACCENTS, DESIGNS, InvitationCard, NEW_INVITE, OCCASIONS} from './src/des
 const {checkForBetaUpdate} = require('./src/betaUpdateFeed');
 const {exportInvitationPng} = require('./src/pngExport');
 const {createWorkingCopyStore} = require('./src/workingCopy');
+const {reconcileAfterSave} = require('./src/saveReconciliation');
 const {readLocalDrafts,writeLocalDrafts,inspectRecoverySnapshot,inspectStorageHealth,makeBackupFile,readBackupFile,mergeBackup} = require('./src/draftStorage');
 
 const C={bg:'#171310',panel:'#24201C',panel2:'#30271F',gold:'#D6B174',soft:'#F9EDDB',muted:'#AEA194',line:'#4D4033',rose:'#C9928B'};
-const BETA_VERSION='1.1.13';
+const BETA_VERSION='1.1.14';
 const nowId=()=>String(Date.now())+'-'+Math.random().toString(36).slice(2,7);
 // Keep template-gallery sample names, but never prefill a real new invitation with demo wedding details.
 const makeNew=(designId='rajwada')=>({...NEW_INVITE,id:null,designId,bride:'',groom:'',date:'',time:'',venue:'',host:'',message:'',relatives:'',rsvp:''});
@@ -74,6 +75,7 @@ function AppContent(){
   const [busy,setBusy]=useState(false);
   const exportInFlight=useRef(false);
   const [hasUnsavedEdits,setHasUnsavedEdits]=useState(false);
+  const editRevision=useRef(0);
   const [workingCandidate,setWorkingCandidate]=useState(null);
   const [workingLoaded,setWorkingLoaded]=useState(false);
   const [workingCopyError,setWorkingCopyError]=useState(false);
@@ -200,8 +202,9 @@ function AppContent(){
     });
     return()=>subscription.remove();
   },[tab,intro,hasUnsavedEdits]);
-  const editField=(field,value)=>{setHasUnsavedEdits(true);setInvite(p=>({...p,[field]:value}));};
+  const editField=(field,value)=>{editRevision.current+=1;setHasUnsavedEdits(true);setInvite(p=>({...p,[field]:value}));};
   const switchLanguage=(language)=>{
+    editRevision.current+=1;
     setHasUnsavedEdits(true);
     setInvite(p=>({
       ...p,language,
@@ -241,6 +244,7 @@ function AppContent(){
     }catch(e){Alert.alert('Still unreadable','Local unfinished-work data cannot be read. Your saved invitations are stored separately.');}
   };
   const confirmDiscard=(proceed)=>{
+    if(savingInFlight.current){Alert.alert('Saving invitation','Finish saving this invitation before switching to another one.');return;}
     if(!workingLoaded){Alert.alert('Loading unfinished work','Checking for an unfinished invitation. Please try again.');return;}
     if(workingCopyError){
       Alert.alert('Unfinished work unavailable','The unfinished-work record cannot be read. Retry or explicitly discard this separate copy from Home before creating another invitation.');
@@ -276,22 +280,27 @@ function AppContent(){
     const id=invite.id||nowId();
     const entry={...invite,id,createdAt:invite.createdAt||new Date().toISOString(),updatedAt:new Date().toISOString()};
     const previous=draftsRef.current;
+    const revisionAtSave=editRevision.current;
     const next=[entry,...previous.filter(d=>d.id!==id)];
     try{
       const result=await writeLocalDrafts(AsyncStorage,previous,next);
       draftsRef.current=next;
       setDrafts(next);
-      setInvite(entry);
-      setHasUnsavedEdits(false);
-      let workNotice='';
+      const changedDuringSave=editRevision.current!==revisionAtSave;
+      setInvite(current=>reconcileAfterSave(entry,current,changedDuringSave).invite);
+      setHasUnsavedEdits(changedDuringSave);
+      let workNotice=changedDuringSave?' Edits typed during Save are still unsaved; press Save again.':'';
       try{
         const cleanup=await workingCopyStore.current.clearIfUnchanged(invite);
-        setWorkingCandidate(cleanup.newerCopy);
+        // While user continues editing, the current editor already holds the
+        // newer text. Never block its autosave with a redundant restore prompt.
+        const editingContinued=editRevision.current!==revisionAtSave;
+        setWorkingCandidate(editingContinued?null:cleanup.newerCopy);
         if(cleanup.cleared){
           setWorkingCopyError(false);
-          setWorkingCopyStatus('idle');
-        }else{
-          workNotice=' Newer unfinished changes were kept separately; reopen Home to restore them.';
+          if(!editingContinued)setWorkingCopyStatus('idle');
+        }else if(!editingContinued){
+          workNotice+=' A newer working copy is available to restore from Home.';
         }
       }catch(e){
         workNotice=' The separate unfinished working copy could not be safely cleared.';
